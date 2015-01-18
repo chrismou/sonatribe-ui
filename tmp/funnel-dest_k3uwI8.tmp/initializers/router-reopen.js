@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/app/initializers/router-reopen.js

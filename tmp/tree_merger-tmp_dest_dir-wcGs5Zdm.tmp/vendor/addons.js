@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/tmp/class-tmp_cache_dir-vsg18usn.tmp/addons.js

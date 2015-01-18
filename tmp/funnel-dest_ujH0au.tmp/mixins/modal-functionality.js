@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/app/mixins/modal-functionality.js

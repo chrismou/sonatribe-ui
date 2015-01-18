@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/node_modules/ember-cli-font-awesome/app-addon/helpers/fa-icon.js

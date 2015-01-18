@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/app/views/hide-modal.js

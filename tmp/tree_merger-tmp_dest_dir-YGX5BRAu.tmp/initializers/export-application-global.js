@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/tmp/tree_merger-tmp_dest_dir-4jfmGA1u.tmp/initializers/export-application-global.js

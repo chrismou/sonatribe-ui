@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/jshinter-tmp_dest_dir-OE0dMUwG.tmp/helpers/image-helper.jshint.js

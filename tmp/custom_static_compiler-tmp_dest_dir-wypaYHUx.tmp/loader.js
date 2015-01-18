@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/bower_components/loader.js/

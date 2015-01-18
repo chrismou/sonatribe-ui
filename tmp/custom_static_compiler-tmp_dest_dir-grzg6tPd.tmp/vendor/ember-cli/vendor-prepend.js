@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/tmp/custom_replace-tmp_dest_dir-1kDmzKYm.tmp/vendor-prepend.js

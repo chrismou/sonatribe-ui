@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/caching-writer-dest-dir_lf7VzM.tmp/ember-cli-bootstrap.js

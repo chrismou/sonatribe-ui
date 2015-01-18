@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/app/controllers/listing-event.js

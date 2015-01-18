@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/tmp/caching-writer-dest-dir_qAWAES.tmp/assets/vendor.js

@@ -1,0 +1,1 @@
+/Users/dev/sonatribe/src/sonatribe-ui/node_modules/ember-cli/lib/broccoli/testem.js

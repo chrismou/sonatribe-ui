@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/class-tmp_cache_dir-Zk0hRneR.tmp/addons.js

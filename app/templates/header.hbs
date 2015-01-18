@@ -1,0 +1,64 @@
+<div class='container'>
+  <div class='contents clearfix'>
+
+    {{home-logo minimized=showExtraInfo}}
+
+    <div class='panel clearfix'>
+
+      {{#unless session.isAuthenticated}}
+
+        {{#em-modal-toggler modal-id="login" class="btn btn-primary"}}log in{{/em-modal-toggler}}
+        {{#em-modal-toggler modal-id="signup" class="btn btn-primary"}}sign up{{/em-modal-toggler}}
+
+        {{render "modal/create-account"}}
+        {{render "modal/login"}}
+
+
+      {{/unless}}
+
+      <ul class='icons clearfix' role='navigation'>
+        <li>
+            <a id='search-button'
+               class='icon expand'
+               href='#'
+               data-dropdown="search-dropdown"
+               title='search mother fucker'>
+               {{icon-helper "search" label="search.title"}}
+            </a>
+        </li>
+        <li class='categories dropdown'>
+
+           <a class='icon'
+               data-dropdown="site-map-dropdown"
+               data-render="renderSiteMap"
+               href="#"
+               title='site map'
+               id="site-map">
+               {{icon-helper "bars" label="site_map"}}
+            </a>
+
+        </li>
+         {{#if currentUser}}
+        <li class='current-user dropdown'>
+            <a class='icon'
+               data-dropdown="user-dropdown"
+               data-render="renderUserDropdown"
+               href="#"
+
+               id="current-user">
+
+                 {{bound-avatar currentUser.data "medium"}}
+            </a>
+        </li>
+        {{/if}}
+      </ul>
+        {{render "search"}}
+
+        {{#if view.renderSiteMap}}
+          {{render "site-map"}}
+        {{/if}}
+
+        {{render "user-dropdown"}}
+    </div>
+  </div>
+</div>
