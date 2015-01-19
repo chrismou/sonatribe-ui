@@ -1,1 +1,0 @@
-/Users/dev/sonatribe/src/sonatribe-ui/tmp/custom_static_compiler-tmp_dest_dir-vpH4VCbG.tmp/sonatribe-ui/tests/helpers/bound-avatar.jshint.js

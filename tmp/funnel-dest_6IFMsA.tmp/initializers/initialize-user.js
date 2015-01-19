@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/app/initializers/initialize-user.js

@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/app/mixins/has-current-user.js

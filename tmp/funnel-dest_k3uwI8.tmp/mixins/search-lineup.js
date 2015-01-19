@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/app/mixins/search-lineup.js

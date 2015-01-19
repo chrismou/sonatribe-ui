@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/app/authenticators/torii.js

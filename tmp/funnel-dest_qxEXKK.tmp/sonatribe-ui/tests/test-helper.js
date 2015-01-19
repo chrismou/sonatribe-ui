@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/tmp/six_to_five-tmp_dest_dir-hzA0Sfu5.tmp/sonatribe-ui/tests/test-helper.js

@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/app/mixins/sonatribe-ajax.js

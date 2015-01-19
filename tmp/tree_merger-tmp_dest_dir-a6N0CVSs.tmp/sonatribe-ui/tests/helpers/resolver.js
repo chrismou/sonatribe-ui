@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/six_to_five-tmp_dest_dir-J65pgH8r.tmp/sonatribe-ui/tests/helpers/resolver.js

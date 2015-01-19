@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/tmp/class-tmp_cache_dir-XOn4mPGF.tmp/ember-cli-bootstrap.js

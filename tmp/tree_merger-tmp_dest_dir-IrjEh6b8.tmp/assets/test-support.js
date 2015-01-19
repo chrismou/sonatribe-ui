@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/caching-writer-dest-dir_G3EEjy.tmp/assets/test-support.js

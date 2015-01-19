@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/app/views/search-text-field.js

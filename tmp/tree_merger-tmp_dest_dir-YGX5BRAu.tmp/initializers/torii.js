@@ -1,1 +1,0 @@
-/Users/dev/sonatribe/src/sonatribe-ui/app/initializers/torii.js

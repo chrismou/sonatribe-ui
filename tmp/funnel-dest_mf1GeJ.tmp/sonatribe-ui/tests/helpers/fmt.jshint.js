@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/jshinter-tmp_dest_dir-OE0dMUwG.tmp/helpers/fmt.jshint.js

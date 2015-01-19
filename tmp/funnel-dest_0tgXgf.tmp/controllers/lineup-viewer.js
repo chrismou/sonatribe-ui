@@ -1,1 +1,0 @@
-/Users/dev/sonatribe/src/sonatribe-ui/app/controllers/lineup-viewer.js

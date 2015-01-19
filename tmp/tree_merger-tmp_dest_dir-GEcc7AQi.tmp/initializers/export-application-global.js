@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe/src/sonatribe-ui/tmp/tree_merger-tmp_dest_dir-NXTMUDJz.tmp/initializers/export-application-global.js

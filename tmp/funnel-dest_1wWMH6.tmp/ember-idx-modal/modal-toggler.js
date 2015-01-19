@@ -1,1 +1,0 @@
-/Users/dev/sonatribe/src/sonatribe-ui/node_modules/ember-idx-modal/addon/modal-toggler.js

@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/app/controllers/event-profile/lineup-viewer.js

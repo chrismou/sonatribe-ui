@@ -1,1 +1,0 @@
-/Users/waynedouglas/sonatribe-ui/tmp/tree_merger-tmp_dest_dir-vlzAKJ6a.tmp/initializers/simple-auth-oauth2.js
