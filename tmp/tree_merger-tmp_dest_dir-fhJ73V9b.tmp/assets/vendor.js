@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe-ui/tmp/class-tmp_cache_dir-kaA46YqV.tmp/assets/vendor.js

@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe-ui/node_modules/ember-idx-modal/node_modules/ember-idx-utils/addon/mixin/hotkeys-bindings.js

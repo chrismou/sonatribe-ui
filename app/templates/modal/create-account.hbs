@@ -1,4 +1,4 @@
-{{#em-modal configName="bs" id="signup"}}
+{{#em-modal-form configName="bs" id="signup" in-async=async}}
 {{#em-modal-title}}
 <!--optional toggler to close the opened modal-->
 {{#em-modal-toggler class="close"}}x{{/em-modal-toggler}}
@@ -12,6 +12,10 @@
 <a {{bind-attr href=facebook_login_url}}>facebook</a>
 <a {{bind-attr href=twitter_login_url}}>twitter</a>
 {{/unless}}
+
+{{#if async}}
+Submitting, please wait...
+{{/if}}
 
 <div>
   <form id="form-register" action="http://test.sonatribe.co.uk:1337/api/register" method="POST">
@@ -99,4 +103,4 @@
 {{#em-modal-footer}}
 {{#em-modal-toggler class="btn btn-default"}}Close{{/em-modal-toggler}}
 {{/em-modal-footer}}
-{{/em-modal}}
+{{/em-modal-form}}

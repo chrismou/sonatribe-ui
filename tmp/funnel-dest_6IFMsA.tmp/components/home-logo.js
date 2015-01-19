@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe-ui/app/components/home-logo.js

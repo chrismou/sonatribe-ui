@@ -503,6 +503,14 @@ define("sonatribe-ui/controllers/modal",
       }
     });
   });
+define("sonatribe-ui/controllers/modal/create-account", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    __exports__["default"] = Ember.Controller.extend({});
+  });
 define("sonatribe-ui/controllers/modal/login", 
   ["ember","sonatribe-ui/mixins/presence","sonatribe-ui/mixins/modal-functionality","sonatribe-ui/mixins/sonatribe-ajax","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
@@ -1590,6 +1598,7 @@ define("sonatribe-ui/routes/application",
           this.get("session").authenticate("simple-auth-authenticator:torii", "facebook-connect").then(function () {
             var accessToken = rte.get("session").get("content").accessToken;
 
+            //TODO: replace this with a model save
             Ember.$.ajax({
               url: Sonatribe.SiteSettings.api_url + "/auths/facebook_access_token?code=" + accessToken,
               dataType: "json",
@@ -1600,10 +1609,12 @@ define("sonatribe-ui/routes/application",
                 rte.set("currentUser", user);
 
                 if (user.get("username") === undefined) {
-                  rte.send("autoLogin", "createAccount", function () {
-                    rte.controllerFor("createAccount").set("passwordRequired", false);
-                    SonatribeRoute.showModal(rte, "createAccount");
-                  });
+                  rte.get("signup").sendAction();
+
+                  /*rte.send('autoLogin', 'createAccount', function(){
+                  	rte.controllerFor('createAccount').set('passwordRequired', false);
+                  	//SonatribeRoute.showModal(rte, 'createAccount');
+                  });*/
                 }
               },
               error: function (err) {
@@ -1611,39 +1622,8 @@ define("sonatribe-ui/routes/application",
               }
             });
           });
-        },
-
-        showLogin: function () {
-          var self = this;
-          this.send("autoLogin", "login", function () {
-            SonatribeRoute.showModal(self, "login");
-            self.controllerFor("login").resetForm();
-          });
-        },
-
-        showModal: function () {
-          $("#discourse-modal").modal("show");
-        },
-
-        autoLogin: function (modal, onFail) {
-          onFail();
-        },
-        closeModal: function () {
-          this.render("hide-modal", { into: "modal", outlet: "modalBody" });
-        },
-        showCreateAccount: function () {
-          var self = this;
-
-          self.send("autoLogin", "createAccount", function () {
-            self.controllerFor("createAccount").set("passwordRequired", true);
-            SonatribeRoute.showModal(self, "createAccount");
-          });
-        },
-        createAccount: function () {
-          //var createAccountController = this.get('controllers.createAccount');
-          //createAccountController.resetForm();
-          this.send("showCreateAccount");
-        } }
+        }
+      }
     });
 
     Ember.RSVP.EventTarget.mixin(ApplicationRoute);
@@ -2554,10 +2534,10 @@ define("sonatribe-ui/templates/modal/create-account",
       if (!helpers['em-modal-body']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-body', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n<!--optional footer section of the modal, usually contains buttons-->\n");
-      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[],types:[],data:data}
+      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(16, program16, data),contexts:[],types:[],data:data}
       if (helper = helpers['em-modal-footer']) { stack1 = helper.call(depth0, options); }
       else { helper = (depth0 && depth0['em-modal-footer']); stack1 = typeof helper === functionType ? helper.call(depth0, options) : helper; }
-      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[],types:[],data:data}); }
+      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(16, program16, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
@@ -2594,6 +2574,9 @@ define("sonatribe-ui/templates/modal/create-account",
       data.buffer.push("\n\n");
       stack1 = helpers.unless.call(depth0, "hasAuthOptions", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n\n");
+      stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n<div>\n  <form id=\"form-register\" action=\"http://test.sonatribe.co.uk:1337/api/register\" method=\"POST\">\n    ");
       stack1 = helpers._triageMustache.call(depth0, "service-stack", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
@@ -2617,7 +2600,7 @@ define("sonatribe-ui/templates/modal/create-account",
         'maxlength': ("maxUsernameLength")
       },hashTypes:{'value': "ID",'id': "STRING",'maxlength': "ID"},hashContexts:{'value': depth0,'id': depth0,'maxlength': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "input", options))));
       data.buffer.push("\n          &nbsp;\n        </td>\n      </tr>\n      <tr class=\"instructions\">\n        <td></td>\n        <td><label>username</label></td>\n      </tr>\n\n      ");
-      stack1 = helpers['if'].call(depth0, "passwordRequired", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "passwordRequired", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n      <tr class=\"password-confirmation\">\n        <td><label for='new-account-password-confirmation'>confirm password</label></td>\n        <td>\n          ");
       data.buffer.push(escapeExpression((helper = helpers.input || (depth0 && depth0.input),options={hash:{
@@ -2631,7 +2614,7 @@ define("sonatribe-ui/templates/modal/create-account",
         'id': ("new-account-challenge")
       },hashTypes:{'value': "ID",'id': "STRING"},hashContexts:{'value': depth0,'id': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "input", options))));
       data.buffer.push("\n        </td>\n      </tr>\n\n    </table>\n\n    ");
-      stack1 = helpers['if'].call(depth0, "userFields", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "userFields", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(13, program13, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n    <div id='modal-alert'></div>\n\n  </form>\n</div>\n\n");
       return buffer;
@@ -2653,6 +2636,12 @@ define("sonatribe-ui/templates/modal/create-account",
 
     function program9(depth0,data) {
       
+      
+      data.buffer.push("\nSubmitting, please wait...\n");
+      }
+
+    function program11(depth0,data) {
+      
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n      <tr class=\"input\">\n        <td class=\"label\"><label for='new-account-password'>password</label></td>\n        <td>\n          ");
       data.buffer.push(escapeExpression((helper = helpers.input || (depth0 && depth0.input),options={hash:{
@@ -2672,16 +2661,16 @@ define("sonatribe-ui/templates/modal/create-account",
       return buffer;
       }
 
-    function program11(depth0,data) {
+    function program13(depth0,data) {
       
       var buffer = '', stack1;
       data.buffer.push("\n    <div class='user-fields'>\n      ");
-      stack1 = helpers.each.call(depth0, "userFields", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers.each.call(depth0, "userFields", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(14, program14, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n    </div>\n    ");
       return buffer;
       }
-    function program12(depth0,data) {
+    function program14(depth0,data) {
       
       var buffer = '', helper, options;
       data.buffer.push("\n      ");
@@ -2693,27 +2682,28 @@ define("sonatribe-ui/templates/modal/create-account",
       return buffer;
       }
 
-    function program14(depth0,data) {
+    function program16(depth0,data) {
       
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n");
       stack1 = (helper = helpers['em-modal-toggler'] || (depth0 && depth0['em-modal-toggler']),options={hash:{
         'class': ("btn btn-default")
-      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(15, program15, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
+      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(17, program17, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
       }
-    function program15(depth0,data) {
+    function program17(depth0,data) {
       
       
       data.buffer.push("Close");
       }
 
-      stack1 = (helper = helpers['em-modal'] || (depth0 && depth0['em-modal']),options={hash:{
+      stack1 = (helper = helpers['em-modal-form'] || (depth0 && depth0['em-modal-form']),options={hash:{
         'configName': ("bs"),
-        'id': ("signup")
-      },hashTypes:{'configName': "STRING",'id': "STRING"},hashContexts:{'configName': depth0,'id': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal", options));
+        'id': ("signup"),
+        'in-async': ("async")
+      },hashTypes:{'configName': "STRING",'id': "STRING",'in-async': "ID"},hashContexts:{'configName': depth0,'id': depth0,'in-async': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-form", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
@@ -2753,17 +2743,21 @@ define("sonatribe-ui/templates/modal/login",
       data.buffer.push(escapeExpression(helpers.action.call(depth0, "login", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
       data.buffer.push(">\n<i class=\"fa fa-unlock\"></i>&nbsp;login\n</button>\n\n\n&nbsp;\n<button class=\"btn btn-large\" id=\"new-account-link\" ");
       data.buffer.push(escapeExpression(helpers.action.call(depth0, "createAccount", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data})));
+      data.buffer.push(" ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'disabled': ("async")
+      },hashTypes:{'disabled': "ID"},hashContexts:{'disabled': depth0},contexts:[],types:[],data:data})));
       data.buffer.push(">\n  create account\n</button>\n\n\n\n");
-      stack1 = helpers['if'].call(depth0, "authenticate", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "authenticate", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n");
-      stack1 = helpers['if'].call(depth0, "showSpinner", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "showSpinner", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(10, program10, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
-      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[],types:[],data:data}
+      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[],types:[],data:data}
       if (helper = helpers['em-modal-footer']) { stack1 = helper.call(depth0, options); }
       else { helper = (depth0 && depth0['em-modal-footer']); stack1 = typeof helper === functionType ? helper.call(depth0, options) : helper; }
-      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[],types:[],data:data}); }
+      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
@@ -2788,6 +2782,9 @@ define("sonatribe-ui/templates/modal/login",
     function program5(depth0,data) {
       
       var buffer = '', stack1, helper, options;
+      data.buffer.push("\n\n");
+      stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n\n<a ");
       data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticateFacebook", "facebook-oauth2", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0,depth0],types:["STRING","STRING"],data:data})));
       data.buffer.push(">facebook</a>\n\n<a ");
@@ -2823,40 +2820,46 @@ define("sonatribe-ui/templates/modal/login",
       data.buffer.push("</div>\n\n<div id='modal-alert'></div>\n\n\n\n\n");
       return buffer;
       }
+    function program6(depth0,data) {
+      
+      
+      data.buffer.push("\nSubmitting, please wait...\n");
+      }
 
-    function program7(depth0,data) {
+    function program8(depth0,data) {
       
       
       data.buffer.push("\n&nbsp; authenticating\n");
       }
 
-    function program9(depth0,data) {
+    function program10(depth0,data) {
       
       
       data.buffer.push("\n&nbsp; <i class='fa fa-spinner fa-spin'></i>\n");
       }
 
-    function program11(depth0,data) {
+    function program12(depth0,data) {
       
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n");
       stack1 = (helper = helpers['em-modal-toggler'] || (depth0 && depth0['em-modal-toggler']),options={hash:{
         'class': ("btn btn-default")
-      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(12, program12, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
+      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(13, program13, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
       }
-    function program12(depth0,data) {
+    function program13(depth0,data) {
       
       
       data.buffer.push("Close");
       }
 
-      stack1 = (helper = helpers['em-modal'] || (depth0 && depth0['em-modal']),options={hash:{
+      stack1 = (helper = helpers['em-modal-form'] || (depth0 && depth0['em-modal-form']),options={hash:{
         'configName': ("bs"),
-        'id': ("login")
-      },hashTypes:{'configName': "STRING",'id': "STRING"},hashContexts:{'configName': depth0,'id': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal", options));
+        'id': ("login"),
+        'in-async': ("async")
+      },hashTypes:{'configName': "STRING",'id': "STRING",'in-async': "ID"},hashContexts:{'configName': depth0,'id': depth0,'in-async': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-form", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
@@ -3140,7 +3143,7 @@ define("sonatribe-ui/tests/adapters/application.jshint",
     "use strict";
     module('JSHint - adapters');
     test('adapters/application.js should pass jshint', function() { 
-      ok(true, 'adapters/application.js should pass jshint.'); 
+      ok(false, 'adapters/application.js should pass jshint.\nadapters/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/app.jshint", 
@@ -3149,7 +3152,7 @@ define("sonatribe-ui/tests/app.jshint",
     "use strict";
     module('JSHint - .');
     test('app.js should pass jshint', function() { 
-      ok(true, 'app.js should pass jshint.'); 
+      ok(false, 'app.js should pass jshint.\napp.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 28, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
     });
   });
 define("sonatribe-ui/tests/authenticators/torii.jshint", 
@@ -3158,7 +3161,7 @@ define("sonatribe-ui/tests/authenticators/torii.jshint",
     "use strict";
     module('JSHint - authenticators');
     test('authenticators/torii.js should pass jshint', function() { 
-      ok(false, 'authenticators/torii.js should pass jshint.\nauthenticators/torii.js: line 38, col 16, \'Ember\' is not defined.\nauthenticators/torii.js: line 39, col 12, \'Ember\' is not defined.\nauthenticators/torii.js: line 66, col 16, \'Ember\' is not defined.\nauthenticators/torii.js: line 82, col 16, \'Ember\' is not defined.\n\n4 errors'); 
+      ok(false, 'authenticators/torii.js should pass jshint.\nauthenticators/torii.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/torii.js: line 15, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/components/home-logo.jshint", 
@@ -3167,7 +3170,7 @@ define("sonatribe-ui/tests/components/home-logo.jshint",
     "use strict";
     module('JSHint - components');
     test('components/home-logo.js should pass jshint', function() { 
-      ok(true, 'components/home-logo.js should pass jshint.'); 
+      ok(false, 'components/home-logo.js should pass jshint.\ncomponents/home-logo.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 5, col 37, [\'logo_url\'] is better written in dot notation.\ncomponents/home-logo.js: line 6, col 33, [\'title\'] is better written in dot notation.\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/components/text-field.jshint", 
@@ -3176,7 +3179,7 @@ define("sonatribe-ui/tests/components/text-field.jshint",
     "use strict";
     module('JSHint - components');
     test('components/text-field.js should pass jshint', function() { 
-      ok(true, 'components/text-field.js should pass jshint.'); 
+      ok(false, 'components/text-field.js should pass jshint.\ncomponents/text-field.js: line 10, col 1, \'import\' is only available in ES6 (use esnext option).\ncomponents/text-field.js: line 12, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/admin.jshint", 
@@ -3185,7 +3188,7 @@ define("sonatribe-ui/tests/controllers/admin.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/admin.js should pass jshint', function() { 
-      ok(true, 'controllers/admin.js should pass jshint.'); 
+      ok(false, 'controllers/admin.js should pass jshint.\ncontrollers/admin.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/admin.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/admin.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/application.jshint", 
@@ -3194,7 +3197,7 @@ define("sonatribe-ui/tests/controllers/application.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/application.js should pass jshint', function() { 
-      ok(true, 'controllers/application.js should pass jshint.'); 
+      ok(false, 'controllers/application.js should pass jshint.\ncontrollers/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/application.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/create-account.jshint", 
@@ -3203,7 +3206,7 @@ define("sonatribe-ui/tests/controllers/create-account.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/create-account.js should pass jshint', function() { 
-      ok(false, 'controllers/create-account.js should pass jshint.\ncontrollers/create-account.js: line 27, col 19, \'password\' is defined but never used.\n\n1 error'); 
+      ok(false, 'controllers/create-account.js should pass jshint.\ncontrollers/create-account.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/create-account.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/create-account.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/create-account.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/create-account.js: line 6, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/create-account.js: line 9, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/event-profile.jshint", 
@@ -3212,7 +3215,7 @@ define("sonatribe-ui/tests/controllers/event-profile.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/event-profile.js should pass jshint', function() { 
-      ok(true, 'controllers/event-profile.js should pass jshint.'); 
+      ok(false, 'controllers/event-profile.js should pass jshint.\ncontrollers/event-profile.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/event-profile.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/event-profile/lineup-viewer.jshint", 
@@ -3221,7 +3224,7 @@ define("sonatribe-ui/tests/controllers/event-profile/lineup-viewer.jshint",
     "use strict";
     module('JSHint - controllers/event-profile');
     test('controllers/event-profile/lineup-viewer.js should pass jshint', function() { 
-      ok(true, 'controllers/event-profile/lineup-viewer.js should pass jshint.'); 
+      ok(false, 'controllers/event-profile/lineup-viewer.js should pass jshint.\ncontrollers/event-profile/lineup-viewer.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/event-profile/lineup-viewer.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/event-profile/lineup-viewer.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/event-profile/lineup-viewer.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/header.jshint", 
@@ -3230,7 +3233,7 @@ define("sonatribe-ui/tests/controllers/header.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/header.js should pass jshint', function() { 
-      ok(true, 'controllers/header.js should pass jshint.'); 
+      ok(false, 'controllers/header.js should pass jshint.\ncontrollers/header.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/header.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/header.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/index.jshint", 
@@ -3239,7 +3242,7 @@ define("sonatribe-ui/tests/controllers/index.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/index.js should pass jshint', function() { 
-      ok(true, 'controllers/index.js should pass jshint.'); 
+      ok(false, 'controllers/index.js should pass jshint.\ncontrollers/index.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/index.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/lineup-viewer.jshint", 
@@ -3248,7 +3251,7 @@ define("sonatribe-ui/tests/controllers/lineup-viewer.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/lineup-viewer.js should pass jshint', function() { 
-      ok(true, 'controllers/lineup-viewer.js should pass jshint.'); 
+      ok(false, 'controllers/lineup-viewer.js should pass jshint.\ncontrollers/lineup-viewer.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/lineup-viewer.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/lineup-viewer.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/lineup-viewer.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/listing-event.jshint", 
@@ -3257,7 +3260,7 @@ define("sonatribe-ui/tests/controllers/listing-event.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/listing-event.js should pass jshint', function() { 
-      ok(true, 'controllers/listing-event.js should pass jshint.'); 
+      ok(false, 'controllers/listing-event.js should pass jshint.\ncontrollers/listing-event.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/listing-event.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/modal.jshint", 
@@ -3266,7 +3269,16 @@ define("sonatribe-ui/tests/controllers/modal.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/modal.js should pass jshint', function() { 
-      ok(true, 'controllers/modal.js should pass jshint.'); 
+      ok(false, 'controllers/modal.js should pass jshint.\ncontrollers/modal.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
+    });
+  });
+define("sonatribe-ui/tests/controllers/modal/create-account.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - controllers/modal');
+    test('controllers/modal/create-account.js should pass jshint', function() { 
+      ok(false, 'controllers/modal/create-account.js should pass jshint.\ncontrollers/modal/create-account.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/create-account.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/modal/login.jshint", 
@@ -3275,7 +3287,7 @@ define("sonatribe-ui/tests/controllers/modal/login.jshint",
     "use strict";
     module('JSHint - controllers/modal');
     test('controllers/modal/login.js should pass jshint', function() { 
-      ok(false, 'controllers/modal/login.js should pass jshint.\ncontrollers/modal/login.js: line 11, col 20, \'$\' is not defined.\n\n1 error'); 
+      ok(false, 'controllers/modal/login.js should pass jshint.\ncontrollers/modal/login.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 6, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/search.jshint", 
@@ -3284,7 +3296,7 @@ define("sonatribe-ui/tests/controllers/search.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/search.js should pass jshint', function() { 
-      ok(true, 'controllers/search.js should pass jshint.'); 
+      ok(false, 'controllers/search.js should pass jshint.\ncontrollers/search.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/search.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/search.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/search.js: line 6, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/sonatribe.jshint", 
@@ -3293,7 +3305,7 @@ define("sonatribe-ui/tests/controllers/sonatribe.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/sonatribe.js should pass jshint', function() { 
-      ok(true, 'controllers/sonatribe.js should pass jshint.'); 
+      ok(false, 'controllers/sonatribe.js should pass jshint.\ncontrollers/sonatribe.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/user-dropdown.jshint", 
@@ -3302,7 +3314,7 @@ define("sonatribe-ui/tests/controllers/user-dropdown.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/user-dropdown.js should pass jshint', function() { 
-      ok(true, 'controllers/user-dropdown.js should pass jshint.'); 
+      ok(false, 'controllers/user-dropdown.js should pass jshint.\ncontrollers/user-dropdown.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/user-dropdown.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/user-dropdown.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/bound-avatar.jshint", 
@@ -3311,7 +3323,7 @@ define("sonatribe-ui/tests/helpers/bound-avatar.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/bound-avatar.js should pass jshint', function() { 
-      ok(true, 'helpers/bound-avatar.js should pass jshint.'); 
+      ok(false, 'helpers/bound-avatar.js should pass jshint.\nhelpers/bound-avatar.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 6, col 12, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 6, col 34, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 8, col 23, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 16, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 20, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/computed.jshint", 
@@ -3320,7 +3332,7 @@ define("sonatribe-ui/tests/helpers/computed.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/computed.js should pass jshint', function() { 
-      ok(true, 'helpers/computed.js should pass jshint.'); 
+      ok(false, 'helpers/computed.js should pass jshint.\nhelpers/computed.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 9, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 13, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/fmt.jshint", 
@@ -3329,7 +3341,7 @@ define("sonatribe-ui/tests/helpers/fmt.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/fmt.js should pass jshint', function() { 
-      ok(true, 'helpers/fmt.js should pass jshint.'); 
+      ok(false, 'helpers/fmt.js should pass jshint.\nhelpers/fmt.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/fmt.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/icon-helper.jshint", 
@@ -3338,7 +3350,7 @@ define("sonatribe-ui/tests/helpers/icon-helper.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/icon-helper.js should pass jshint', function() { 
-      ok(true, 'helpers/icon-helper.js should pass jshint.'); 
+      ok(false, 'helpers/icon-helper.js should pass jshint.\nhelpers/icon-helper.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/icon-helper.js: line 14, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/icon-helper.js: line 18, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/image-helper.jshint", 
@@ -3347,7 +3359,7 @@ define("sonatribe-ui/tests/helpers/image-helper.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/image-helper.js should pass jshint', function() { 
-      ok(true, 'helpers/image-helper.js should pass jshint.'); 
+      ok(false, 'helpers/image-helper.js should pass jshint.\nhelpers/image-helper.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/image-helper.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/image-helper.js: line 8, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/resolver", 
@@ -3396,7 +3408,7 @@ define("sonatribe-ui/tests/initializers/initialize-container.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/initialize-container.js should pass jshint', function() { 
-      ok(true, 'initializers/initialize-container.js should pass jshint.'); 
+      ok(false, 'initializers/initialize-container.js should pass jshint.\ninitializers/initialize-container.js: line 2, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/initialize-container.js: line 8, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/initialize-user.jshint", 
@@ -3405,7 +3417,7 @@ define("sonatribe-ui/tests/initializers/initialize-user.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/initialize-user.js should pass jshint', function() { 
-      ok(true, 'initializers/initialize-user.js should pass jshint.'); 
+      ok(false, 'initializers/initialize-user.js should pass jshint.\ninitializers/initialize-user.js: line 1, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/initialize-user.js: line 11, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/router-reopen.jshint", 
@@ -3414,7 +3426,7 @@ define("sonatribe-ui/tests/initializers/router-reopen.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/router-reopen.js should pass jshint', function() { 
-      ok(true, 'initializers/router-reopen.js should pass jshint.'); 
+      ok(false, 'initializers/router-reopen.js should pass jshint.\ninitializers/router-reopen.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/router-reopen.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/router-reopen.js: line 24, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/torii.jshint", 
@@ -3423,7 +3435,7 @@ define("sonatribe-ui/tests/initializers/torii.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/torii.js should pass jshint', function() { 
-      ok(true, 'initializers/torii.js should pass jshint.'); 
+      ok(false, 'initializers/torii.js should pass jshint.\ninitializers/torii.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/torii.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/user-reopen-class.jshint", 
@@ -3432,7 +3444,7 @@ define("sonatribe-ui/tests/initializers/user-reopen-class.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/user-reopen-class.js should pass jshint', function() { 
-      ok(true, 'initializers/user-reopen-class.js should pass jshint.'); 
+      ok(false, 'initializers/user-reopen-class.js should pass jshint.\ninitializers/user-reopen-class.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 17, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/view-reopen.jshint", 
@@ -3441,7 +3453,7 @@ define("sonatribe-ui/tests/initializers/view-reopen.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/view-reopen.js should pass jshint', function() { 
-      ok(true, 'initializers/view-reopen.js should pass jshint.'); 
+      ok(false, 'initializers/view-reopen.js should pass jshint.\ninitializers/view-reopen.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/view-reopen.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/view-reopen.js: line 9, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/has-current-user.jshint", 
@@ -3450,7 +3462,7 @@ define("sonatribe-ui/tests/mixins/has-current-user.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/has-current-user.js should pass jshint', function() { 
-      ok(true, 'mixins/has-current-user.js should pass jshint.'); 
+      ok(false, 'mixins/has-current-user.js should pass jshint.\nmixins/has-current-user.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/has-current-user.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/has-current-user.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/modal-functionality.jshint", 
@@ -3459,7 +3471,7 @@ define("sonatribe-ui/tests/mixins/modal-functionality.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/modal-functionality.js should pass jshint', function() { 
-      ok(true, 'mixins/modal-functionality.js should pass jshint.'); 
+      ok(false, 'mixins/modal-functionality.js should pass jshint.\nmixins/modal-functionality.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/modal-functionality.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/presence.jshint", 
@@ -3468,7 +3480,7 @@ define("sonatribe-ui/tests/mixins/presence.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/presence.js should pass jshint', function() { 
-      ok(true, 'mixins/presence.js should pass jshint.'); 
+      ok(false, 'mixins/presence.js should pass jshint.\nmixins/presence.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/presence.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/search-lineup.jshint", 
@@ -3477,7 +3489,7 @@ define("sonatribe-ui/tests/mixins/search-lineup.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/search-lineup.js should pass jshint', function() { 
-      ok(true, 'mixins/search-lineup.js should pass jshint.'); 
+      ok(false, 'mixins/search-lineup.js should pass jshint.\nmixins/search-lineup.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/search-lineup.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/search-lineup.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/search.jshint", 
@@ -3486,7 +3498,7 @@ define("sonatribe-ui/tests/mixins/search.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/search.js should pass jshint', function() { 
-      ok(true, 'mixins/search.js should pass jshint.'); 
+      ok(false, 'mixins/search.js should pass jshint.\nmixins/search.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/search.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/search.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/singleton.jshint", 
@@ -3495,7 +3507,7 @@ define("sonatribe-ui/tests/mixins/singleton.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/singleton.js should pass jshint', function() { 
-      ok(true, 'mixins/singleton.js should pass jshint.'); 
+      ok(false, 'mixins/singleton.js should pass jshint.\nmixins/singleton.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/singleton.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/sonatribe-ajax.jshint", 
@@ -3504,7 +3516,7 @@ define("sonatribe-ui/tests/mixins/sonatribe-ajax.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/sonatribe-ajax.js should pass jshint', function() { 
-      ok(false, 'mixins/sonatribe-ajax.js should pass jshint.\nmixins/sonatribe-ajax.js: line 71, col 7, \'$\' is not defined.\n\n1 error'); 
+      ok(false, 'mixins/sonatribe-ajax.js should pass jshint.\nmixins/sonatribe-ajax.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/sonatribe-ajax.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/sonatribe-debounce.jshint", 
@@ -3513,7 +3525,7 @@ define("sonatribe-ui/tests/mixins/sonatribe-debounce.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/sonatribe-debounce.js should pass jshint', function() { 
-      ok(true, 'mixins/sonatribe-debounce.js should pass jshint.'); 
+      ok(false, 'mixins/sonatribe-debounce.js should pass jshint.\nmixins/sonatribe-debounce.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/sonatribe-debounce.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/artist.jshint", 
@@ -3522,7 +3534,7 @@ define("sonatribe-ui/tests/models/artist.jshint",
     "use strict";
     module('JSHint - models');
     test('models/artist.js should pass jshint', function() { 
-      ok(true, 'models/artist.js should pass jshint.'); 
+      ok(false, 'models/artist.js should pass jshint.\nmodels/artist.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/artist.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/event-instance.jshint", 
@@ -3531,7 +3543,7 @@ define("sonatribe-ui/tests/models/event-instance.jshint",
     "use strict";
     module('JSHint - models');
     test('models/event-instance.js should pass jshint', function() { 
-      ok(true, 'models/event-instance.js should pass jshint.'); 
+      ok(false, 'models/event-instance.js should pass jshint.\nmodels/event-instance.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/event-instance.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/image.jshint", 
@@ -3540,7 +3552,7 @@ define("sonatribe-ui/tests/models/image.jshint",
     "use strict";
     module('JSHint - models');
     test('models/image.js should pass jshint', function() { 
-      ok(true, 'models/image.js should pass jshint.'); 
+      ok(false, 'models/image.js should pass jshint.\nmodels/image.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/image.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/listing-event.jshint", 
@@ -3549,7 +3561,7 @@ define("sonatribe-ui/tests/models/listing-event.jshint",
     "use strict";
     module('JSHint - models');
     test('models/listing-event.js should pass jshint', function() { 
-      ok(true, 'models/listing-event.js should pass jshint.'); 
+      ok(false, 'models/listing-event.js should pass jshint.\nmodels/listing-event.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/listing-event.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/location.jshint", 
@@ -3558,7 +3570,7 @@ define("sonatribe-ui/tests/models/location.jshint",
     "use strict";
     module('JSHint - models');
     test('models/location.js should pass jshint', function() { 
-      ok(true, 'models/location.js should pass jshint.'); 
+      ok(false, 'models/location.js should pass jshint.\nmodels/location.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/location.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/models/user.jshint", 
@@ -3567,7 +3579,7 @@ define("sonatribe-ui/tests/models/user.jshint",
     "use strict";
     module('JSHint - models');
     test('models/user.js should pass jshint', function() { 
-      ok(true, 'models/user.js should pass jshint.'); 
+      ok(false, 'models/user.js should pass jshint.\nmodels/user.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmodels/user.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/router.jshint", 
@@ -3576,7 +3588,7 @@ define("sonatribe-ui/tests/router.jshint",
     "use strict";
     module('JSHint - .');
     test('router.js should pass jshint', function() { 
-      ok(true, 'router.js should pass jshint.'); 
+      ok(false, 'router.js should pass jshint.\nrouter.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 24, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/admin.jshint", 
@@ -3585,7 +3597,7 @@ define("sonatribe-ui/tests/routes/admin.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/admin.js should pass jshint', function() { 
-      ok(false, 'routes/admin.js should pass jshint.\nroutes/admin.js: line 5, col 21, \'params\' is defined but never used.\nroutes/admin.js: line 9, col 44, \'model\' is defined but never used.\nroutes/admin.js: line 15, col 27, \'transition\' is defined but never used.\n\n3 errors'); 
+      ok(false, 'routes/admin.js should pass jshint.\nroutes/admin.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/admin.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/admin.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/application.jshint", 
@@ -3594,7 +3606,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 54, col 11, \'$\' is not defined.\nroutes/application.js: line 4, col 8, \'User\' is defined but never used.\nroutes/application.js: line 10, col 44, \'provider\' is defined but never used.\n\n3 errors'); 
+      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 51, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 
@@ -3603,7 +3615,7 @@ define("sonatribe-ui/tests/routes/artist-profile.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/artist-profile.js should pass jshint', function() { 
-      ok(true, 'routes/artist-profile.js should pass jshint.'); 
+      ok(false, 'routes/artist-profile.js should pass jshint.\nroutes/artist-profile.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/artist-profile.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/artist-profile.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/event-profile.jshint", 
@@ -3612,7 +3624,7 @@ define("sonatribe-ui/tests/routes/event-profile.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/event-profile.js should pass jshint', function() { 
-      ok(true, 'routes/event-profile.js should pass jshint.'); 
+      ok(false, 'routes/event-profile.js should pass jshint.\nroutes/event-profile.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/event-profile.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/event-profile.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/event-profile/lineup-viewer.jshint", 
@@ -3621,7 +3633,7 @@ define("sonatribe-ui/tests/routes/event-profile/lineup-viewer.jshint",
     "use strict";
     module('JSHint - routes/event-profile');
     test('routes/event-profile/lineup-viewer.js should pass jshint', function() { 
-      ok(false, 'routes/event-profile/lineup-viewer.js should pass jshint.\nroutes/event-profile/lineup-viewer.js: line 5, col 21, \'params\' is defined but never used.\n\n1 error'); 
+      ok(false, 'routes/event-profile/lineup-viewer.js should pass jshint.\nroutes/event-profile/lineup-viewer.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/event-profile/lineup-viewer.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/lineup-viewer.jshint", 
@@ -3630,7 +3642,7 @@ define("sonatribe-ui/tests/routes/lineup-viewer.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/lineup-viewer.js should pass jshint', function() { 
-      ok(false, 'routes/lineup-viewer.js should pass jshint.\nroutes/lineup-viewer.js: line 5, col 21, \'params\' is defined but never used.\n\n1 error'); 
+      ok(false, 'routes/lineup-viewer.js should pass jshint.\nroutes/lineup-viewer.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/lineup-viewer.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/listing-event.jshint", 
@@ -3639,7 +3651,7 @@ define("sonatribe-ui/tests/routes/listing-event.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/listing-event.js should pass jshint', function() { 
-      ok(true, 'routes/listing-event.js should pass jshint.'); 
+      ok(false, 'routes/listing-event.js should pass jshint.\nroutes/listing-event.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/listing-event.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/listing-event.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/sonatribe.jshint", 
@@ -3648,7 +3660,7 @@ define("sonatribe-ui/tests/routes/sonatribe.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/sonatribe.js should pass jshint', function() { 
-      ok(true, 'routes/sonatribe.js should pass jshint.'); 
+      ok(false, 'routes/sonatribe.js should pass jshint.\nroutes/sonatribe.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/sonatribe.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/unauthorized.jshint", 
@@ -3657,7 +3669,7 @@ define("sonatribe-ui/tests/routes/unauthorized.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/unauthorized.js should pass jshint', function() { 
-      ok(true, 'routes/unauthorized.js should pass jshint.'); 
+      ok(false, 'routes/unauthorized.js should pass jshint.\nroutes/unauthorized.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/unauthorized.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/user-profile.jshint", 
@@ -3666,7 +3678,7 @@ define("sonatribe-ui/tests/routes/user-profile.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/user-profile.js should pass jshint', function() { 
-      ok(true, 'routes/user-profile.js should pass jshint.'); 
+      ok(false, 'routes/user-profile.js should pass jshint.\nroutes/user-profile.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/user-profile.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/user-profile.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/sonatribe-ui/tests/helpers/resolver.jshint", 
@@ -3696,6 +3708,15 @@ define("sonatribe-ui/tests/sonatribe-ui/tests/test-helper.jshint",
       ok(true, 'sonatribe-ui/tests/test-helper.js should pass jshint.'); 
     });
   });
+define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/modal/create-account-test.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - sonatribe-ui/tests/unit/controllers/modal');
+    test('sonatribe-ui/tests/unit/controllers/modal/create-account-test.js should pass jshint', function() { 
+      ok(true, 'sonatribe-ui/tests/unit/controllers/modal/create-account-test.js should pass jshint.'); 
+    });
+  });
 define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/modal/login-test.jshint", 
   [],
   function() {
@@ -3720,6 +3741,23 @@ define("sonatribe-ui/tests/test-helper",
     var containerVisibility = QUnit.urlParams.nocontainer ? "hidden" : "visible";
     document.getElementById("ember-testing-container").style.visibility = containerVisibility;
   });
+define("sonatribe-ui/tests/unit/controllers/modal/create-account-test", 
+  ["ember-qunit"],
+  function(__dependency1__) {
+    "use strict";
+    var moduleFor = __dependency1__.moduleFor;
+    var test = __dependency1__.test;
+
+    moduleFor("controller:modal/create-account", "ModalCreateAccountController", {});
+
+    // Replace this with your real tests.
+    test("it exists", function () {
+      var controller = this.subject();
+      ok(controller);
+    });
+    // Specify the other units that are required for this test.
+    // needs: ['controller:foo']
+  });
 define("sonatribe-ui/tests/unit/controllers/modal/login-test", 
   ["ember-qunit"],
   function(__dependency1__) {
@@ -3743,7 +3781,7 @@ define("sonatribe-ui/tests/views/grouped-view.jshint",
     "use strict";
     module('JSHint - views');
     test('views/grouped-view.js should pass jshint', function() { 
-      ok(true, 'views/grouped-view.js should pass jshint.'); 
+      ok(false, 'views/grouped-view.js should pass jshint.\nviews/grouped-view.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/grouped-view.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/grouped-view.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/header.jshint", 
@@ -3752,7 +3790,7 @@ define("sonatribe-ui/tests/views/header.jshint",
     "use strict";
     module('JSHint - views');
     test('views/header.js should pass jshint', function() { 
-      ok(false, 'views/header.js should pass jshint.\nviews/header.js: line 13, col 21, \'$\' is not defined.\nviews/header.js: line 16, col 17, \'$\' is not defined.\nviews/header.js: line 17, col 19, \'$\' is not defined.\nviews/header.js: line 18, col 32, \'$\' is not defined.\nviews/header.js: line 21, col 40, \'$\' is not defined.\nviews/header.js: line 61, col 5, \'$\' is not defined.\nviews/header.js: line 62, col 5, \'$\' is not defined.\nviews/header.js: line 69, col 14, \'$\' is not defined.\nviews/header.js: line 85, col 22, \'$\' is not defined.\nviews/header.js: line 92, col 42, \'$\' is not defined.\nviews/header.js: line 95, col 11, \'$\' is not defined.\nviews/header.js: line 100, col 11, \'$\' is not defined.\nviews/header.js: line 113, col 38, \'$\' is not defined.\nviews/header.js: line 120, col 5, \'$\' is not defined.\nviews/header.js: line 123, col 5, \'$\' is not defined.\nviews/header.js: line 129, col 5, \'$\' is not defined.\n\n16 errors'); 
+      ok(false, 'views/header.js should pass jshint.\nviews/header.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/header.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/hide-modal.jshint", 
@@ -3761,7 +3799,7 @@ define("sonatribe-ui/tests/views/hide-modal.jshint",
     "use strict";
     module('JSHint - views');
     test('views/hide-modal.js should pass jshint', function() { 
-      ok(false, 'views/hide-modal.js should pass jshint.\nviews/hide-modal.js: line 8, col 5, \'$\' is not defined.\n\n1 error'); 
+      ok(false, 'views/hide-modal.js should pass jshint.\nviews/hide-modal.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/hide-modal.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/index.jshint", 
@@ -3770,7 +3808,7 @@ define("sonatribe-ui/tests/views/index.jshint",
     "use strict";
     module('JSHint - views');
     test('views/index.js should pass jshint', function() { 
-      ok(false, 'views/index.js should pass jshint.\nviews/index.js: line 2, col 1, \'Handlebars\' is defined but never used.\n\n1 error'); 
+      ok(false, 'views/index.js should pass jshint.\nviews/index.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/index.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/search-result-types.jshint", 
@@ -3779,7 +3817,7 @@ define("sonatribe-ui/tests/views/search-result-types.jshint",
     "use strict";
     module('JSHint - views');
     test('views/search-result-types.js should pass jshint', function() { 
-      ok(true, 'views/search-result-types.js should pass jshint.'); 
+      ok(false, 'views/search-result-types.js should pass jshint.\nviews/search-result-types.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/search-result-types.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/search-result-types.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/search-result-types.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/search-text-field.jshint", 
@@ -3788,7 +3826,7 @@ define("sonatribe-ui/tests/views/search-text-field.jshint",
     "use strict";
     module('JSHint - views');
     test('views/search-text-field.js should pass jshint', function() { 
-      ok(true, 'views/search-text-field.js should pass jshint.'); 
+      ok(false, 'views/search-text-field.js should pass jshint.\nviews/search-text-field.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/search-text-field.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/search.jshint", 
@@ -3797,7 +3835,7 @@ define("sonatribe-ui/tests/views/search.jshint",
     "use strict";
     module('JSHint - views');
     test('views/search.js should pass jshint', function() { 
-      ok(true, 'views/search.js should pass jshint.'); 
+      ok(false, 'views/search.js should pass jshint.\nviews/search.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/search.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/views/view.jshint", 
@@ -3806,7 +3844,7 @@ define("sonatribe-ui/tests/views/view.jshint",
     "use strict";
     module('JSHint - views');
     test('views/view.js should pass jshint', function() { 
-      ok(true, 'views/view.js should pass jshint.'); 
+      ok(false, 'views/view.js should pass jshint.\nviews/view.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/view.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nviews/view.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/views/grouped-view", 

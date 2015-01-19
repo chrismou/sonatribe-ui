@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe-ui/tmp/jshinter-tmp_dest_dir-tqVYAYVY.tmp/app.jshint.js

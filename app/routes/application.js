@@ -17,6 +17,7 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 
 						var accessToken = rte.get('session').get('content').accessToken;
 
+						//TODO: replace this with a model save
 						Ember.$.ajax({
 							url: Sonatribe.SiteSettings.api_url + '/auths/facebook_access_token?code=' + accessToken,
 							dataType: 'json',
@@ -28,10 +29,12 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 
 								if(user.get('username') === undefined){
 
-									rte.send('autoLogin', 'createAccount', function(){
+									rte.get('signup').sendAction();
+
+									/*rte.send('autoLogin', 'createAccount', function(){
 										rte.controllerFor('createAccount').set('passwordRequired', false);
-										SonatribeRoute.showModal(rte, 'createAccount');
-									});
+										//SonatribeRoute.showModal(rte, 'createAccount');
+									});*/
 								}
 							},
 							error: function(err){
@@ -40,41 +43,7 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 						});
 
 					});
-			},
-
-	 		showLogin: function() {
-	      	var self = this;
-	        this.send('autoLogin', 'login', function(){
-	        	SonatribeRoute.showModal(self, 'login');
-	        	self.controllerFor('login').resetForm();
-	        });
-	    },
-
-	 		showModal: function() {
-	      $('#discourse-modal').modal('show');
-	    },
-
-	  	autoLogin: function(modal, onFail){
-	    	onFail();
-	    },
-    	closeModal: function() {
-      		this.render('hide-modal', {into: 'modal', outlet: 'modalBody'});
-    	},
-    	showCreateAccount: function() {
-	      	var self = this;
-
-	      	self.send('autoLogin', 'createAccount', function(){
-						self.controllerFor('createAccount').set('passwordRequired', true);
-	        	SonatribeRoute.showModal(self, 'createAccount');
-	      	});
-    	},
-			createAccount: function() {
-				//var createAccountController = this.get('controllers.createAccount');
-				//createAccountController.resetForm();
-				this.send('showCreateAccount');
-			},
-
-			
+			}
 	}
 });
 

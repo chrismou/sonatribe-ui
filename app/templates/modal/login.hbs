@@ -1,4 +1,4 @@
-{{#em-modal configName="bs" id="login"}}
+{{#em-modal-form configName="bs" id="login" in-async=async}}
 {{#em-modal-title}}
 <!--optional toggler to close the opened modal-->
 {{#em-modal-toggler class="close"}}x{{/em-modal-toggler}}
@@ -6,6 +6,10 @@
 {{/em-modal-title}}
 <!--the content of the modal...-->
 {{#em-modal-body}}
+
+{{#if async}}
+Submitting, please wait...
+{{/if}}
 
 
 <a {{action "authenticateFacebook" "facebook-oauth2"}}>facebook</a>
@@ -60,7 +64,7 @@
 
 
 &nbsp;
-<button class="btn btn-large" id="new-account-link" {{action "createAccount"}}>
+<button class="btn btn-large" id="new-account-link" {{action "createAccount"}} {{bind-attr disabled=async}}>
   create account
 </button>
 
@@ -76,4 +80,4 @@
 {{#em-modal-footer}}
 {{#em-modal-toggler class="btn btn-default"}}Close{{/em-modal-toggler}}
 {{/em-modal-footer}}
-{{/em-modal}}
+{{/em-modal-form}}

@@ -1,0 +1,1 @@
+/Users/waynedouglas/sonatribe-ui/app/routes/artist-profile.js
