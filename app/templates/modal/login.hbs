@@ -1,3 +1,6 @@
+{{#if showRegistration}}
+
+{{else}}
 {{#em-modal-form configName="bs" id="login" in-async=async}}
 {{#em-modal-title}}
 <!--optional toggler to close the opened modal-->
@@ -11,7 +14,7 @@
 Submitting, please wait...
 {{/if}}
 
-
+{{showRegistration}}
 <a {{action "authenticateFacebook" "facebook-oauth2"}}>facebook</a>
 
 <a {{bind-attr href=twitter_login_url}}>twitter</a>
@@ -81,3 +84,5 @@ Submitting, please wait...
 {{#em-modal-toggler class="btn btn-default"}}Close{{/em-modal-toggler}}
 {{/em-modal-footer}}
 {{/em-modal-form}}
+
+{{/if}}

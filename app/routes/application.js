@@ -29,12 +29,7 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 
 								if(user.get('username') === undefined){
 
-									rte.get('signup').sendAction();
-
-									/*rte.send('autoLogin', 'createAccount', function(){
-										rte.controllerFor('createAccount').set('passwordRequired', false);
-										//SonatribeRoute.showModal(rte, 'createAccount');
-									});*/
+									rte.transitionTo('manageAccount');
 								}
 							},
 							error: function(err){
@@ -43,6 +38,8 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 						});
 
 					});
+
+					return false;
 			}
 	}
 });

@@ -1,9 +1,8 @@
 import Ember from 'ember';
 import Presence from 'sonatribe-ui/mixins/presence';
-import ModalFunctionality from 'sonatribe-ui/mixins/modal-functionality';
 import Ajax from 'sonatribe-ui/mixins/sonatribe-ajax';
 
-export default Ember.Controller.extend(Presence, ModalFunctionality, Ajax, {
+export default Ember.Controller.extend(Presence, Ajax, {
   flashMessageChanged: function() {
     var flashMessage = this.get('flashMessage');
     if (flashMessage) {
@@ -13,6 +12,7 @@ export default Ember.Controller.extend(Presence, ModalFunctionality, Ajax, {
       $alert.fadeIn();
     }
   }.observes('flashMessage'),
+  showRegistration: false,
   actions: {
     login: function() {
       var self = this;

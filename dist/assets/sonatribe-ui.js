@@ -491,6 +491,14 @@ define("sonatribe-ui/controllers/listing-event",
 
     __exports__["default"] = Ember.Controller.extend({});
   });
+define("sonatribe-ui/controllers/manage-account", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    __exports__["default"] = Ember.Controller.extend({});
+  });
 define("sonatribe-ui/controllers/modal", 
   ["ember","exports"],
   function(__dependency1__, __exports__) {
@@ -512,15 +520,14 @@ define("sonatribe-ui/controllers/modal/create-account",
     __exports__["default"] = Ember.Controller.extend({});
   });
 define("sonatribe-ui/controllers/modal/login", 
-  ["ember","sonatribe-ui/mixins/presence","sonatribe-ui/mixins/modal-functionality","sonatribe-ui/mixins/sonatribe-ajax","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+  ["ember","sonatribe-ui/mixins/presence","sonatribe-ui/mixins/sonatribe-ajax","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
     var Presence = __dependency2__["default"];
-    var ModalFunctionality = __dependency3__["default"];
-    var Ajax = __dependency4__["default"];
+    var Ajax = __dependency3__["default"];
 
-    __exports__["default"] = Ember.Controller.extend(Presence, ModalFunctionality, Ajax, {
+    __exports__["default"] = Ember.Controller.extend(Presence, Ajax, {
       flashMessageChanged: (function () {
         var flashMessage = this.get("flashMessage");
         if (flashMessage) {
@@ -530,6 +537,7 @@ define("sonatribe-ui/controllers/modal/login",
           $alert.fadeIn();
         }
       }).observes("flashMessage"),
+      showRegistration: false,
       actions: {
         login: function () {
           var self = this;
@@ -1537,7 +1545,9 @@ define("sonatribe-ui/router",
 
       this.route("admin", { path: "/admin/:Slug" });
       this.route("unauthorized");
+      this.route("manage-account");
       this.route("event-profile/lineup-viewer");
+      this.route("manageAccount");
     });
 
     __exports__["default"] = Router;
@@ -1609,12 +1619,7 @@ define("sonatribe-ui/routes/application",
                 rte.set("currentUser", user);
 
                 if (user.get("username") === undefined) {
-                  rte.get("signup").sendAction();
-
-                  /*rte.send('autoLogin', 'createAccount', function(){
-                  	rte.controllerFor('createAccount').set('passwordRequired', false);
-                  	//SonatribeRoute.showModal(rte, 'createAccount');
-                  });*/
+                  rte.transitionTo("manageAccount");
                 }
               },
               error: function (err) {
@@ -1622,6 +1627,8 @@ define("sonatribe-ui/routes/application",
               }
             });
           });
+
+          return false;
         }
       }
     });
@@ -1730,6 +1737,14 @@ define("sonatribe-ui/routes/listing-event",
         });
       }
     });
+  });
+define("sonatribe-ui/routes/manage-account", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    __exports__["default"] = Ember.Route.extend({});
   });
 define("sonatribe-ui/routes/sonatribe", 
   ["ember","exports"],
@@ -2508,6 +2523,25 @@ define("sonatribe-ui/templates/listing-event",
       
     });
   });
+define("sonatribe-ui/templates/manage-account", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var buffer = '', stack1;
+
+
+      data.buffer.push("\n\n\n");
+      stack1 = helpers._triageMustache.call(depth0, "outlet", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      return buffer;
+      
+    });
+  });
 define("sonatribe-ui/templates/modal/create-account", 
   ["ember","exports"],
   function(__dependency1__, __exports__) {
@@ -2718,22 +2752,41 @@ define("sonatribe-ui/templates/modal/login",
     __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
     this.compilerInfo = [4,'>= 1.0.0'];
     helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-      var buffer = '', stack1, helper, options, self=this, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, functionType="function", blockHelperMissing=helpers.blockHelperMissing;
+      var buffer = '', stack1, self=this, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, functionType="function", blockHelperMissing=helpers.blockHelperMissing;
 
     function program1(depth0,data) {
       
+      
+      data.buffer.push("\n\n");
+      }
+
+    function program3(depth0,data) {
+      
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n");
-      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[],types:[],data:data}
+      stack1 = (helper = helpers['em-modal-form'] || (depth0 && depth0['em-modal-form']),options={hash:{
+        'configName': ("bs"),
+        'id': ("login"),
+        'in-async': ("async")
+      },hashTypes:{'configName': "STRING",'id': "STRING",'in-async': "ID"},hashContexts:{'configName': depth0,'id': depth0,'in-async': depth0},inverse:self.noop,fn:self.program(4, program4, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-form", options));
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n\n");
+      return buffer;
+      }
+    function program4(depth0,data) {
+      
+      var buffer = '', stack1, helper, options;
+      data.buffer.push("\n");
+      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[],types:[],data:data}
       if (helper = helpers['em-modal-title']) { stack1 = helper.call(depth0, options); }
       else { helper = (depth0 && depth0['em-modal-title']); stack1 = typeof helper === functionType ? helper.call(depth0, options) : helper; }
-      if (!helpers['em-modal-title']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-title', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(2, program2, data),contexts:[],types:[],data:data}); }
+      if (!helpers['em-modal-title']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-title', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n<!--the content of the modal...-->\n");
-      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[],types:[],data:data}
+      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[],types:[],data:data}
       if (helper = helpers['em-modal-body']) { stack1 = helper.call(depth0, options); }
       else { helper = (depth0 && depth0['em-modal-body']); stack1 = typeof helper === functionType ? helper.call(depth0, options) : helper; }
-      if (!helpers['em-modal-body']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-body', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(5, program5, data),contexts:[],types:[],data:data}); }
+      if (!helpers['em-modal-body']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-body', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n<button class=\"btn btn-large btn-primary\"\n");
       data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
@@ -2748,44 +2801,47 @@ define("sonatribe-ui/templates/modal/login",
         'disabled': ("async")
       },hashTypes:{'disabled': "ID"},hashContexts:{'disabled': depth0},contexts:[],types:[],data:data})));
       data.buffer.push(">\n  create account\n</button>\n\n\n\n");
-      stack1 = helpers['if'].call(depth0, "authenticate", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "authenticate", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(11, program11, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n");
-      stack1 = helpers['if'].call(depth0, "showSpinner", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(10, program10, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "showSpinner", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(13, program13, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
-      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[],types:[],data:data}
+      options={hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(15, program15, data),contexts:[],types:[],data:data}
       if (helper = helpers['em-modal-footer']) { stack1 = helper.call(depth0, options); }
       else { helper = (depth0 && depth0['em-modal-footer']); stack1 = typeof helper === functionType ? helper.call(depth0, options) : helper; }
-      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[],types:[],data:data}); }
+      if (!helpers['em-modal-footer']) { stack1 = blockHelperMissing.call(depth0, 'em-modal-footer', {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(15, program15, data),contexts:[],types:[],data:data}); }
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
       }
-    function program2(depth0,data) {
+    function program5(depth0,data) {
       
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n<!--optional toggler to close the opened modal-->\n");
       stack1 = (helper = helpers['em-modal-toggler'] || (depth0 && depth0['em-modal-toggler']),options={hash:{
         'class': ("close")
-      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(3, program3, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
+      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(6, program6, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n<h4 class=\"modal-title\">login</h4>\n");
       return buffer;
       }
-    function program3(depth0,data) {
+    function program6(depth0,data) {
       
       
       data.buffer.push("x");
       }
 
-    function program5(depth0,data) {
+    function program8(depth0,data) {
       
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n\n");
-      stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-      data.buffer.push("\n\n\n<a ");
+      data.buffer.push("\n\n");
+      stack1 = helpers._triageMustache.call(depth0, "showRegistration", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n<a ");
       data.buffer.push(escapeExpression(helpers.action.call(depth0, "authenticateFacebook", "facebook-oauth2", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0,depth0],types:["STRING","STRING"],data:data})));
       data.buffer.push(">facebook</a>\n\n<a ");
       data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
@@ -2820,46 +2876,42 @@ define("sonatribe-ui/templates/modal/login",
       data.buffer.push("</div>\n\n<div id='modal-alert'></div>\n\n\n\n\n");
       return buffer;
       }
-    function program6(depth0,data) {
+    function program9(depth0,data) {
       
       
       data.buffer.push("\nSubmitting, please wait...\n");
       }
 
-    function program8(depth0,data) {
+    function program11(depth0,data) {
       
       
       data.buffer.push("\n&nbsp; authenticating\n");
       }
 
-    function program10(depth0,data) {
+    function program13(depth0,data) {
       
       
       data.buffer.push("\n&nbsp; <i class='fa fa-spinner fa-spin'></i>\n");
       }
 
-    function program12(depth0,data) {
+    function program15(depth0,data) {
       
       var buffer = '', stack1, helper, options;
       data.buffer.push("\n");
       stack1 = (helper = helpers['em-modal-toggler'] || (depth0 && depth0['em-modal-toggler']),options={hash:{
         'class': ("btn btn-default")
-      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(13, program13, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
+      },hashTypes:{'class': "STRING"},hashContexts:{'class': depth0},inverse:self.noop,fn:self.program(16, program16, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-toggler", options));
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
       }
-    function program13(depth0,data) {
+    function program16(depth0,data) {
       
       
       data.buffer.push("Close");
       }
 
-      stack1 = (helper = helpers['em-modal-form'] || (depth0 && depth0['em-modal-form']),options={hash:{
-        'configName': ("bs"),
-        'id': ("login"),
-        'in-async': ("async")
-      },hashTypes:{'configName': "STRING",'id': "STRING",'in-async': "ID"},hashContexts:{'configName': depth0,'id': depth0,'in-async': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-modal-form", options));
+      stack1 = helpers['if'].call(depth0, "showRegistration", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n");
       return buffer;
@@ -3263,6 +3315,15 @@ define("sonatribe-ui/tests/controllers/listing-event.jshint",
       ok(false, 'controllers/listing-event.js should pass jshint.\ncontrollers/listing-event.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/listing-event.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
+define("sonatribe-ui/tests/controllers/manage-account.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - controllers');
+    test('controllers/manage-account.js should pass jshint', function() { 
+      ok(false, 'controllers/manage-account.js should pass jshint.\ncontrollers/manage-account.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/manage-account.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
+    });
+  });
 define("sonatribe-ui/tests/controllers/modal.jshint", 
   [],
   function() {
@@ -3287,7 +3348,7 @@ define("sonatribe-ui/tests/controllers/modal/login.jshint",
     "use strict";
     module('JSHint - controllers/modal');
     test('controllers/modal/login.js should pass jshint', function() { 
-      ok(false, 'controllers/modal/login.js should pass jshint.\ncontrollers/modal/login.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 6, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
+      ok(false, 'controllers/modal/login.js should pass jshint.\ncontrollers/modal/login.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/modal/login.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/search.jshint", 
@@ -3588,7 +3649,7 @@ define("sonatribe-ui/tests/router.jshint",
     "use strict";
     module('JSHint - .');
     test('router.js should pass jshint', function() { 
-      ok(false, 'router.js should pass jshint.\nrouter.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 24, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+      ok(false, 'router.js should pass jshint.\nrouter.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nrouter.js: line 26, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/admin.jshint", 
@@ -3606,7 +3667,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 51, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
+      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 48, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 
@@ -3652,6 +3713,15 @@ define("sonatribe-ui/tests/routes/listing-event.jshint",
     module('JSHint - routes');
     test('routes/listing-event.js should pass jshint', function() { 
       ok(false, 'routes/listing-event.js should pass jshint.\nroutes/listing-event.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/listing-event.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/listing-event.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+    });
+  });
+define("sonatribe-ui/tests/routes/manage-account.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - routes');
+    test('routes/manage-account.js should pass jshint', function() { 
+      ok(false, 'routes/manage-account.js should pass jshint.\nroutes/manage-account.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/manage-account.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/sonatribe.jshint", 
@@ -3708,6 +3778,15 @@ define("sonatribe-ui/tests/sonatribe-ui/tests/test-helper.jshint",
       ok(true, 'sonatribe-ui/tests/test-helper.js should pass jshint.'); 
     });
   });
+define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/manage-account-test.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - sonatribe-ui/tests/unit/controllers');
+    test('sonatribe-ui/tests/unit/controllers/manage-account-test.js should pass jshint', function() { 
+      ok(true, 'sonatribe-ui/tests/unit/controllers/manage-account-test.js should pass jshint.'); 
+    });
+  });
 define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/modal/create-account-test.jshint", 
   [],
   function() {
@@ -3726,6 +3805,15 @@ define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/modal/login-test.
       ok(true, 'sonatribe-ui/tests/unit/controllers/modal/login-test.js should pass jshint.'); 
     });
   });
+define("sonatribe-ui/tests/sonatribe-ui/tests/unit/routes/manage-account-test.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - sonatribe-ui/tests/unit/routes');
+    test('sonatribe-ui/tests/unit/routes/manage-account-test.js should pass jshint', function() { 
+      ok(true, 'sonatribe-ui/tests/unit/routes/manage-account-test.js should pass jshint.'); 
+    });
+  });
 define("sonatribe-ui/tests/test-helper", 
   ["sonatribe-ui/tests/helpers/resolver","ember-qunit"],
   function(__dependency1__, __dependency2__) {
@@ -3740,6 +3828,23 @@ define("sonatribe-ui/tests/test-helper",
     QUnit.config.urlConfig.push({ id: "nocontainer", label: "Hide container" });
     var containerVisibility = QUnit.urlParams.nocontainer ? "hidden" : "visible";
     document.getElementById("ember-testing-container").style.visibility = containerVisibility;
+  });
+define("sonatribe-ui/tests/unit/controllers/manage-account-test", 
+  ["ember-qunit"],
+  function(__dependency1__) {
+    "use strict";
+    var moduleFor = __dependency1__.moduleFor;
+    var test = __dependency1__.test;
+
+    moduleFor("controller:manage-account", "ManageAccountController", {});
+
+    // Replace this with your real tests.
+    test("it exists", function () {
+      var controller = this.subject();
+      ok(controller);
+    });
+    // Specify the other units that are required for this test.
+    // needs: ['controller:foo']
   });
 define("sonatribe-ui/tests/unit/controllers/modal/create-account-test", 
   ["ember-qunit"],
@@ -3771,6 +3876,22 @@ define("sonatribe-ui/tests/unit/controllers/modal/login-test",
     test("it exists", function () {
       var controller = this.subject();
       ok(controller);
+    });
+    // Specify the other units that are required for this test.
+    // needs: ['controller:foo']
+  });
+define("sonatribe-ui/tests/unit/routes/manage-account-test", 
+  ["ember-qunit"],
+  function(__dependency1__) {
+    "use strict";
+    var moduleFor = __dependency1__.moduleFor;
+    var test = __dependency1__.test;
+
+    moduleFor("route:manage-account", "ManageAccountRoute", {});
+
+    test("it exists", function () {
+      var route = this.subject();
+      ok(route);
     });
     // Specify the other units that are required for this test.
     // needs: ['controller:foo']
