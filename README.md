@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/wayne-o/sonatribe-ui.svg?branch=master)](https://travis-ci.org/wayne-o/sonatribe-ui)
+
 # Sonatribe-ui
 
 This README outlines the details of collaborating on this Ember application.
