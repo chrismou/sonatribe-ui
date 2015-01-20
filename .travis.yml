@@ -4,4 +4,4 @@ node_js:
 before_script:
 - nvm install 0.10.35
 - nvm alias default 0.10.35
-script: npm install && npm test
+script: npm install && bower install && npm test
