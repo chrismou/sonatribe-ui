@@ -4,6 +4,7 @@ import Singleton from 'sonatribe-ui/mixins/singleton';
 export var initialize = function(container) {
   User.reopenClass(Singleton, {
     createCurrent: function() {
+      
       var userJson = null; //PreloadStore.get('currentUser');
       if (userJson) {
         var store = container.lookup('store:main');

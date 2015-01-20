@@ -153,6 +153,69 @@ define("sonatribe-ui/authenticators/torii",
 
     });
   });
+define("sonatribe-ui/components/em-checkbox", 
+  ["ember","ember-idx-forms/checkbox","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var CheckboxComponent = __dependency2__["default"];
+
+    __exports__["default"] = CheckboxComponent;
+  });
+define("sonatribe-ui/components/em-form-control-help", 
+  ["ember","ember-idx-forms/control_help","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var FormControlHelperComponent = __dependency2__["default"];
+
+    __exports__["default"] = FormControlHelperComponent;
+  });
+define("sonatribe-ui/components/em-form-group", 
+  ["ember","ember-idx-forms/group","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var FormGroupComponent = __dependency2__["default"];
+
+    __exports__["default"] = FormGroupComponent;
+  });
+define("sonatribe-ui/components/em-form-label", 
+  ["ember","ember-idx-forms/label","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var FormLabelComponent = __dependency2__["default"];
+
+    __exports__["default"] = FormLabelComponent;
+  });
+define("sonatribe-ui/components/em-form-submit", 
+  ["ember","ember-idx-forms/submit_button","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var SubmitButtonComponent = __dependency2__["default"];
+
+    __exports__["default"] = SubmitButtonComponent;
+  });
+define("sonatribe-ui/components/em-form", 
+  ["ember","ember-idx-forms/form","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var FormComponent = __dependency2__["default"];
+
+    __exports__["default"] = FormComponent;
+  });
+define("sonatribe-ui/components/em-input", 
+  ["ember","ember-idx-forms/input","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var InputComponent = __dependency2__["default"];
+
+    __exports__["default"] = InputComponent;
+  });
 define("sonatribe-ui/components/em-modal-body", 
   ["ember-idx-modal/modal-body","exports"],
   function(__dependency1__, __exports__) {
@@ -224,6 +287,24 @@ define("sonatribe-ui/components/em-modal",
     var ModalComponent = __dependency1__["default"];
 
     __exports__["default"] = ModalComponent;
+  });
+define("sonatribe-ui/components/em-select", 
+  ["ember","ember-idx-forms/select","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var SelectComponent = __dependency2__["default"];
+
+    __exports__["default"] = SelectComponent;
+  });
+define("sonatribe-ui/components/em-text", 
+  ["ember","ember-idx-forms/text","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var TextComponent = __dependency2__["default"];
+
+    __exports__["default"] = TextComponent;
   });
 define("sonatribe-ui/components/home-logo", 
   ["ember","exports"],
@@ -1303,6 +1384,7 @@ define("sonatribe-ui/mixins/singleton",
       },
 
       createCurrent: function () {
+        console.log("into the empty create methiod");
         return this.create({});
       },
 
@@ -1614,13 +1696,29 @@ define("sonatribe-ui/routes/application",
               dataType: "json",
               success: function (authResponse) {
                 console.log(authResponse);
-                var user = rte.store.find("user", { id: authResponse.auth.user });
 
-                rte.set("currentUser", user);
+                rte.store.find("user", authResponse.id).then(function (user) {
+                  User.resetCurrent(user);
 
-                if (user.get("username") === undefined) {
-                  rte.transitionTo("manageAccount");
-                }
+                  if (user.get("username") === undefined || user.get("username") == null) {
+                    FB.api("/me/picture", {
+                      redirect: true,
+                      height: "101",
+                      type: "normal",
+                      width: "101"
+                    }, function (response) {
+                      if (response && !response.error) {
+                        user.set("profilePictureUrl", response.data.url);
+                        user.save();
+                        User.resetCurrent(user);
+                        rte.currentUser = user;
+                        rte.transitionTo("manageAccount");
+                      }
+                    });
+
+                  }
+                });
+
               },
               error: function (err) {
                 console.log(err);
@@ -1907,6 +2005,166 @@ define("sonatribe-ui/templates/artist",
       
     });
   });
+define("sonatribe-ui/templates/components/em-form-control-help", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1;
+
+
+      stack1 = helpers._triageMustache.call(depth0, "helpText", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/em-form-group", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1, escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n    <div ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("wrapperClass")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">\n        ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group", options))));
+      data.buffer.push("\n    </div>\n");
+      return buffer;
+      }
+
+    function program3(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group", options))));
+      data.buffer.push("\n");
+      return buffer;
+      }
+
+      stack1 = helpers['if'].call(depth0, "wrapperClass", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/em-form-label", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var buffer = '', stack1;
+
+
+      stack1 = helpers._triageMustache.call(depth0, "yield", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      stack1 = helpers._triageMustache.call(depth0, "text", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      return buffer;
+      
+    });
+  });
+define("sonatribe-ui/templates/components/em-form-submit", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1, escapeExpression=this.escapeExpression, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n    <div ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("horiClass")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">\n        <button ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("classes")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(" ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'disabled': ("disabled")
+      },hashTypes:{'disabled': "ID"},hashContexts:{'disabled': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">");
+      stack1 = helpers._triageMustache.call(depth0, "text", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("</button>\n    </div>\n");
+      return buffer;
+      }
+
+    function program3(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n    <button ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("classes")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(" ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'disabled': ("disabled")
+      },hashTypes:{'disabled': "ID"},hashContexts:{'disabled': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">");
+      stack1 = helpers._triageMustache.call(depth0, "text", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("</button>\n");
+      return buffer;
+      }
+
+      stack1 = helpers['if'].call(depth0, "form.isHorizontal", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/em-form", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var buffer = '', stack1, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n    ");
+      stack1 = helpers._triageMustache.call(depth0, "em-form-submit", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      return buffer;
+      }
+
+      stack1 = helpers._triageMustache.call(depth0, "yield", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      stack1 = helpers['if'].call(depth0, "submit_button", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      return buffer;
+      
+    });
+  });
 define("sonatribe-ui/templates/components/em-modal-confirm", 
   ["ember","exports"],
   function(__dependency1__, __exports__) {
@@ -2053,6 +2311,245 @@ define("sonatribe-ui/templates/components/em-modal",
       }
 
       stack1 = helpers['if'].call(depth0, "is-open", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/formgroup/control-within-label", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1, helper, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group-control", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group-control", options))));
+      data.buffer.push("\n");
+      return buffer;
+      }
+
+      stack1 = (helper = helpers['em-form-label'] || (depth0 && depth0['em-form-label']),options={hash:{
+        'text': ("label"),
+        'horiClass': (""),
+        'inlineClass': (""),
+        'viewName': ("labelViewName")
+      },hashTypes:{'text': "ID",'horiClass': "STRING",'inlineClass': "STRING",'viewName': "ID"},hashContexts:{'text': depth0,'horiClass': depth0,'inlineClass': depth0,'viewName': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-form-label", options));
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/formgroup/form-group-control", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1, escapeExpression=this.escapeExpression, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '';
+      data.buffer.push("\n    <div ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("controlWrapper")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">\n        ");
+      data.buffer.push(escapeExpression(helpers.view.call(depth0, "controlView", {hash:{
+        'viewName': ("controlViewName"),
+        'property': ("propertyName"),
+        'id': ("cid")
+      },hashTypes:{'viewName': "ID",'property': "ID",'id': "ID"},hashContexts:{'viewName': depth0,'property': depth0,'id': depth0},contexts:[depth0],types:["ID"],data:data})));
+      data.buffer.push("\n    </div>\n");
+      return buffer;
+      }
+
+    function program3(depth0,data) {
+      
+      var buffer = '';
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression(helpers.view.call(depth0, "controlView", {hash:{
+        'viewName': ("controlViewName"),
+        'property': ("propertyName"),
+        'id': ("cid")
+      },hashTypes:{'viewName': "ID",'property': "ID",'id': "ID"},hashContexts:{'viewName': depth0,'property': depth0,'id': depth0},contexts:[depth0],types:["ID"],data:data})));
+      data.buffer.push("\n");
+      return buffer;
+      }
+
+      stack1 = helpers['if'].call(depth0, "controlWrapper", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      else { data.buffer.push(''); }
+      
+    });
+  });
+define("sonatribe-ui/templates/components/formgroup/form-group", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+    this.compilerInfo = [4,'>= 1.0.0'];
+    helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+      var stack1, escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
+
+    function program1(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n    ");
+      stack1 = helpers['if'].call(depth0, "label", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(13, program13, data),fn:self.program(2, program2, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n\n    ");
+      stack1 = helpers['if'].call(depth0, "v_icons", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(15, program15, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n\n    \n    ");
+      stack1 = helpers.unless.call(depth0, "form.isInline", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(17, program17, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      return buffer;
+      }
+    function program2(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n        ");
+      stack1 = helpers['if'].call(depth0, "yieldInLabel", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(8, program8, data),fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n    ");
+      return buffer;
+      }
+    function program3(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n            ");
+      stack1 = helpers['if'].call(depth0, "labelWrapperClass", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(6, program6, data),fn:self.program(4, program4, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n        ");
+      return buffer;
+      }
+    function program4(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n                <div ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("labelWrapperClass")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">\n                    ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/control-within-label", options) : helperMissing.call(depth0, "partial", "components/formgroup/control-within-label", options))));
+      data.buffer.push("\n                </div>\n            ");
+      return buffer;
+      }
+
+    function program6(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n                ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/control-within-label", options) : helperMissing.call(depth0, "partial", "components/formgroup/control-within-label", options))));
+      data.buffer.push("\n            ");
+      return buffer;
+      }
+
+    function program8(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n            ");
+      stack1 = helpers['if'].call(depth0, "labelWrapperClass", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(11, program11, data),fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n        ");
+      return buffer;
+      }
+    function program9(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n                <div ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("labelWrapperClass")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push(">\n                    ");
+      data.buffer.push(escapeExpression((helper = helpers['em-form-label'] || (depth0 && depth0['em-form-label']),options={hash:{
+        'text': ("label"),
+        'viewName': ("labelViewName")
+      },hashTypes:{'text': "ID",'viewName': "ID"},hashContexts:{'text': depth0,'viewName': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-form-label", options))));
+      data.buffer.push("\n                    ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group-control", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group-control", options))));
+      data.buffer.push("\n                </div>\n            ");
+      return buffer;
+      }
+
+    function program11(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n                ");
+      data.buffer.push(escapeExpression((helper = helpers['em-form-label'] || (depth0 && depth0['em-form-label']),options={hash:{
+        'text': ("label"),
+        'viewName': ("labelViewName")
+      },hashTypes:{'text': "ID",'viewName': "ID"},hashContexts:{'text': depth0,'viewName': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-form-label", options))));
+      data.buffer.push("\n                ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group-control", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group-control", options))));
+      data.buffer.push("\n            ");
+      return buffer;
+      }
+
+    function program13(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n        ");
+      data.buffer.push(escapeExpression((helper = helpers.partial || (depth0 && depth0.partial),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "components/formgroup/form-group-control", options) : helperMissing.call(depth0, "partial", "components/formgroup/form-group-control", options))));
+      data.buffer.push("\n    ");
+      return buffer;
+      }
+
+    function program15(depth0,data) {
+      
+      var buffer = '';
+      data.buffer.push("\n        <span class=\"form-control-feedback\"><i ");
+      data.buffer.push(escapeExpression(helpers['bind-attr'].call(depth0, {hash:{
+        'class': ("v_icon")
+      },hashTypes:{'class': "ID"},hashContexts:{'class': depth0},contexts:[],types:[],data:data})));
+      data.buffer.push("></i></span>\n    ");
+      return buffer;
+      }
+
+    function program17(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n        ");
+      stack1 = helpers['if'].call(depth0, "canShowErrors", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(18, program18, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n    ");
+      return buffer;
+      }
+    function program18(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n            ");
+      data.buffer.push(escapeExpression((helper = helpers['em-form-control-help'] || (depth0 && depth0['em-form-control-help']),options={hash:{
+        'text': ("help"),
+        'viewName': ("helpViewName")
+      },hashTypes:{'text': "ID",'viewName': "ID"},hashContexts:{'text': depth0,'viewName': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-form-control-help", options))));
+      data.buffer.push("\n        ");
+      return buffer;
+      }
+
+    function program20(depth0,data) {
+      
+      var buffer = '', stack1;
+      data.buffer.push("\n    ");
+      stack1 = helpers._triageMustache.call(depth0, "yield", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n");
+      return buffer;
+      }
+
+      stack1 = helpers.unless.call(depth0, "template", {hash:{},hashTypes:{},hashContexts:{},inverse:self.program(20, program20, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       else { data.buffer.push(''); }
       
@@ -2531,13 +3028,51 @@ define("sonatribe-ui/templates/manage-account",
     __exports__["default"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
     this.compilerInfo = [4,'>= 1.0.0'];
     helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-      var buffer = '', stack1;
+      var buffer = '', stack1, helper, options, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
 
+    function program1(depth0,data) {
+      
+      var buffer = '', helper, options;
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers['em-input'] || (depth0 && depth0['em-input']),options={hash:{
+        'property': ("name"),
+        'label': ("Full Name"),
+        'placeholder': ("Enter a name...")
+      },hashTypes:{'property': "STRING",'label': "STRING",'placeholder': "STRING"},hashContexts:{'property': depth0,'label': depth0,'placeholder': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-input", options))));
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers['em-text'] || (depth0 && depth0['em-text']),options={hash:{
+        'property': ("comment"),
+        'label': ("Coment"),
+        'placeholder': ("Comment please.."),
+        'rows': (4)
+      },hashTypes:{'property': "STRING",'label': "STRING",'placeholder': "STRING",'rows': "INTEGER"},hashContexts:{'property': depth0,'label': depth0,'placeholder': depth0,'rows': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-text", options))));
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers['em-select'] || (depth0 && depth0['em-select']),options={hash:{
+        'property': ("gender"),
+        'label': ("Gender"),
+        'prompt': ("-select-"),
+        'contentBinding': ("genderOptions"),
+        'optionValuePath': ("content.id"),
+        'optionLabelPath': ("content.name")
+      },hashTypes:{'property': "STRING",'label': "STRING",'prompt': "STRING",'contentBinding': "STRING",'optionValuePath': "STRING",'optionLabelPath': "STRING"},hashContexts:{'property': depth0,'label': depth0,'prompt': depth0,'contentBinding': depth0,'optionValuePath': depth0,'optionLabelPath': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-select", options))));
+      data.buffer.push("\n    ");
+      data.buffer.push(escapeExpression((helper = helpers['em-checkbox'] || (depth0 && depth0['em-checkbox']),options={hash:{
+        'property': ("active"),
+        'label': ("Active?")
+      },hashTypes:{'property': "STRING",'label': "STRING"},hashContexts:{'property': depth0,'label': depth0},contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-checkbox", options))));
+      data.buffer.push("\n    ");
+      return buffer;
+      }
 
-      data.buffer.push("\n\n\n");
+      data.buffer.push("\n\n<div class=\"container\">\n  <h4>Because you're new...</h4>\n<br>\n  ");
       stack1 = helpers._triageMustache.call(depth0, "outlet", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-      data.buffer.push("\n");
+      data.buffer.push("\n  <div class=\"col-sm-9 col-xs-12 page row well line-example\">\n    ");
+      stack1 = (helper = helpers['em-form'] || (depth0 && depth0['em-form']),options={hash:{
+        'form_layout': ("default")
+      },hashTypes:{'form_layout': "STRING"},hashContexts:{'form_layout': depth0},inverse:self.noop,fn:self.program(1, program1, data),contexts:[],types:[],data:data},helper ? helper.call(depth0, options) : helperMissing.call(depth0, "em-form", options));
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n  </div>\n\n</div>\n");
       return buffer;
       
     });
@@ -3505,7 +4040,7 @@ define("sonatribe-ui/tests/initializers/user-reopen-class.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/user-reopen-class.js should pass jshint', function() { 
-      ok(false, 'initializers/user-reopen-class.js should pass jshint.\ninitializers/user-reopen-class.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 17, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
+      ok(false, 'initializers/user-reopen-class.js should pass jshint.\ninitializers/user-reopen-class.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/user-reopen-class.js: line 18, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/view-reopen.jshint", 
@@ -3667,7 +4202,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 48, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
+      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 31, col 99, Use \'===\' to compare with \'null\'.\nroutes/application.js: line 71, col 1, \'export\' is only available in ES6 (use esnext option).\n\n7 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 

@@ -1,4 +1,16 @@
 
 
+<div class="container">
+  <h4>Because you're new...</h4>
+<br>
+  {{outlet}}
+  <div class="col-sm-9 col-xs-12 page row well line-example">
+    {{#em-form form_layout="default"}}
+    {{em-input property="name" label="Full Name" placeholder="Enter a name..."}}
+    {{em-text property="comment" label="Coment" placeholder="Comment please.." rows=4}}
+    {{em-select property="gender" label="Gender" prompt="-select-" contentBinding="genderOptions" optionValuePath="content.id" optionLabelPath="content.name"}}
+    {{em-checkbox property="active" label="Active?"}}
+    {{/em-form}}
+  </div>
 
-{{outlet}}
+</div>

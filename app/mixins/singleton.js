@@ -10,6 +10,7 @@ export default Ember.Mixin.create({
   },
 
   createCurrent: function() {
+    console.log('into the empty create methiod');
     return this.create({});
   },
 

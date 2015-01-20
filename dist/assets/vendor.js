@@ -63454,6 +63454,2707 @@ define("ember/load-initializers",
 );
 })();
 
+;/* ========================================================================
+ * Bootstrap: transition.js v3.0.0
+ * http://twbs.github.com/bootstrap/javascript.html#transitions
+ * ========================================================================
+ * Copyright 2013 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
+
++function ($) { "use strict";
+
+  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
+  // ============================================================
+
+  function transitionEnd() {
+    var el = document.createElement('bootstrap')
+
+    var transEndEventNames = {
+      'WebkitTransition' : 'webkitTransitionEnd'
+    , 'MozTransition'    : 'transitionend'
+    , 'OTransition'      : 'oTransitionEnd otransitionend'
+    , 'transition'       : 'transitionend'
+    }
+
+    for (var name in transEndEventNames) {
+      if (el.style[name] !== undefined) {
+        return { end: transEndEventNames[name] }
+      }
+    }
+  }
+
+  // http://blog.alexmaccaw.com/css-transitions
+  $.fn.emulateTransitionEnd = function (duration) {
+    var called = false, $el = this
+    $(this).one($.support.transition.end, function () { called = true })
+    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
+    setTimeout(callback, duration)
+    return this
+  }
+
+  $(function () {
+    $.support.transition = transitionEnd()
+  })
+
+}(window.jQuery);
+
+(function() {
+  var Bootstrap;
+
+  Bootstrap = window.Bootstrap = Ember.Namespace.create();
+
+}).call(this);
+
+(function() {
+  var Bootstrap, get;
+
+  Bootstrap = window.Bootstrap;
+
+  get = Ember.get;
+
+  Bootstrap.WithRouter = Ember.Mixin.create({
+    router: Ember.computed(function() {
+      return get(this, "controller").container.lookup("router:main");
+    })
+  });
+
+}).call(this);
+
+(function() {
+  var Bootstrap, get, set;
+
+  Bootstrap = window.Bootstrap;
+
+  get = Ember.get;
+
+  set = Ember.set;
+
+  Bootstrap.TypeSupport = Ember.Mixin.create({
+    classTypePrefix: Ember.required(String),
+    classNameBindings: ['typeClass'],
+    type: 'default',
+    typeClass: (function() {
+      var pref, type;
+      type = this.get('type');
+      if (type == null) {
+        type = 'default';
+      }
+      pref = this.get('classTypePrefix');
+      return "" + pref + "-" + type;
+    }).property('type').cacheable()
+  });
+
+}).call(this);
+
+(function() {
+  var Bootstrap, get, set;
+
+  Bootstrap = window.Bootstrap;
+
+  get = Ember.get;
+
+  set = Ember.set;
+
+  Bootstrap.SizeSupport = Ember.Mixin.create({
+    classTypePrefix: Ember.required(String),
+    classNameBindings: ['sizeClass', 'largeSizeClass', 'smallSizeClass', 'extraSmallSizeClass'],
+    size: null,
+    xs: null,
+    small: null,
+    large: null,
+    extraSmallSizeClass: (function() {
+      var pref;
+      pref = this.get('classTypePrefix');
+      if (this.xs) {
+        return "" + pref + "-xs";
+      } else {
+        return null;
+      }
+    }).property('xs').cacheable(),
+    smallSizeClass: (function() {
+      var pref;
+      pref = this.get('classTypePrefix');
+      if (this.small) {
+        return "" + pref + "-sm";
+      } else {
+        return null;
+      }
+    }).property('small').cacheable(),
+    largeSizeClass: (function() {
+      var pref;
+      pref = this.get('classTypePrefix');
+      if (this.large) {
+        return "" + pref + "-lg";
+      } else {
+        return null;
+      }
+    }).property('large').cacheable(),
+    sizeClass: (function() {
+      var pref, size;
+      size = this.get('size');
+      pref = this.get('classTypePrefix');
+      if (size) {
+        return "" + pref + "-" + size;
+      } else {
+        return null;
+      }
+    }).property('size').cacheable()
+  });
+
+}).call(this);
+
+/*
+A mixin for Items that have a value property
+*/
+
+
+(function() {
+  Bootstrap.ItemValue = Ember.Mixin.create({
+    /*
+    The value of the item, currently Items content supports only an array of strings, so value is the actual 'content' property
+    of the item.
+    */
+
+    value: (function() {
+      var itemsView, value;
+      itemsView = this.get('parentView');
+      if (itemsView == null) {
+        return;
+      }
+      value = this.get('content');
+      return value;
+    }).property('content').cacheable()
+  });
+
+}).call(this);
+
+/*
+A Mixin to enhance items enhanced with the 'IsItem' Mixin with selection capability.
+
+When a click event is received the current item will be stored in the parent view 'selected' property,
+An extra 'active' css class will be assigned to the Item (this) if this is a selected item.
+*/
+
+
+(function() {
+  Bootstrap.ItemSelection = Ember.Mixin.create(Bootstrap.ItemValue, Bootstrap.WithRouter, {
+    classNameBindings: ["isActive:active"],
+    init: function() {
+      this._super();
+      return this.didRouteChange();
+    },
+    didRouteChange: (function() {
+      var itemsView, linkTo, _ref;
+      linkTo = this.get('content.linkTo');
+      if (linkTo == null) {
+        return;
+      }
+      itemsView = this.get('parentView');
+      if (itemsView == null) {
+        return;
+      }
+      if ((_ref = this.get('router')) != null ? _ref.isActive(linkTo) : void 0) {
+        return itemsView.set('selected', this.get('value'));
+      }
+    }).observes('router.url'),
+    /*
+    Determine whether the current item is selected,
+    if true the 'active' css class will be associated with the this DOM's element.
+    
+    This is a calculated property and will be retriggered if the 'value' property of the item has changed or the 'selected' property
+    in the parent ItemsView.
+    */
+
+    isActive: (function() {
+      var itemsView, selected, value;
+      itemsView = this.get('parentView');
+      if (itemsView == null) {
+        return false;
+      }
+      selected = itemsView.get('selected');
+      value = this.get('value');
+      if (value == null) {
+        return false;
+      }
+      return selected === value;
+    }).property('value', 'parentView.selected', 'content.linkTo').cacheable(),
+    /*
+    Handle selection by click event.
+    
+    The identifier of the selection is based on the 'content' property of this item.
+    */
+
+    click: function(event) {
+      var content, itemsView;
+      event.preventDefault();
+      itemsView = this.get('parentView');
+      if (itemsView == null) {
+        return;
+      }
+      content = this.get('content');
+      if (typeof content === 'object') {
+        if (content.get('disabled')) {
+          return;
+        }
+      }
+      if (this.get('content.linkTo') != null) {
+        return;
+      }
+      return itemsView.set('selected', this.get('value'));
+    }
+  });
+
+}).call(this);
+
+/*
+A Mixin to enhance views that extends from 'ItemsView' with selection capability.
+*/
+
+
+(function() {
+  Bootstrap.ItemsSelection = Ember.Mixin.create({
+    /*
+    If true, multiple selection is supported
+    */
+
+    multiSelection: false,
+    /*
+    An array of selected item(s), can be also bound to a controller property via 'selectedBinding'
+    */
+
+    selected: []
+  });
+
+}).call(this);
+
+/*
+A Mixin that provides the basic configuration for rendering a Bootstrap navigation such as tabs and pills
+*/
+
+
+(function() {
+  Bootstrap.Nav = Ember.Mixin.create({
+    classNames: ['nav'],
+    classNameBindings: ['navTypeClass'],
+    tagName: 'ul',
+    navType: null,
+    navTypeClass: (function() {
+      if (this.navType != null) {
+        return "nav-" + this.navType;
+      } else {
+        return null;
+      }
+    }).property('navType').cacheable()
+  });
+
+}).call(this);
+
+/*
+A Mixin that provides the basic configuration for rendering and interacting with Bootstrap navigation item such a pill or a tab.
+*/
+
+
+(function() {
+  Bootstrap.NavItem = Ember.Mixin.create(Bootstrap.SelectableView);
+
+}).call(this);
+
+(function() {
+  var getParentView, getProperty;
+
+  getParentView = function(view) {
+    var ok, parentView;
+    if (!(view && (parentView = view.get('parentView')))) {
+      return;
+    }
+    ok = parentView instanceof Bootstrap.ItemsView;
+    Ember.assert("The parent view must be an instance of Bootstrap.ItemsView or any inherited class", ok);
+    if (ok) {
+      return parentView;
+    } else {
+      return void 0;
+    }
+  };
+
+  getProperty = function(obj, prop, noGetReturns) {
+    if (!(Ember.typeOf(obj) === 'instance' || Ember.canInvoke(obj, 'get'))) {
+      return noGetReturns;
+    }
+    return obj.get(prop);
+  };
+
+  /*
+  Views that are rendered as an Item of the ItemsView should extends from this view.
+  
+  When a click event is received the current item will be stored in the parent view 'selected' property,
+  An extra 'active' css class will be assigned to the Item (this) if this is a selected item.
+  
+  Views that extends this view can be enhanced with:
+  ItemSelection: Makes the item selectable.
+  */
+
+
+  Bootstrap.ItemView = Ember.View.extend({
+    isItem: true,
+    classNameBindings: ['disabled'],
+    /*
+    A calculated property that defines the title of the item.
+    */
+
+    title: (function() {
+      var content, itemTitleKey, itemsView;
+      if (!(itemsView = getParentView(this))) {
+        return;
+      }
+      itemTitleKey = itemsView.get('itemTitleKey') || 'title';
+      content = this.get('content');
+      return getProperty(content, itemTitleKey, content);
+    }).property('content').cacheable(),
+    /*
+    Determine whether the item is disabled or not
+    */
+
+    disabled: (function() {
+      var content, disabled, itemsView;
+      if (!(itemsView = getParentView(this))) {
+        return;
+      }
+      content = this.get('content');
+      disabled = !!getProperty(content, 'disabled', false);
+      if (disabled && this.get('isActive')) {
+        itemsView.set('selected', null);
+      }
+      return disabled;
+    }).property('content', 'content.disabled').cacheable()
+  });
+
+}).call(this);
+
+/*
+A parent view of views that supports multiple items rendering such as Navigations (Tabs, Pills)
+
+Views that inherits from this view can be enhanced with:
+- ItemsSelection: Enhances with selection capability.
+*/
+
+
+(function() {
+  Bootstrap.ItemsView = Ember.CollectionView.extend({
+    didInsertElement: function() {
+      var defaultTab, view, _i, _len, _ref, _ref1;
+      if (this.get('default')) {
+        defaultTab = this.get('default');
+        _ref = this._childViews;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          view = _ref[_i];
+          if (((_ref1 = view.get('content')) != null ? _ref1.get('title') : void 0) === defaultTab) {
+            this.set('selected', view.get('content'));
+          }
+        }
+        return Ember.assert("Could not activate default tab " + defaultTab + " as it doesnt exist", defaultTab);
+      }
+    }
+  });
+
+}).call(this);
+
+(function() {
+  Bootstrap.ItemPaneView = Ember.View.extend({
+    template: Ember.Handlebars.compile(['{{#if view.content.template}}', '{{bsItemPanePartial view.content.template}}', '{{/if}}'].join("\n")),
+    corrItem: (function() {
+      var view, _i, _len, _ref;
+      if (this.get('parentView').get('corrItemsView') != null) {
+        _ref = this.get('parentView').get('corrItemsView')._childViews;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          view = _ref[_i];
+          if (view.content === this.get('content')) {
+            return view;
+          }
+        }
+      }
+    }).property('parentView.corrItemsView'),
+    isVisible: (function() {
+      var _ref;
+      return (_ref = this.get('corrItem')) != null ? _ref.get('isActive') : void 0;
+    }).property('corrItem.isActive'),
+    controller: (function() {
+      var controller, itemController;
+      controller = this.get('parentView.controller');
+      if (this.get('content.controller')) {
+        itemController = this.get('container').lookup("controller:" + (this.get('content.controller')));
+        if (itemController) {
+          controller = itemController;
+        }
+      }
+      return controller;
+    }).property('content')
+  });
+
+  Ember.Handlebars.helper("bsItemPanePartial", function(templateName, options) {
+    var template, view;
+    view = options.data.view;
+    template = view.templateForName(templateName);
+    Ember.assert("Unable to find template with name '" + templateName + "'", template);
+    return template(this, {
+      data: options.data
+    });
+  });
+
+}).call(this);
+
+(function() {
+  Bootstrap.ItemsPanesView = Ember.CollectionView.extend({
+    viewsInserted: false,
+    corrItemsView: (function() {
+      var itemsView;
+      itemsView = Ember.View.views[this.get('items-id')];
+      return itemsView;
+    }).property('viewsInserted'),
+    didInsertElement: function() {
+      this._super();
+      return this.set('viewsInserted', true);
+    }
+  });
+
+}).call(this);
+
+;/* ========================================================================
+ * Bootstrap: alert.js v3.0.0
+ * http://twbs.github.com/bootstrap/javascript.html#alerts
+ * ========================================================================
+ * Copyright 2013 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
+
++function ($) { "use strict";
+
+  // ALERT CLASS DEFINITION
+  // ======================
+
+  var dismiss = '[data-dismiss="alert"]'
+  var Alert   = function (el) {
+    $(el).on('click', dismiss, this.close)
+  }
+
+  Alert.prototype.close = function (e) {
+    var $this    = $(this)
+    var selector = $this.attr('data-target')
+
+    if (!selector) {
+      selector = $this.attr('href')
+      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
+    }
+
+    var $parent = $(selector)
+
+    if (e) e.preventDefault()
+
+    if (!$parent.length) {
+      $parent = $this.hasClass('alert') ? $this : $this.parent()
+    }
+
+    $parent.trigger(e = $.Event('close.bs.alert'))
+
+    if (e.isDefaultPrevented()) return
+
+    $parent.removeClass('in')
+
+    function removeElement() {
+      $parent.trigger('closed.bs.alert').remove()
+    }
+
+    $.support.transition && $parent.hasClass('fade') ?
+      $parent
+        .one($.support.transition.end, removeElement)
+        .emulateTransitionEnd(150) :
+      removeElement()
+  }
+
+
+  // ALERT PLUGIN DEFINITION
+  // =======================
+
+  var old = $.fn.alert
+
+  $.fn.alert = function (option) {
+    return this.each(function () {
+      var $this = $(this)
+      var data  = $this.data('bs.alert')
+
+      if (!data) $this.data('bs.alert', (data = new Alert(this)))
+      if (typeof option == 'string') data[option].call($this)
+    })
+  }
+
+  $.fn.alert.Constructor = Alert
+
+
+  // ALERT NO CONFLICT
+  // =================
+
+  $.fn.alert.noConflict = function () {
+    $.fn.alert = old
+    return this
+  }
+
+
+  // ALERT DATA-API
+  // ==============
+
+  $(document).on('click.bs.alert.data-api', dismiss, Alert.prototype.close)
+
+}(window.jQuery);
+
+(function() {
+  Bootstrap.BsAlertComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
+    classNames: ['alert'],
+    classNameBindings: ['fade', 'fade:in'],
+    layoutName: 'components/bs-alert',
+    classTypePrefix: 'alert',
+    attributeBindings: ['data-timeout'],
+    dismissAfter: 0,
+    closedParam: null,
+    didInsertElement: function() {
+      var _this = this;
+      if (this.dismissAfter > 0) {
+        Ember.run.later(this, 'dismiss', this.dismissAfter * 1000);
+      }
+      Ember.$("#" + this.elementId).bind('closed.bs.alert', function() {
+        _this.sendAction('closed', _this.get('closedParam'));
+        return _this.destroy();
+      });
+      return Ember.$("#" + this.elementId).bind('close.bs.alert', function() {
+        return _this.sendAction('close', _this.get('closedParam'));
+      });
+    },
+    dismiss: function() {
+      return Ember.$("#" + this.elementId).alert('close');
+    }
+  });
+
+  Ember.Handlebars.helper('bs-alert', Bootstrap.BsAlertComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-alert"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, self=this, escapeExpression=this.escapeExpression;
+
+function program1(depth0,data) {
+  
+  
+  data.buffer.push("\n    <a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>\n");
+  }
+
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "dismiss", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "message", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  return buffer;
+  
+});
+;(function() {
+  Bootstrap.BsBadgeComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
+    layoutName: 'components/bs-badge',
+    tagName: 'span',
+    classNames: ['badge'],
+    classTypePrefix: 'badge'
+  });
+
+  Ember.Handlebars.helper('bs-badge', Bootstrap.BsBadgeComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-badge"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
+
+
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "content", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  
+});
+;(function() {
+  Bootstrap.BsWellComponent = Ember.Component.extend({
+    layoutName: 'components/bs-well',
+    classNameBindings: ['small:well-sm', 'large:well-lg'],
+    classNames: ['well'],
+    click: function() {
+      return this.sendAction('clicked');
+    }
+  });
+
+  Ember.Handlebars.helper('bs-well', Bootstrap.BsWellComponent);
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsPageHeaderComponent = Ember.Component.extend({
+    layoutName: 'components/bs-page-header',
+    classNames: ['page-header']
+  });
+
+  Ember.Handlebars.helper('bs-page-header', Bootstrap.BsPageHeaderComponent);
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsPanelComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
+    layoutName: 'components/bs-panel',
+    classNames: ['panel'],
+    classTypePrefix: ['panel'],
+    classNameBindings: ['fade', 'fade:in'],
+    clicked: null,
+    onClose: null,
+    fade: true,
+    collapsible: false,
+    open: true,
+    actions: {
+      close: function(event) {
+        this.sendAction('onClose');
+        this.$().removeClass('in');
+        return setTimeout((function() {
+          return this.destroy();
+        }).bind(this), 250);
+      }
+    },
+    click: function(event) {
+      return this.sendAction('clicked');
+    },
+    collapsibleBodyId: (function() {
+      return "" + (this.get('elementId')) + "_body";
+    }).property('collapsible'),
+    collapsibleBodyLink: (function() {
+      return "#" + (this.get('elementId')) + "_body";
+    }).property('collapsibleBodyId')
+  });
+
+  Ember.Handlebars.helper('bs-panel', Bootstrap.BsPanelComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-page-header"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n        <small>");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "sub", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</small>\n    ");
+  return buffer;
+  }
+
+  data.buffer.push("<h1>\n    ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "title", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n    ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "sub", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n</h1>");
+  return buffer;
+  
+});
+
+this["Ember"]["TEMPLATES"]["components/bs-well"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
+
+
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  
+});
+
+this["Ember"]["TEMPLATES"]["components/bs-panel"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, hashTypes, hashContexts;
+  data.buffer.push("\n    <div class=\"panel-heading\">\n        ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "collapsible", {hash:{},inverse:self.program(4, program4, data),fn:self.program(2, program2, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n        ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "dismiss", {hash:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n    </div>\n");
+  return buffer;
+  }
+function program2(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n            <a class=\"accordion-toggle\" data-toggle=\"collapse\" data-parent=\"#accordion\" ");
+  hashContexts = {'href': depth0};
+  hashTypes = {'href': "ID"};
+  options = {hash:{
+    'href': ("collapsibleBodyLink")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
+  data.buffer.push(">\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "heading", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n            </a>\n        ");
+  return buffer;
+  }
+
+function program4(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "heading", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n        ");
+  return buffer;
+  }
+
+function program6(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n            <a class=\"close\" data-dismiss=\"panel\" ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.action.call(depth0, "close", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push(">&times;</a>\n        ");
+  return buffer;
+  }
+
+function program8(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n    <div ");
+  hashContexts = {'id': depth0};
+  hashTypes = {'id': "ID"};
+  options = {hash:{
+    'id': ("collapsibleBodyId")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
+  data.buffer.push(" ");
+  hashContexts = {'class': depth0};
+  hashTypes = {'class': "STRING"};
+  options = {hash:{
+    'class': (":panel-collapse :collapse open:in")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
+  data.buffer.push(">\n        <div class=\"panel-body\">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</div>\n    </div>\n");
+  return buffer;
+  }
+
+function program10(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n    <div id=\"collapseOne\" class=\"panel-body\">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</div>\n");
+  return buffer;
+  }
+
+function program12(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n    <div class=\"panel-footer\">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "footer", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("</div>\n");
+  return buffer;
+  }
+
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "heading", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n\n");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "collapsible", {hash:{},inverse:self.program(10, program10, data),fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n\n");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "footer", {hash:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n");
+  return buffer;
+  
+});
+;/*
+Breadcrumbs compponent.
+*/
+
+
+(function() {
+  Bootstrap.BsBreadcrumbsItem = Bootstrap.ItemView.extend({
+    tagName: ['li'],
+    classNameBindings: ["isActive:active"],
+    template: Ember.Handlebars.compile('{{#unless view.isActive}}{{#if view.content.model}}{{#link-to view.content.route model.id}}{{view.content.name}}{{/link-to}}{{else}}{{#link-to view.content.route}}{{view.content.name}}{{/link-to}}{{/if}}{{else}}{{view.content.name}}{{/unless}}'),
+    isActive: (function() {
+      return this.get('content.active');
+    }).property('content.active')
+  });
+
+  Bootstrap.BsBreadcrumbs = Bootstrap.ItemsView.extend(Bootstrap.WithRouter, {
+    tagName: ['ol'],
+    classNames: ['breadcrumb'],
+    currentPathObserver: (function() {
+      this.get('router');
+      return this.send('updateCrumbsByRoute');
+    }).observes('router.url').on('init'),
+    content: [],
+    itemViewClass: Bootstrap.BsBreadcrumbsItem,
+    nameDictionary: void 0,
+    dictionaryNamePrefix: 'breadcrumbs',
+    actions: {
+      currentPathDidChange: function() {
+        return this.send('updateCrumbsByRoute');
+      },
+      updateCrumbsByRoute: function() {
+        var routes,
+          _this = this;
+        this.get('content').clear();
+        routes = this.get('container').lookup('router:main');
+        routes.get('router.currentHandlerInfos').forEach(function(route, i, arr) {
+          var crumb, displayName, name, routeName, _ref, _ref1, _ref2;
+          name = route.name;
+          if (name.indexOf('.index') !== -1 || name === 'application') {
+            return;
+          }
+          if ((_ref = route.handler.breadcrumbs) != null ? _ref.hidden : void 0) {
+            return;
+          }
+          routeName = route.handler.routeName;
+          if ((_ref1 = route.handler.breadcrumbs) != null ? _ref1.name : void 0) {
+            displayName = route.handler.breadcrumbs.name;
+          } else if ((_ref2 = _this.get('nameDictionary')) != null ? _ref2["" + _this.dictionaryNamePrefix + "." + routeName] : void 0) {
+            displayName = _this.get('nameDictionary')["" + _this.dictionaryNamePrefix + "." + routeName];
+          } else {
+            displayName = route.handler.routeName.split('.').pop();
+            displayName = displayName[0].toUpperCase() + displayName.slice(1).toLowerCase();
+          }
+          crumb = Ember.Object.create({
+            route: route.handler.routeName,
+            name: displayName,
+            model: null
+          });
+          if (_this.get('content').length === 0) {
+            crumb.set('icon', 'fa fa-home home-icon');
+          }
+          if (route.isDynamic) {
+            crumb.setProperties({
+              model: route.handler.context,
+              name: route.handler.context.get('name')
+            });
+          }
+          return _this.get('content').pushObject(crumb);
+        });
+        return this.get('content.lastObject').set('active', true);
+      }
+    }
+  });
+
+  Ember.Handlebars.helper('bs-breadcrumbs', Bootstrap.BsBreadcrumbs);
+
+}).call(this);
+
+;/* ========================================================================
+ * Bootstrap: button.js v3.0.0
+ * http://twbs.github.com/bootstrap/javascript.html#buttons
+ * ========================================================================
+ * Copyright 2013 Twitter, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ======================================================================== */
+
+
++function ($) { "use strict";
+
+  // BUTTON PUBLIC CLASS DEFINITION
+  // ==============================
+
+  var Button = function (element, options) {
+    this.$element = $(element)
+    this.options  = $.extend({}, Button.DEFAULTS, options)
+  }
+
+  Button.DEFAULTS = {
+    loadingText: 'loading...'
+  }
+
+  Button.prototype.setState = function (state) {
+    var d    = 'disabled'
+    var $el  = this.$element
+    var val  = $el.is('input') ? 'val' : 'html'
+    var data = $el.data()
+
+    state = state + 'Text'
+
+    if (!data.resetText) $el.data('resetText', $el[val]())
+
+    $el[val](data[state] || this.options[state])
+
+    // push to event loop to allow forms to submit
+    setTimeout(function () {
+      state == 'loadingText' ?
+        $el.addClass(d).attr(d, d) :
+        $el.removeClass(d).removeAttr(d);
+    }, 0)
+  }
+
+  Button.prototype.toggle = function () {
+    var $parent = this.$element.closest('[data-toggle="buttons"]')
+
+    if ($parent.length) {
+      var $input = this.$element.find('input')
+        .prop('checked', !this.$element.hasClass('active'))
+        .trigger('change')
+      if ($input.prop('type') === 'radio') $parent.find('.active').removeClass('active')
+    }
+
+    this.$element.toggleClass('active')
+  }
+
+
+  // BUTTON PLUGIN DEFINITION
+  // ========================
+
+  var old = $.fn.button
+
+  $.fn.button = function (option) {
+    return this.each(function () {
+      var $this   = $(this)
+      var data    = $this.data('bs.button')
+      var options = typeof option == 'object' && option
+
+      if (!data) $this.data('bs.button', (data = new Button(this, options)))
+
+      if (option == 'toggle') data.toggle()
+      else if (option) data.setState(option)
+    })
+  }
+
+  $.fn.button.Constructor = Button
+
+
+  // BUTTON NO CONFLICT
+  // ==================
+
+  $.fn.button.noConflict = function () {
+    $.fn.button = old
+    return this
+  }
+
+
+  // BUTTON DATA-API
+  // ===============
+
+  $(document).on('click.bs.button.data-api', '[data-toggle^=button]', function (e) {
+    var $btn = $(e.target)
+    if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn')
+    $btn.button('toggle')
+    e.preventDefault()
+  })
+
+}(window.jQuery);
+
+(function() {
+  Bootstrap.BsButtonComponent = Ember.Component.extend(Bootstrap.TypeSupport, Bootstrap.SizeSupport, {
+    layoutName: 'components/bs-button',
+    tagName: 'button',
+    classNames: ['btn'],
+    classNameBindings: ['blockClass'],
+    classTypePrefix: 'btn',
+    clickedParam: null,
+    block: null,
+    attributeBindings: ['disabled', 'dismiss:data-dismiss', '_type:type', 'style'],
+    _type: 'button',
+    bubbles: true,
+    allowedProperties: ['title', 'type', 'size', 'block', 'disabled', 'clicked', 'dismiss', 'class'],
+    icon_active: void 0,
+    icon_inactive: void 0
+  }, {
+    init: function() {
+      var attr, c, key, _i, _len, _ref, _results;
+      this._super();
+      if ((this.get('content') != null) && Ember.typeOf(this.get('content')) === 'instance') {
+        c = this.get('content');
+        _ref = this.get('allowedProperties');
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          key = _ref[_i];
+          if (c[key] != null) {
+            this.set(key, c[key]);
+          }
+        }
+      } else {
+        if (this.get('title') == null) {
+          this.set('title', this.get('content'));
+        }
+      }
+      _results = [];
+      for (attr in this) {
+        if (attr.match(/^data-[\w-]*$/) != null) {
+          _results.push(this.attributeBindings.pushObject(attr));
+        }
+      }
+      return _results;
+    },
+    blockClass: (function() {
+      if (this.block) {
+        return "" + this.classTypePrefix + "-block";
+      } else {
+        return null;
+      }
+    }).property('block').cacheable(),
+    click: function(evt) {
+      if (!this.get('bubbles')) {
+        evt.stopPropagation();
+      }
+      return this.sendAction('clicked', this.get('clickedParam'));
+    },
+    loadingChanged: (function() {
+      var loading;
+      loading = this.get('loading') !== null ? this.get('loading') : "reset";
+      return Ember.$("#" + this.elementId).button(loading);
+    }).observes('loading'),
+    icon: (function() {
+      if (this.get('isActive')) {
+        return this.get('icon_active');
+      } else {
+        return this.get('icon_inactive');
+      }
+    }).property('isActive')
+  });
+
+  Ember.Handlebars.helper('bs-button', Bootstrap.BsButtonComponent);
+
+}).call(this);
+
+/*
+Button Group.
+
+In its simple form, each item in the button group is a Bootstrap.Button component,
+In case this is a Radio, each item is rendered as a label.
+*/
+
+
+(function() {
+  Bootstrap.BsBtnGroup = Bootstrap.ItemsView.extend(Bootstrap.SizeSupport, Bootstrap.ItemsSelection, {
+    classTypePrefix: ['btn-group'],
+    classNames: ['btn-group'],
+    classNameBindings: ['vertical:btn-group-vertical'],
+    itemViewClass: Bootstrap.BsButtonComponent.extend(Bootstrap.ItemValue, Bootstrap.ItemSelection, {
+      init: function() {
+        this._super();
+        this.set('icon_active', this.get('parentView.icon_active'));
+        return this.set('icon_inactive', this.get('parentView.icon_inactive'));
+      }
+    })
+  });
+
+  Ember.Handlebars.helper('bs-btn-group', Bootstrap.BsBtnGroup);
+
+}).call(this);
+
+/*
+Button Toolbar.
+
+A collection of button groups
+*/
+
+
+(function() {
+  Bootstrap.BsBtnToolbarComponent = Ember.Component.extend({
+    layoutName: 'components/bs-btn-toolbar',
+    classNames: ['btn-toolbar']
+  });
+
+  Ember.Handlebars.helper('bs-btn-toolbar', Bootstrap.BsBtnToolbarComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-button"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n    <i ");
+  hashContexts = {'class': depth0};
+  hashTypes = {'class': "STRING"};
+  options = {hash:{
+    'class': ("icon")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
+  data.buffer.push("></i>\n");
+  return buffer;
+  }
+
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "icon", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "title", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  return buffer;
+  
+});
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-btn-toolbar"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
+
+
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  
+});
+;/*
+A Growl-like notifications component.
+Originally written by Aaron Haurwitz (http://aaron.haurwitz.com/), licensed under MIT.
+*/
+
+
+(function() {
+  Bootstrap.GrowlNotifications = Ember.CollectionView.extend({
+    /*
+    @property {String[]} The array of concrete class names to put on this view's element
+    */
+
+    classNames: ['growl-notifications'],
+    /*
+    Binding to the GrowlNotificationManager's notifications array
+    Each of the array element will be rendered as a notification view (see ItemViewClass)
+    */
+
+    contentBinding: 'Bootstrap.GNM.notifications',
+    attributeBindings: ['style'],
+    showTime: 10000,
+    /*
+    @property {View} Notification view class
+    Determines what view class to render for each item in the content array.
+    */
+
+    itemViewClass: Ember.View.extend({
+      classNames: ['growl-notification'],
+      template: Ember.Handlebars.compile('<span class="icon"><i class="fa {{unbound view.iconType}}"></i></span>\n<a class="close-notification" {{action "close" target="view"}}>\n    <span style="font-size: 15px;"><i class="fa fa-times"></i></span>\n</a>\n<strong>\n    {{view.content.title}}\n</strong>\n<p>\n    {{view.content.sub}}\n</p>'),
+      classNameBindings: [":growl-notification", "content.closed", "isOpaque"],
+      attributeBindings: ['style'],
+      /*
+      @property {Number} Will be set by `didInsertElement`, used for clearing the auto-hide timeout.
+      */
+
+      timeoutId: null,
+      /*
+      @property {Boolean} should the view be opaque now?
+      Used for fancy fading purposes.
+      */
+
+      isOpaque: false,
+      /*
+      Lifecycle hook - called when view is created.
+      */
+
+      init: function() {
+        var fn,
+          _this = this;
+        this._super();
+        fn = (function() {
+          return _this.notifyPropertyChange("style");
+        });
+        this.set("_recomputeStyle", fn);
+        return $(window).bind("resize", fn);
+      },
+      /*
+      View lifecycle hook - called when the view enters the DOM.
+      */
+
+      didInsertElement: function() {
+        var _this = this;
+        this.set("timeoutId", setTimeout((function() {
+          return _this.send("close");
+        }), this.get("parentView.showTime")));
+        return Ember.run.later(this, (function() {
+          return this.set("isOpaque", true);
+        }), 1);
+      },
+      /*
+      Lifecycle hook - called right before view is destroyed
+      */
+
+      willDestroyElement: function() {
+        return $(window).unbind('resize', this.get('_recomputeStyle'));
+      },
+      style: (function() {
+        var column, index, notifications, rightPx, row, topPx, unitHeight, unitWidth, unitsPerColumn, viewportHeight;
+        notifications = this.get('parentView.content').rejectProperty('closed', true);
+        index = notifications.indexOf(this.get('content'));
+        viewportHeight = $(window).height();
+        unitHeight = 80;
+        unitWidth = 320;
+        unitsPerColumn = Math.floor(viewportHeight / unitHeight);
+        column = Math.floor(index / unitsPerColumn);
+        row = index % unitsPerColumn;
+        if (index === -1) {
+          return '';
+        }
+        topPx = row * unitHeight;
+        rightPx = column * unitWidth;
+        return 'top: ' + topPx + 'px; right: ' + rightPx + 'px;';
+      }).property('parentView.content.@each.closed'),
+      /*
+      This is simply computed property for mapping a meaningful type name to a FontAwesome CSS class.
+      */
+
+      iconType: (function() {
+        var hash, type;
+        type = this.get('content.type');
+        hash = {
+          'info': 'fa-bullhorn',
+          'success': 'fa-check',
+          'warning': 'fa-exclamation',
+          'danger': 'fa-times'
+        };
+        return hash[type] || '';
+      }).property('content.type'),
+      actions: {
+        close: function() {
+          var _this = this;
+          this.set('isOpaque', false);
+          return setTimeout((function() {
+            _this.get('parentView.content').removeObject(_this.get('content'));
+            return clearTimeout(_this.get("timeoutId"));
+          }), 300);
+        }
+      }
+    })
+  });
+
+  Ember.Handlebars.helper('bs-growl-notifications', Bootstrap.GrowlNotifications);
+
+  /*
+  A manager that is responsible for getting told about new notifications and storing them within an array.
+  */
+
+
+  Bootstrap.GNM = Bootstrap.GrowlNotificationManager = Ember.Object.create({
+    /*
+    @property {Array} A global array for storing notification objects.
+    */
+
+    notifications: Ember.A(),
+    /*
+    An exposed method for pushing new notification.
+    @param title {String} leading text
+    @param sub {String} supporting text
+    @param type {String} classification; used for which icon to show
+    */
+
+    push: function(title, sub, type) {
+      var notif;
+      type = type != null ? type : type = 'info';
+      notif = Bootstrap.Notification.create({
+        title: title,
+        sub: sub,
+        type: type,
+        closed: false
+      });
+      return this.get('notifications').pushObject(notif);
+    }
+  });
+
+  /*
+  An object that represents a notification to be displayed.
+  */
+
+
+  Bootstrap.GrowlNotification = Ember.Object.extend();
+
+}).call(this);
+
+;(function() {
+  Bootstrap.ItemsActionBar = Ember.CollectionView.extend({
+    classNames: 'btn-toolbar',
+    classNameBindings: 'rtl:pull-right',
+    role: 'toolbar',
+    selectedItems: [],
+    rtl: false,
+    selection: (function() {
+      var items;
+      items = this.get('selectedItems');
+      if (items == null) {
+        return [];
+      }
+      if (Array.isArray(items)) {
+        return items;
+      } else {
+        return [items];
+      }
+    }).property('selectedItems'),
+    itemViewClass: Ember.CollectionView.extend({
+      tagName: ['div'],
+      classNames: ['btn-group'],
+      itemViewClass: Ember.View.extend({
+        tagName: 'button',
+        classNames: ['btn', 'btn-default'],
+        attributeBindings: ['disabled'],
+        template: Ember.Handlebars.compile("                {{#if view.content.transitionTo}}                    {{link-to view.content.title view.content.transitionTo tagName='div'}}                {{else}}                    {{view.content.title}}                {{/if}}            "),
+        disabled: (function() {
+          var _base;
+          return typeof (_base = this.get('content.disabled')) === "function" ? _base(this.get('parentView.parentView.selection')) : void 0;
+        }).property('parentView.parentView.selection.@each', 'parentView.parentView.selection'),
+        click: function() {
+          if (this.get('content.clickActionName') != null) {
+            return this.get('controller').send(this.get('content.clickActionName'), this.get('parentView.parentView.selection'));
+          } else if (this.get('content.click')) {
+            return this.get('content.click')(this.get('parentView.parentView.selection'));
+          }
+        }
+      })
+    })
+  });
+
+  Ember.Handlebars.helper('bs-items-action-bar', Bootstrap.ItemsActionBar);
+
+}).call(this);
+
+;(function() {
+  Bootstrap.BsLabelComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
+    layoutName: 'components/bs-label',
+    tagName: 'span',
+    classNames: ['label'],
+    classTypePrefix: 'label'
+  });
+
+  Ember.Handlebars.helper('bs-label', Bootstrap.BsLabelComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-label"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
+
+
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "content", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  
+});
+;(function() {
+  Bootstrap.BsListGroupComponent = Bootstrap.ItemsView.extend({
+    tagName: 'ul',
+    classNames: ['list-group'],
+    itemViewClass: Bootstrap.ItemView.extend(Bootstrap.ItemSelection, {
+      classNames: ['list-group-item'],
+      template: Ember.Handlebars.compile('{{#if view.badge}}\n    {{bs-badge contentBinding="view.badge"}}\n{{/if}}\n{{#if view.sub}}\n    <h4 class="list-group-item-heading">{{view.title}}</h4>\n    <p class="list-group-item-text">{{view.sub}}</p>\n{{else}}\n    {{view.title}}\n{{/if}}'),
+      badge: (function() {
+        var content;
+        content = this.get('content');
+        if (!(Ember.typeOf(content) === 'instance' || Ember.canInvoke(content, 'get'))) {
+          return null;
+        }
+        return content.get('badge');
+      }).property('content'),
+      sub: (function() {
+        var content;
+        content = this.get('content');
+        if (!(Ember.typeOf(content) === 'instance' || Ember.canInvoke(content, 'get'))) {
+          return null;
+        }
+        return content.get('sub');
+      }).property('content')
+    })
+  });
+
+  Ember.Handlebars.helper('bs-list-group', Bootstrap.BsListGroupComponent);
+
+}).call(this);
+
+;/*
+Modal component.
+*/
+
+
+(function() {
+  Bootstrap.BsModalComponent = Ember.Component.extend(Ember.Evented, {
+    layoutName: 'components/bs-modal',
+    classNames: ['modal'],
+    attributeBindings: ['role', 'aria-labelledby', 'isAriaHidden:aria-hidden', "ariaLabelledBy:aria-labelledby"],
+    isAriaHidden: (function() {
+      return "" + (this.get('isVisible'));
+    }).property('isVisible'),
+    modalBackdrop: '<div class="modal-backdrop fade in"></div>',
+    role: 'dialog',
+    footerViews: [],
+    backdrop: true,
+    title: null,
+    isVisible: false,
+    manual: false,
+    didInsertElement: function() {
+      var name;
+      this._super();
+      this.setupBinders();
+      name = this.get('name');
+      Ember.assert("Modal name is required for modal view " + (this.get('elementId')), this.get('name'));
+      if (name == null) {
+        name = this.get('elementId');
+      }
+      Bootstrap.ModalManager.add(name, this);
+      if (this.manual) {
+        return this.show();
+      }
+    },
+    becameVisible: function() {
+      if (this.get("backdrop")) {
+        return this.appendBackdrop();
+      }
+    },
+    becameHidden: function() {
+      if (this._backdrop) {
+        return this._backdrop.remove();
+      }
+    },
+    appendBackdrop: function() {
+      var parentElement;
+      parentElement = this.$().parent();
+      return this._backdrop = Em.$(this.modalBackdrop).appendTo(parentElement);
+    },
+    show: function() {
+      return this.set('isVisible', true);
+    },
+    hide: function() {
+      return this.set('isVisible', false);
+    },
+    toggle: function() {
+      return this.toggleProperty('isVisible');
+    },
+    click: function(event) {
+      var target, targetDismiss;
+      target = event.target;
+      targetDismiss = target.getAttribute("data-dismiss");
+      if (targetDismiss === 'modal') {
+        return this.close();
+      }
+    },
+    keyPressed: function(event) {
+      if (event.keyCode === 27) {
+        return this.close(event);
+      }
+    },
+    close: function(event) {
+      if (this.get('manual')) {
+        this.destroy();
+      } else {
+        this.hide();
+      }
+      return this.trigger('closed');
+    },
+    willDestroyElement: function() {
+      var name;
+      this.removeHandlers();
+      name = this.get('name');
+      if (name == null) {
+        name = this.get('elementId');
+      }
+      Bootstrap.ModalManager.remove(name, this);
+      if (this._backdrop) {
+        return this._backdrop.remove();
+      }
+    },
+    removeHandlers: function() {
+      return jQuery(window.document).unbind("keyup", this._keyUpHandler);
+    },
+    setupBinders: function() {
+      var handler,
+        _this = this;
+      handler = function(event) {
+        return _this.keyPressed(event);
+      };
+      jQuery(window.document).bind("keyup", handler);
+      return this._keyUpHandler = handler;
+    }
+  });
+
+  /*
+  Bootstrap.BsModalComponent = Bootstrap.BsModalComponent.reopenClass(
+      build: (options) ->
+          options = {}  unless options
+          options.manual = true
+          modalPane = @create(options)
+          modalPane.append()
+  )
+  */
+
+
+  Bootstrap.ModalManager = Ember.Object.create({
+    add: function(name, modalInstance) {
+      return this.set(name, modalInstance);
+    },
+    register: function(name, modalInstance) {
+      this.add(name, modalInstance);
+      return modalInstance.appendTo(modalInstance.get('targetObject').namespace.rootElement);
+    },
+    remove: function(name) {
+      return this.set(name, null);
+    },
+    close: function(name) {
+      return this.get(name).close();
+    },
+    hide: function(name) {
+      return this.get(name).hide();
+    },
+    show: function(name) {
+      return this.get(name).show();
+    },
+    toggle: function(name) {
+      return this.get(name).toggle();
+    },
+    confirm: function(controller, title, message, confirmButtonTitle, cancelButtonTitle) {
+      var body, buttons;
+      if (confirmButtonTitle == null) {
+        confirmButtonTitle = "Confirm";
+      }
+      if (cancelButtonTitle == null) {
+        cancelButtonTitle = "Cancel";
+      }
+      body = Ember.View.extend({
+        template: Ember.Handlebars.compile(message || "Are you sure you would like to perform this action?")
+      });
+      buttons = [
+        Ember.Object.create({
+          title: confirmButtonTitle,
+          clicked: "modalConfirmed",
+          dismiss: 'modal'
+        }), Ember.Object.create({
+          title: cancelButtonTitle,
+          clicked: "modalCanceled",
+          dismiss: 'modal'
+        })
+      ];
+      return this.open('confirm-modal', title || 'Confirmation required!', body, buttons, controller);
+    },
+    openModal: function(modalView, options) {
+      var instance, rootElement;
+      if (options == null) {
+        options = {};
+      }
+      rootElement = options.rootElement || '.ember-application';
+      instance = modalView.create(options);
+      return instance.appendTo(rootElement);
+    },
+    open: function(name, title, view, footerButtons, controller) {
+      var cl, modalComponent, template;
+      cl = controller.container.lookup('component-lookup:main');
+      modalComponent = cl.lookupFactory('bs-modal', controller.get('container')).create();
+      modalComponent.setProperties({
+        name: name,
+        title: title,
+        manual: true,
+        footerButtons: footerButtons,
+        targetObject: controller
+      });
+      if (Ember.typeOf(view) === 'string') {
+        template = controller.container.lookup("template:" + view);
+        Ember.assert("Template " + view + " was specified for Modal but template could not be found.", template);
+        if (template) {
+          modalComponent.setProperties({
+            body: Ember.View.extend({
+              template: template,
+              controller: controller
+            })
+          });
+        }
+      } else if (Ember.typeOf(view) === 'class') {
+        modalComponent.setProperties({
+          body: view,
+          controller: controller
+        });
+      }
+      return modalComponent.appendTo(controller.namespace.rootElement);
+    }
+  });
+
+  Ember.Application.initializer({
+    name: 'bs-modal',
+    initialize: function(container, application) {
+      return container.register('component:bs-modal', Bootstrap.BsModalComponent);
+    }
+  });
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-modal"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n                    <i ");
+  hashContexts = {'class': depth0};
+  hashTypes = {'class': "STRING"};
+  options = {hash:{
+    'class': ("titleIconClasses")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
+  data.buffer.push("></i>\n                ");
+  return buffer;
+  }
+
+function program3(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.view.call(depth0, "view.body", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n            ");
+  return buffer;
+  }
+
+function program5(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n            ");
+  return buffer;
+  }
+
+function program7(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n                ");
+  hashContexts = {'content': depth0,'targetObjectBinding': depth0};
+  hashTypes = {'content': "ID",'targetObjectBinding': "STRING"};
+  options = {hash:{
+    'content': (""),
+    'targetObjectBinding': ("view.targetObject")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bs-button'] || depth0['bs-button']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bs-button", options))));
+  data.buffer.push("\n            ");
+  return buffer;
+  }
+
+function program9(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers.view.call(depth0, "", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n            ");
+  return buffer;
+  }
+
+  data.buffer.push("<div class=\"modal-dialog\">\n    <div class=\"modal-content\">\n        <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>\n            <h4 class=\"modal-title\">\n                ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "titleIconClasses", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n                ");
+  hashContexts = {'unescaped': depth0};
+  hashTypes = {'unescaped': "STRING"};
+  stack1 = helpers._triageMustache.call(depth0, "title", {hash:{
+    'unescaped': ("true")
+  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n            </h4>\n        </div>\n        <div class=\"modal-body\">\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "body", {hash:{},inverse:self.program(5, program5, data),fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n        </div>\n        <div class=\"modal-footer\">\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers.each.call(depth0, "footerButtons", {hash:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n            ");
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers.each.call(depth0, "footerViews", {hash:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  data.buffer.push("\n        </div>\n    </div>\n</div>");
+  return buffer;
+  
+});
+;(function() {
+  Bootstrap.BsPill = Bootstrap.ItemView.extend(Bootstrap.NavItem, Bootstrap.ItemSelection, {
+    template: Ember.Handlebars.compile('{{#if view.content.linkTo}}\n    {{#if view.parentView.dynamicLink}}\n        {{#link-to view.content.linkTo model}}{{view.title}}{{/link-to}}\n    {{else}}\n        {{#link-to view.content.linkTo}}{{view.title}}{{/link-to}}\n    {{/if}}\n{{else}}\n    {{view view.pillAsLinkView}}\n{{/if}}'),
+    pillAsLinkView: Ember.View.extend({
+      tagName: 'a',
+      template: Ember.Handlebars.compile('{{view.parentView.title}}'),
+      attributeBindings: ['href'],
+      href: "#"
+    })
+  });
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsPills = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
+    navType: 'pills',
+    classNameBindings: ['stacked:nav-stacked', 'justified:nav-justified'],
+    attributeBindings: ['style'],
+    itemViewClass: Bootstrap.BsPill
+  });
+
+  Ember.Handlebars.helper('bs-pills', Bootstrap.BsPills);
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsTabPane = Bootstrap.ItemPaneView.extend();
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsTabsPanes = Bootstrap.ItemsPanesView.extend({
+    classNames: ['tab-content'],
+    itemViewClass: Bootstrap.BsTabPane
+  });
+
+  Ember.Handlebars.helper('bs-tabs-panes', Bootstrap.BsTabsPanes);
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsTabs = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
+    navType: 'tabs',
+    classNameBindings: ['justified:nav-justified'],
+    attributeBindings: ['style'],
+    itemViewClass: Bootstrap.BsPill
+  });
+
+  Ember.Handlebars.helper('bs-tabs', Bootstrap.BsTabs);
+
+}).call(this);
+
+;/*
+A view that displays notification (messages).
+
+Currently a single notification is displayed as an Alert on top of the screen, each notification in a time.
+*/
+
+
+(function() {
+  Bootstrap.NotificationsView = Ember.CollectionView.extend({
+    classNames: ['notifications'],
+    attributeBindings: ['style'],
+    contentBinding: 'Bootstrap.NM.content',
+    showTime: 2000,
+    fadeInTime: 500,
+    fadeOutTime: 3000,
+    showTimeTimeoutId: null,
+    /*
+    itemViewClass: Bootstrap.BsAlertComponent.extend(
+        messageBinding: 'content.message'
+        typeBinding: 'content.type'
+        fadeInTimeBinding: 'parentView.fadeInTime'
+        isVisible: false
+    
+        didInsertElement: ->
+            @$().fadeIn(@get('fadeInTime'))
+    )
+    */
+
+    itemViewClass: Ember.View.extend({
+      classNames: ['alert', 'notification'],
+      template: Ember.Handlebars.compile('{{view.content.message}}'),
+      classNameBindings: ["alertType"],
+      isVisible: false,
+      alertType: (function() {
+        return this.get('content').get('classType');
+      }).property('content'),
+      didInsertElement: function() {
+        return this.$().fadeIn(this.get('fadeInTime'));
+      }
+    }),
+    contentChanged: (function() {
+      if (this.get('content').length > 0) {
+        return this.resetShowTime();
+      }
+    }).observes('content.length'),
+    resetShowTime: function() {
+      var _this = this;
+      this.$().css({
+        display: 'block'
+      });
+      if (this.$().is(":animated")) {
+        this.$().stop().animate({
+          opacity: "100"
+        });
+      }
+      if (this.showTimeTimeoutId != null) {
+        clearTimeout(this.showTimeTimeoutId);
+      }
+      return this.showTimeTimeoutId = setTimeout(function() {
+        return _this.fadeOut(_this);
+      }, this.showTime);
+    },
+    fadeOut: function(that) {
+      return that.$().fadeOut(that.fadeOutTime, function() {
+        return that.get('content').clear();
+      });
+    },
+    mouseEnter: function() {
+      if (this.$().is(":animated")) {
+        return this.$().stop().animate({
+          opacity: "100"
+        });
+      }
+    },
+    mouseLeave: function() {
+      return this.resetShowTime();
+    }
+  });
+
+  Ember.Handlebars.helper('bs-notifications', Bootstrap.NotificationsView);
+
+  Bootstrap.NM = Bootstrap.NotificationManager = Ember.Object.create({
+    content: Ember.A(),
+    push: function(message, type) {
+      var notif;
+      type = type != null ? type : type = 'info';
+      notif = Bootstrap.Notification.create({
+        message: message,
+        type: type
+      });
+      return this.get('content').pushObject(notif);
+    }
+  });
+
+  /*
+  This object represents a notification to be displayed.
+  Notification(s) are added into the NotificationQueue by the pushNotification function.
+  */
+
+
+  Bootstrap.Notification = Ember.Object.extend({
+    classType: (function() {
+      if (this.type != null) {
+        return "alert-" + this.type;
+      } else {
+        return null;
+      }
+    }).property('type').cacheable()
+  });
+
+}).call(this);
+
+;(function() {
+  var popoverTemplate, template, tooltipTemplate;
+
+  popoverTemplate = '' + '<div class="arrow"></div>' + '{{#if title}}<h3 class="popover-title">{{title}}</h3>{{/if}}' + '<div class="popover-content">' + '{{#if template}}' + '   {{partial partialTemplateName}}' + '{{else}}' + '   {{#if content}}' + '       {{#if html}}' + '           {{{content}}}' + '       {{else}}' + '           {{content}}' + '       {{/if}}' + '   {{else}}' + '       {{yield}}' + '   {{/if}}' + '{{/if}}' + '    </div>';
+
+  Ember.TEMPLATES["components/bs-popover"] = Ember.Handlebars.compile(popoverTemplate);
+
+  tooltipTemplate = '' + '<div class="tooltip-arrow"></div>' + '<div class="tooltip-inner">' + '{{#if html}}' + '   {{{content}}}' + '{{else}}' + '   {{content}}' + '{{/if}}' + '</div>';
+
+  Ember.TEMPLATES["components/bs-tooltip"] = Ember.Handlebars.compile(tooltipTemplate);
+
+  Bootstrap.BsPopoverComponent = Ember.Component.extend({
+    layoutName: 'components/bs-popover',
+    classNames: "popover",
+    classNameBindings: ["fade", "in", "top", "left", "right", "bottom"],
+    top: (function() {
+      return this.get("realPlacement") === "top";
+    }).property("realPlacement"),
+    left: (function() {
+      return this.get("realPlacement") === "left";
+    }).property("realPlacement"),
+    right: (function() {
+      return this.get("realPlacement") === "right";
+    }).property("realPlacement"),
+    bottom: (function() {
+      return this.get("realPlacement") === "bottom";
+    }).property("realPlacement"),
+    titleBinding: "data.title",
+    content: Ember.computed.alias('data.content'),
+    html: false,
+    delay: 0,
+    animation: true,
+    fade: (function() {
+      return this.get("animation");
+    }).property("animation"),
+    "in": (function() {
+      return this.get("isVisible");
+    }).property("isVisible"),
+    placement: (function() {
+      return this.get("data.placement") || "top";
+    }).property("data.placement"),
+    $element: null,
+    $tip: null,
+    inserted: false,
+    styleUpdater: (function() {
+      var actualHeight, actualWidth, calculatedOffset, placement, pos;
+      if (!this.$tip || !this.get("isVisible")) {
+        return;
+      }
+      this.$tip.css({
+        top: 0,
+        left: 0,
+        display: "block"
+      }).addClass(this.get("realPlacement"));
+      placement = this.get("realPlacement");
+      pos = this.getPosition();
+      actualWidth = this.$tip[0].offsetWidth;
+      actualHeight = this.$tip[0].offsetHeight;
+      calculatedOffset = this.getCalculatedOffset(placement, pos, actualWidth, actualHeight);
+      this.$tip.css("top", calculatedOffset.top);
+      this.$tip.css("left", calculatedOffset.left);
+      if (this.firstTime) {
+        this.firstTime = false;
+        this.styleUpdater();
+        return this.firstTime = true;
+      }
+    }).observes("content", "realPlacement", "inserted", "isVisible"),
+    init: function() {
+      var name, tpl;
+      this._super();
+      this.set("html", this.get("data.html") || false);
+      this.set("template", this.get("data.template") !== undefined);
+      if (this.get("template")) {
+        name = "components/bs-popover/partial-content-" + this.get("tip_id");
+        tpl = this.get("data.template");
+        if (typeof tpl === "function") {
+          Ember.TEMPLATES[name] = tpl;
+        } else {
+          Ember.TEMPLATES[name] = Ember.Handlebars.compile(tpl);
+        }
+        return this.set("partialTemplateName", name);
+      }
+    },
+    didInsertElement: function() {
+      var name,
+        _this = this;
+      this.$tip = this.$();
+      name = Bootstrap.TooltipBoxManager.attribute;
+      name = "[" + name + "='" + this.get("tip_id") + "']";
+      this.$element = $(name);
+      this.set("inserted", true);
+      if (this.get("data.trigger") === "hover" && this.get("data.sticky")) {
+        this.$().on("mouseenter", function() {
+          return clearTimeout(Bootstrap.TooltipBoxManager.timeout);
+        });
+      }
+      this.$().on("mouseleave", function() {
+        return Bootstrap.TooltipBoxManager.removeTip(_this.get("tip_id"));
+      });
+      return this.$().find("img").load(function() {
+        return _this.afterRender();
+      });
+    },
+    afterRender: function() {
+      return this.notifyPropertyChange("content");
+    },
+    realPlacement: (function() {
+      var $parent, actualHeight, actualWidth, autoPlace, autoToken, docScroll, orgPlacement, parentHeight, parentLeft, parentWidth, placement, pos;
+      if (!this.$tip) {
+        return null;
+      }
+      placement = this.get("placement") || "";
+      autoToken = /\s?auto?\s?/i;
+      autoPlace = autoToken.test(placement);
+      if (autoPlace) {
+        placement = placement.replace(autoToken, "") || "top";
+      }
+      pos = this.getPosition();
+      actualWidth = this.$tip[0].offsetWidth;
+      actualHeight = this.$tip[0].offsetHeight;
+      if (autoPlace) {
+        $parent = this.$element.parent();
+        orgPlacement = placement;
+        docScroll = document.documentElement.scrollTop || document.body.scrollTop;
+        parentWidth = window.innerWidth;
+        parentHeight = window.innerHeight;
+        parentLeft = 0;
+        placement = (placement === "bottom" && pos.top + pos.height + actualHeight - docScroll > parentHeight ? "top" : (placement === "top" && pos.top - docScroll - actualHeight < 0 ? "bottom" : (placement === "right" && pos.right + actualWidth > parentWidth ? "left" : (placement === "left" && pos.left - actualWidth < parentLeft ? "right" : placement))));
+      }
+      return placement;
+    }).property("placement", "inserted"),
+    hasContent: function() {
+      return this.get("title");
+    },
+    getPosition: function() {
+      var el;
+      el = this.$element[0];
+      return $.extend({}, (typeof el.getBoundingClientRect === "function" ? el.getBoundingClientRect() : {
+        width: el.offsetWidth,
+        height: el.offsetHeight
+      }), this.$element.offset());
+    },
+    getCalculatedOffset: function(placement, pos, actualWidth, actualHeight) {
+      if (placement === "bottom") {
+        return {
+          top: pos.top + pos.height,
+          left: pos.left + pos.width / 2 - actualWidth / 2
+        };
+      } else if (placement === "top") {
+        return {
+          top: pos.top - actualHeight,
+          left: pos.left + pos.width / 2 - actualWidth / 2
+        };
+      } else if (placement === "left") {
+        return {
+          top: pos.top + pos.height / 2 - actualHeight / 2,
+          left: pos.left - actualWidth
+        };
+      } else {
+        return {
+          top: pos.top + pos.height / 2 - actualHeight / 2,
+          left: pos.left + pos.width
+        };
+      }
+    },
+    actions: {
+      close: function() {
+        return Bootstrap.TooltipBoxManager.removeTip(this.get("tip_id"));
+      }
+    }
+  });
+
+  Ember.Handlebars.helper('bs-popover', Bootstrap.BsPopoverComponent);
+
+  Bootstrap.BsTooltipComponent = Bootstrap.BsPopoverComponent.extend({
+    classNames: "tooltip",
+    layoutName: 'components/bs-tooltip',
+    init: function() {
+      this._super();
+      this.classNames.removeObject("popover");
+      return this.set("content", this.get("content") || this.get("title"));
+    }
+  });
+
+  Ember.Handlebars.helper('bs-tooltip', Bootstrap.BsTooltipComponent);
+
+  /*
+  The tooltipBox controller is used to render the popovers into the named outlet "bs-tooltip-box"
+  with the template tooltip-box
+  */
+
+
+  Bootstrap.TooltipBoxController = Ember.Controller.extend({
+    popoversBinding: "Bootstrap.TooltipBoxManager.popovers",
+    tooltipsBinding: "Bootstrap.TooltipBoxManager.tooltips"
+  });
+
+  template = "" + "{{#each pop in popovers}}" + "   {{bs-popover" + "       tip_id=pop.tip_id" + "       data=pop.data" + "   }}" + "{{/each}}" + "{{#each pop in tooltips}}" + "   {{bs-tooltip" + "       tip_id=pop.tip_id" + "       data=pop.data" + "   }}" + "{{/each}}";
+
+  Ember.TEMPLATES["bs-tooltip-box"] = Ember.Handlebars.compile(template);
+
+  /*
+  The Manager is based on the code from the emberjs action helper.
+  the tooltip/popover helper sets the attribute TooltipBoxManager.attribute (currently: bootstrap-tip-id)
+  with an id that will be increased with each tip.
+  AfterRender the manager binds a function to each element containing the attribute "bootstrap-tip-id"
+  and on "willClearRender" it will be removed
+  */
+
+
+  Bootstrap.TooltipBoxManager = Ember.Object.create({
+    uuid: 0,
+    attribute: "bootstrap-tip-id",
+    willSetup: false,
+    registeredTips: {},
+    registerTip: function(type, object, options) {
+      var id, self;
+      id = ++this.uuid;
+      self = this;
+      this.registeredTips[id] = {
+        id: id,
+        data: object,
+        eventName: object.trigger || (type === "popover" ? "click" : "hover"),
+        bound: false,
+        type: type,
+        sticky: object.sticky,
+        show: function() {
+          self.showTip(id);
+        },
+        hide: function() {
+          self.hideTip(id, true);
+        },
+        toggle: function() {
+          self.toggleTip(id);
+        }
+      };
+      if (!this.willSetup) {
+        this.willSetup = true;
+        Ember.run.scheduleOnce("afterRender", this, function() {
+          self.setupBindings();
+        });
+      }
+      options.data.view.on("willClearRender", function() {
+        Bootstrap.TooltipBoxManager.removeTip(id);
+        $("[" + self.attribute + "='" + id + "']").unbind();
+        delete Bootstrap.TooltipBoxManager.registeredTips[id];
+      });
+      return id;
+    },
+    setupBindings: function() {
+      var elem, i, pop;
+      for (i in this.registeredTips) {
+        pop = this.registeredTips[i];
+        if (pop.bound === false) {
+          pop.bound = true;
+          elem = $("[" + this.attribute + "='" + i + "']");
+          switch (pop.eventName) {
+            case "click":
+              elem.on("click", $.proxy(pop.toggle, pop));
+              break;
+            case "hover":
+              elem.on("mouseenter", $.proxy(pop.show, pop));
+              elem.on("mouseleave", $.proxy(pop.hide, pop));
+              break;
+            case "focus":
+              elem.on("focusin", $.proxy(pop.show, pop));
+              elem.on("focusout", $.proxy(pop.hide, pop));
+              break;
+            case "manual":
+              pop.data.addObserver("show", pop, function(sender, key) {
+                var value;
+                value = sender.get(key);
+                if (value) {
+                  this.show();
+                } else {
+                  this.hide();
+                }
+              });
+              if (pop.data.show) {
+                this.show();
+              }
+          }
+        }
+      }
+      this.willSetup = false;
+    },
+    popovers: [],
+    tooltips: [],
+    showing: {},
+    timeout: null,
+    showTip: function(id) {
+      var data, obj, type;
+      data = this.registeredTips[id].data;
+      type = this.registeredTips[id].type;
+      if (!this.showing[id]) {
+        this.showing[id] = true;
+        obj = Ember.Object.create({
+          data: data,
+          tip_id: id
+        });
+        if (type === "tooltip") {
+          this.tooltips.pushObject(obj);
+        } else {
+          this.popovers.pushObject(obj);
+        }
+      }
+    },
+    hideTip: function(id, allowTimer) {
+      var data;
+      if (this.showing[id]) {
+        data = this.registeredTips[id].data;
+        if (allowTimer && data.sticky) {
+          this.timedRemove(id);
+        } else {
+          this.removeTip(id);
+        }
+      }
+    },
+    toggleTip: function(id) {
+      if (this.showing[id]) {
+        this.hideTip(id);
+      } else {
+        this.showTip(id);
+      }
+    },
+    timedRemove: function(id) {
+      var self;
+      self = this;
+      this.timeout = setTimeout(function() {
+        self.removeTip(id);
+      }, 100);
+    },
+    removeTip: function(id) {
+      var pop;
+      pop = this.popovers.findProperty("tip_id", id) || this.tooltips.findProperty("tip_id");
+      this.popovers.removeObject(pop);
+      this.tooltips.removeObject(pop);
+      delete this.showing[id];
+    },
+    addFromView: function(view, type, object) {
+      var id, options;
+      if (!view.attributeBindings.contains(Bootstrap.TooltipBoxManager.attribute)) {
+        console.warn("TooltipBoxManager.addFromView: You need to add \"TooltipBoxManager.attribute\" to the attributeBindings!");
+        return;
+      }
+      options = {
+        data: {
+          view: view
+        }
+      };
+      id = Bootstrap.TooltipBoxManager.registerTip(type, object, options);
+      view.set(Bootstrap.TooltipBoxManager.attribute, id);
+    },
+    helper: function(path, object, options) {
+      var binding, keyword, name, o, p, type, value;
+      if ((typeof path === "string") && path !== "") {
+        p = path.split(".");
+        keyword = p[0];
+        o = options.data.keywords[keyword];
+        if (o) {
+          p.removeAt(0);
+          p.insertAt(0, "this");
+          p = p.join(".");
+          object = o.get(p);
+        } else {
+          object = this.get(path);
+        }
+      }
+      if (path instanceof Object) {
+        object = Ember.Object.create({});
+        for (name in path.hash) {
+          value = path.hash[name];
+          type = options.hashTypes[name];
+          if (type === "STRING") {
+            object.set(name, value);
+          } else if (type === "ID") {
+            p = value.split(".");
+            keyword = p[0];
+            o = options.data.keywords[keyword];
+            if (!o) {
+              o = this;
+            } else {
+              p.removeAt(0);
+            }
+            if (!object._bindings) {
+              object._bindings = o;
+            }
+            p.insertAt(0, "_bindings");
+            p = p.join(".");
+            object[name] = "";
+            binding = Ember.Binding.from(p).to(name);
+            binding.connect(object);
+          }
+        }
+      }
+      return object;
+    }
+  });
+
+  Ember.Handlebars.registerHelper("bs-bind-popover", function(path) {
+    var id, object, options;
+    options = arguments[arguments.length - 1];
+    object = this;
+    object = Bootstrap.TooltipBoxManager.helper.call(this, path, object, options);
+    id = Bootstrap.TooltipBoxManager.registerTip("popover", object, options);
+    return new Ember.Handlebars.SafeString(Bootstrap.TooltipBoxManager.attribute + "='" + id + "'");
+  });
+
+  Ember.Handlebars.registerHelper("bs-bind-tooltip", function(path) {
+    var id, object, options;
+    options = arguments[arguments.length - 1];
+    object = this;
+    object = Bootstrap.TooltipBoxManager.helper.call(this, path, object, options);
+    id = Bootstrap.TooltipBoxManager.registerTip("tooltip", object, options);
+    return new Ember.Handlebars.SafeString(Bootstrap.TooltipBoxManager.attribute + "='" + id + "'");
+  });
+
+}).call(this);
+
+;/*
+Parent component of a progressbar component
+*/
+
+
+(function() {
+  Bootstrap.BsProgressComponent = Ember.Component.extend({
+    layoutName: 'components/bs-progress',
+    classNames: ['progress'],
+    classNameBindings: ['animated:active', 'stripped:progress-striped'],
+    progress: null,
+    stripped: false,
+    animated: false,
+    "default": (function() {
+      return this.progress;
+    }).property('progress')
+  });
+
+  Ember.Handlebars.helper('bs-progress', Bootstrap.BsProgressComponent);
+
+}).call(this);
+
+(function() {
+  Bootstrap.BsProgressbarComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
+    layoutName: 'components/bs-progressbar',
+    classNames: ['progress-bar'],
+    attributeBindings: ['style', 'role', 'aria-valuemin', 'ariaValueNow:aria-valuenow', 'aria-valuemax'],
+    classTypePrefix: 'progress-bar',
+    role: 'progressbar',
+    'aria-valuemin': 0,
+    'aria-valuemax': 100,
+    init: function() {
+      return this._super();
+    },
+    style: (function() {
+      return "width:" + this.progress + "%;";
+    }).property('progress').cacheable(),
+    ariaValueNow: (function() {
+      return this.progress;
+    }).property('progress').cacheable()
+  });
+
+  Ember.Handlebars.helper('bs-progressbar', Bootstrap.BsProgressbarComponent);
+
+}).call(this);
+
+this["Ember"] = this["Ember"] || {};
+this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
+
+this["Ember"]["TEMPLATES"]["components/bs-progress"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = '', stack1, hashContexts, hashTypes, options;
+  data.buffer.push("\n    ");
+  hashContexts = {'progress': depth0,'type': depth0};
+  hashTypes = {'progress': "ID",'type': "ID"};
+  options = {hash:{
+    'progress': ("progress"),
+    'type': ("type")
+  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
+  data.buffer.push(escapeExpression(((stack1 = helpers['bs-progressbar'] || depth0['bs-progressbar']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bs-progressbar", options))));
+  data.buffer.push("\n");
+  return buffer;
+  }
+
+function program3(depth0,data) {
+  
+  var buffer = '', hashTypes, hashContexts;
+  data.buffer.push("\n    ");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("\n");
+  return buffer;
+  }
+
+  hashTypes = {};
+  hashContexts = {};
+  stack1 = helpers['if'].call(depth0, "default", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
+  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+  else { data.buffer.push(''); }
+  
+});
+
+this["Ember"]["TEMPLATES"]["components/bs-progressbar"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
+this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
+  var buffer = '', hashTypes, hashContexts, escapeExpression=this.escapeExpression;
+
+
+  data.buffer.push("<span class=\"sr-only\">");
+  hashTypes = {};
+  hashContexts = {};
+  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "progress", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
+  data.buffer.push("% Complete</span>");
+  return buffer;
+  
+});
+;(function() {
+  Bootstrap.BsWizardStep = Bootstrap.ItemView.extend(Bootstrap.ItemSelection, Bootstrap.NavItem, {
+    classNames: ['wizard-step'],
+    classNameBindings: ['completed'],
+    completed: false,
+    template: Ember.Handlebars.compile(['{{view view.stepAsLink}}'].join("\n")),
+    stepAsLink: Ember.View.extend({
+      tagName: 'a',
+      template: Ember.Handlebars.compile('{{view.parentView.title}}'),
+      attributeBindings: ['href'],
+      href: "#"
+    })
+  });
+
+  Bootstrap.BsWizardSteps = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
+    navType: 'pills',
+    classNames: ['wizard-steps'],
+    itemViewClass: Bootstrap.BsWizardStep,
+    currentItemIdx: (function() {
+      var i, selected, selectedItem, view, _i, _len, _ref;
+      selected = this.get('selected');
+      i = 0;
+      _ref = this._childViews;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        view = _ref[_i];
+        if (view.get('content') === selected) {
+          selectedItem = view;
+          break;
+        }
+        i++;
+      }
+      if (selectedItem) {
+        return i;
+      } else {
+        return null;
+      }
+    }).property('selected')
+  });
+
+  Bootstrap.BsWizardStepPane = Bootstrap.ItemPaneView.extend();
+
+  Bootstrap.BsWizardStepsPanes = Bootstrap.ItemsPanesView.extend({
+    classNames: ['wizard-panes'],
+    itemViewClass: Bootstrap.BsWizardStepPane
+  });
+
+  Bootstrap.BsWizardComponent = Ember.ContainerView.extend(Ember.TargetActionSupport, {
+    classNames: ['wizard'],
+    childViews: ['steps', 'panes', 'controls'],
+    prevAllowed: true,
+    items: (function() {
+      var _ref;
+      return (_ref = this._childViews) != null ? _ref[0] : void 0;
+    }).property('content'),
+    panes: (function() {
+      return this._childViews[1];
+    }).property('content'),
+    steps: Bootstrap.BsWizardSteps.extend({
+      contentBinding: 'parentView.content',
+      selectedBinding: 'parentView.selected'
+    }),
+    panes: Bootstrap.BsWizardStepsPanes.extend({
+      contentBinding: 'parentView.content'
+    }),
+    controls: Ember.ContainerView.extend({
+      childViews: ['prev', 'next', 'finish'],
+      prev: Bootstrap.BsButtonComponent.extend({
+        layoutName: 'components/bs-button',
+        title: 'Prev',
+        size: 'xs',
+        "data-rel": 'PREV',
+        isVisible: (function() {
+          return this.get('parentView').get('parentView').get('hasPrev');
+        }).property('parentView.parentView.items.selected')
+      }),
+      next: Bootstrap.BsButtonComponent.extend({
+        layoutName: 'components/bs-button',
+        title: 'Next',
+        size: 'xs',
+        "data-rel": 'NEXT',
+        isVisible: (function() {
+          return this.get('parentView').get('parentView').get('hasNext');
+        }).property('parentView.parentView.items.selected')
+      }),
+      finish: Bootstrap.BsButtonComponent.extend({
+        layoutName: 'components/bs-button',
+        title: 'Finish',
+        size: 'xs',
+        "data-rel": 'FINISH',
+        isVisible: (function() {
+          return this.get('parentView').get('parentView').get('isLast');
+        }).property('parentView.parentView.items.selected')
+      })
+    }),
+    currentStepIdx: (function() {
+      return this.get('items').get('currentItemIdx');
+    }).property('items.selected'),
+    willInsertElement: function() {
+      this.get('panes').set('items-id', this.get('items').get('elementId'));
+      return this.get('items').set('default', this.get('items')._childViews[0].get('content').get('title'));
+    },
+    click: function(event) {
+      var b;
+      b = event.target.getAttribute("data-rel");
+      if (b === 'PREV') {
+        this.prev();
+      }
+      if (b === 'NEXT') {
+        this.next();
+      }
+      if (b === 'FINISH') {
+        return this.close();
+      }
+    },
+    next: function() {
+      var currIdx;
+      if (this.get('hasNext')) {
+        this.stepCompleted(this.get('currentStepIdx'));
+        currIdx = this.get('currentStepIdx') + 1;
+        this.move(currIdx);
+        return this.triggerAction({
+          action: 'onNext',
+          actionContext: this.get('targetObject')
+        });
+      }
+    },
+    prev: function() {
+      var currIdx;
+      if (this.get('hasPrev')) {
+        currIdx = this.get('currentStepIdx') - 1;
+        this.stepCompleted(currIdx, false);
+        this.move(currIdx);
+        return this.triggerAction({
+          action: 'onPrev',
+          actionContext: this.get('targetObject')
+        });
+      }
+    },
+    move: function(idx) {
+      var _ref, _ref1;
+      return (_ref = this._childViews[0]) != null ? _ref.set('selected', (_ref1 = this._childViews[0]._childViews[idx]) != null ? _ref1.get('content') : void 0) : void 0;
+    },
+    hasNext: (function() {
+      return this.get('items')._childViews.length > this.get('currentStepIdx') + 1;
+    }).property('currentStepIdx'),
+    hasPrev: (function() {
+      this.get('currentStepIdx') > 0;
+      return this.get('currentStepIdx') > 0 && this.get('prevAllowed');
+    }).property('currentStepIdx'),
+    isLast: (function() {
+      return this.get('items')._childViews.length === this.get('currentStepIdx') + 1;
+    }).property('currentStepIdx'),
+    close: (function() {
+      this.triggerAction({
+        action: 'onFinish',
+        actionContext: this.get('targetObject')
+      });
+      return this.destroy();
+    }),
+    stepCompleted: function(idx, compl) {
+      if (compl == null) {
+        compl = true;
+      }
+      return this._childViews[0]._childViews[idx].set('completed', compl);
+    }
+  });
+
+  Bootstrap.BsWizardComponent = Bootstrap.BsWizardComponent.reopenClass({
+    build: function(options) {
+      var wizard;
+      if (!options) {
+        options = {};
+      }
+      options.manual = true;
+      wizard = this.create(options);
+      return wizard.append();
+    }
+  });
+
+  Ember.Handlebars.helper('bs-wizard', Bootstrap.BsWizardComponent);
+
+}).call(this);
+
+;/* globals Bootstrap */
+
+define('bootstrap', [], function() {
+  "use strict";
+
+  return {
+    'default': Bootstrap
+  };
+});
+
 ;define("ic-ajax",
   ["ember","exports"],
   function(__dependency1__, __exports__) {
@@ -63582,6 +66283,3800 @@ define("ember/load-initializers",
       };
     }
   });
+;(function(global) {
+  var define = global.define;
+  var require = global.require;
+  var Ember = global.Ember;
+  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
+    Ember = require('ember');
+  }
+
+Ember.libraries.register('Ember Simple Auth', '0.7.2');
+
+define("simple-auth/authenticators/base", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+      The base for all authenticators. __This serves as a starting point for
+      implementing custom authenticators and must not be used directly.__
+
+      The authenticator authenticates the session. The actual mechanism used to do
+      this might e.g. be posting a set of credentials to a server and in exchange
+      retrieving an access token, initiating authentication against an external
+      provider like Facebook etc. and depends on the specific authenticator. Any
+      data that the authenticator receives upon successful authentication and
+      resolves with from the
+      [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)
+      method is stored in the session and can then be used by the authorizer (see
+      [`Authorizers.Base`](#SimpleAuth-Authorizers-Base)).
+
+      The authenticator also decides whether a set of data that was restored from
+      the session store (see
+      [`Stores.Base`](#SimpleAuth-Stores-Base)) is sufficient for the session to be
+      authenticated or not.
+
+      __Custom authenticators have to be registered with Ember's dependency
+      injection container__ so that the session can retrieve an instance, e.g.:
+
+      ```js
+      import Base from 'simple-auth/authenticators/base';
+
+      var CustomAuthenticator = Base.extend({
+        ...
+      });
+
+      Ember.Application.initializer({
+        name: 'authentication',
+        initialize: function(container, application) {
+          container.register('authenticator:custom', CustomAuthenticator);
+        }
+      });
+      ```
+
+      ```js
+      // app/controllers/login.js
+      import AuthenticationControllerMixin from 'simple-auth/mixins/authentication-controller-mixin';
+
+      export default Ember.Controller.extend(AuthenticationControllerMixin, {
+        authenticator: 'authenticator:custom'
+      });
+      ```
+
+      @class Base
+      @namespace SimpleAuth.Authenticators
+      @module simple-auth/authenticators/base
+      @extends Ember.Object
+      @uses Ember.Evented
+    */
+    __exports__["default"] = Ember.Object.extend(Ember.Evented, {
+      /**
+        __Triggered when the data that constitutes the session is updated by the
+        authenticator__. This might happen e.g. because the authenticator refreshes
+        it or an event from is triggered from an external authentication provider.
+        The session automatically catches that event, passes the updated data back
+        to the authenticator's
+        [SimpleAuth.Authenticators.Base#restore](#SimpleAuth-Authenticators-Base-restore)
+        method and handles the result of that invocation accordingly.
+
+        @event sessionDataUpdated
+        @param {Object} data The updated session data
+      */
+      /**
+        __Triggered when the data that constitutes the session is invalidated by
+        the authenticator__. This might happen e.g. because the date expires or an
+        event is triggered from an external authentication provider. The session
+        automatically catches that event and invalidates itself.
+
+        @event sessionDataInvalidated
+        @param {Object} data The updated session data
+      */
+
+      /**
+        Restores the session from a set of properties. __This method is invoked by
+        the session either after the application starts up and session data was
+        restored from the store__ or when properties in the store have changed due
+        to external events (e.g. in another tab) and the new set of properties
+        needs to be re-checked for whether it still constitutes an authenticated
+        session.
+
+        __This method returns a promise. A resolving promise will result in the
+        session being authenticated.__ Any properties the promise resolves with
+        will be saved in and accessible via the session. In most cases the `data`
+        argument will simply be forwarded through the promise. A rejecting promise
+        indicates that authentication failed and the session will remain unchanged.
+
+        `SimpleAuth.Authenticators.Base`'s implementation always returns a
+        rejecting promise.
+
+        @method restore
+        @param {Object} data The data to restore the session from
+        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
+      */
+      restore: function(data) {
+        return new Ember.RSVP.reject();
+      },
+
+      /**
+        Authenticates the session with the specified `options`. These options vary
+        depending on the actual authentication mechanism the authenticator
+        implements (e.g. a set of credentials or a Facebook account id etc.). __The
+        session will invoke this method when an action in the application triggers
+        authentication__ (see
+        [SimpleAuth.AuthenticationControllerMixin.actions#authenticate](#SimpleAuth-AuthenticationControllerMixin-authenticate)).
+
+        __This method returns a promise. A resolving promise will result in the
+        session being authenticated.__ Any properties the promise resolves with
+        will be saved in and accessible via the session. A rejecting promise
+        indicates that authentication failed and the session will remain unchanged.
+
+        `SimpleAuth.Authenticators.Base`'s implementation always returns a
+        rejecting promise and thus never authenticates the session.
+
+        @method authenticate
+        @param {Any} [...options] The arguments that the authenticator requires to authenticate the session
+        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
+      */
+      authenticate: function(options) {
+        return new Ember.RSVP.reject();
+      },
+
+      /**
+        This callback is invoked when the session is invalidated. While the session
+        will invalidate itself and clear all session properties, it might be
+        necessary for some authenticators to perform additional tasks (e.g.
+        invalidating an access token on the server), which should be done in this
+        method.
+
+        __This method returns a promise. A resolving promise will result in the
+        session being invalidated.__ A rejecting promise will result in the session
+        invalidation being intercepted and the session being left authenticated.
+
+        `SimpleAuth.Authenticators.Base`'s implementation always returns a
+        resolving promise and thus never intercepts session invalidation.
+
+        @method invalidate
+        @param {Object} data The data that the session currently holds
+        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being invalidated
+      */
+      invalidate: function(data) {
+        return new Ember.RSVP.resolve();
+      }
+    });
+  });
+define("simple-auth/authorizers/base", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+      The base for all authorizers. __This serves as a starting point for
+      implementing custom authorizers and must not be used directly.__
+
+      __The authorizer preprocesses all XHR requests__ (except ones to 3rd party
+      origins, see
+      [Configuration.crossOriginWhitelist](#SimpleAuth-Configuration-crossOriginWhitelist))
+      and makes sure they have the required data attached that allows the server to
+      identify the user making the request. This data might be an HTTP header,
+      query string parameters in the URL, cookies etc. __The authorizer has to fit
+      the authenticator__ (see
+      [SimpleAuth.Authenticators.Base](#SimpleAuth-Authenticators-Base))
+      as it relies on data that the authenticator acquires during authentication.
+
+      @class Base
+      @namespace SimpleAuth.Authorizers
+      @module simple-auth/authorizers/base
+      @extends Ember.Object
+    */
+    __exports__["default"] = Ember.Object.extend({
+      /**
+        The session the authorizer gets the data it needs to authorize requests
+        from.
+
+        @property session
+        @readOnly
+        @type SimpleAuth.Session
+        @default the session instance
+      */
+      session: null,
+
+      /**
+        Authorizes an XHR request by adding some sort of secret information that
+        allows the server to identify the user making the request (e.g. a token in
+        the `Authorization` header or some other secret in the query string etc.).
+
+        `SimpleAuth.Authorizers.Base`'s implementation does nothing.
+
+        @method authorize
+        @param {jqXHR} jqXHR The XHR request to authorize (see http://api.jquery.com/jQuery.ajax/#jqXHR)
+        @param {Object} requestOptions The options as provided to the `$.ajax` method (see http://api.jquery.com/jQuery.ajaxPrefilter/)
+      */
+      authorize: function(jqXHR, requestOptions) {
+      }
+    });
+  });
+define("simple-auth/configuration", 
+  ["simple-auth/utils/load-config","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var loadConfig = __dependency1__["default"];
+
+    var defaults = {
+      authenticationRoute:         'login',
+      routeAfterAuthentication:    'index',
+      routeIfAlreadyAuthenticated: 'index',
+      sessionPropertyName:         'session',
+      authorizer:                  null,
+      session:                     'simple-auth-session:main',
+      store:                       'simple-auth-session-store:local-storage',
+      localStorageKey:             'ember_simple_auth:session',
+      crossOriginWhitelist:        [],
+      applicationRootUrl:          null
+    };
+
+    /**
+      Ember Simple Auth's configuration object.
+
+      To change any of these values, set them on the application's environment
+      object:
+
+      ```js
+      ENV['simple-auth'] = {
+        authenticationRoute: 'sign-in'
+      };
+      ```
+
+      @class Configuration
+      @namespace SimpleAuth
+      @module simple-auth/configuration
+    */
+    __exports__["default"] = {
+      /**
+        The route to transition to for authentication.
+
+        @property authenticationRoute
+        @readOnly
+        @static
+        @type String
+        @default 'login'
+      */
+      authenticationRoute: defaults.authenticationRoute,
+
+      /**
+        The route to transition to after successful authentication.
+
+        @property routeAfterAuthentication
+        @readOnly
+        @static
+        @type String
+        @default 'index'
+      */
+      routeAfterAuthentication: defaults.routeAfterAuthentication,
+
+      /**
+        The route to transition to if a route that implements
+        [`UnauthenticatedRouteMixin`](#SimpleAuth-UnauthenticatedRouteMixin) is
+        accessed when the session is authenticated.
+
+        @property routeIfAlreadyAuthenticated
+        @readOnly
+        @static
+        @type String
+        @default 'index'
+      */
+      routeIfAlreadyAuthenticated: defaults.routeIfAlreadyAuthenticated,
+
+      /**
+        The name of the property that the session is injected with into routes and
+        controllers.
+
+        @property sessionPropertyName
+        @readOnly
+        @static
+        @type String
+        @default 'session'
+      */
+      sessionPropertyName: defaults.sessionPropertyName,
+
+      /**
+        The authorizer factory to use as it is registered with Ember's container,
+        see
+        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register);
+        when the application does not interact with a server that requires
+        authorized requests, no auzthorizer is needed.
+
+        @property authorizer
+        @readOnly
+        @static
+        @type String
+        @default null
+      */
+      authorizer: defaults.authorizer,
+
+      /**
+        The session factory to use as it is registered with Ember's container,
+        see
+        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
+
+        @property session
+        @readOnly
+        @static
+        @type String
+        @default 'simple-auth-session:main'
+      */
+      session: defaults.session,
+
+      /**
+        The store factory to use as it is registered with Ember's container, see
+        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
+
+        @property store
+        @readOnly
+        @static
+        @type String
+        @default simple-auth-session-store:local-storage
+      */
+      store: defaults.store,
+
+      /**
+        The key the store stores the data in.
+
+        @property key
+        @type String
+        @default 'ember_simple_auth:session'
+      */
+      localStorageKey: defaults.localStorageKey,
+
+      /**
+        Ember Simple Auth will never authorize requests going to a different origin
+        than the one the Ember.js application was loaded from; to explicitely
+        enable authorization for additional origins, whitelist those origins with
+        this setting. _Beware that origins consist of protocol, host and port (port
+        can be left out when it is 80 for HTTP or 443 for HTTPS)_, e.g.
+        `http://domain.com:1234`, `https://external.net`. You can also whitelist
+        all external origins by specifying `[*]`.
+
+        @property crossOriginWhitelist
+        @readOnly
+        @static
+        @type Array
+        @default []
+      */
+      crossOriginWhitelist: defaults.crossOriginWhitelist,
+
+      /**
+        @property applicationRootUrl
+        @private
+      */
+      applicationRootUrl: defaults.applicationRootUrl,
+
+      /**
+        @method load
+        @private
+      */
+      load: loadConfig(defaults, function(container, config) {
+        this.applicationRootUrl = container.lookup('router:main').get('rootURL') || '/';
+      })
+    };
+  });
+define("simple-auth/ember", 
+  ["./initializer"],
+  function(__dependency1__) {
+    "use strict";
+    var initializer = __dependency1__["default"];
+
+    Ember.onLoad('Ember.Application', function(Application) {
+      Application.initializer(initializer);
+    });
+  });
+define("simple-auth/initializer", 
+  ["./configuration","./utils/get-global-config","./setup","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+    var getGlobalConfig = __dependency2__["default"];
+    var setup = __dependency3__["default"];
+
+    __exports__["default"] = {
+      name:       'simple-auth',
+      initialize: function(container, application) {
+        var config = getGlobalConfig('simple-auth');
+        Configuration.load(container, config);
+        setup(container, application);
+      }
+    };
+  });
+define("simple-auth/mixins/application-route-mixin", 
+  ["./../configuration","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+
+    var routeEntryComplete = false;
+
+    /**
+      The mixin for the application route; defines actions to authenticate the
+      session as well as to invalidate it. These actions can be used in all
+      templates like this:
+
+      ```handlebars
+      {{#if session.isAuthenticated}}
+        <a {{ action 'invalidateSession' }}>Logout</a>
+      {{else}}
+        <a {{ action 'authenticateSession' }}>Login</a>
+      {{/if}}
+      ```
+
+      or in the case that the application uses a dedicated route for logging in:
+
+      ```handlebars
+      {{#if session.isAuthenticated}}
+        <a {{ action 'invalidateSession' }}>Logout</a>
+      {{else}}
+        {{#link-to 'login'}}Login{{/link-to}}
+      {{/if}}
+      ```
+
+      This mixin also defines actions that are triggered whenever the session is
+      successfully authenticated or invalidated and whenever authentication or
+      invalidation fails. These actions provide a good starting point for adding
+      custom behavior to these events.
+
+      __When this mixin is used and the application's `ApplicationRoute` defines
+      the `beforeModel` method, that method has to call `_super`.__
+
+      Using this mixin is optional. Without using it, the session's events will not
+      be automatically translated into route actions but would have to be handled
+      inidivially, e.g. in an initializer:
+
+      ```js
+      Ember.Application.initializer({
+        name:       'authentication',
+        after:      'simple-auth',
+        initialize: function(container, application) {
+          var applicationRoute = container.lookup('route:application');
+          var session          = container.lookup('simple-auth-session:main');
+          // handle the session events
+          session.on('sessionAuthenticationSucceeded', function() {
+            applicationRoute.transitionTo('index');
+          });
+        }
+      });
+      ```
+
+      @class ApplicationRouteMixin
+      @namespace SimpleAuth
+      @module simple-auth/mixins/application-route-mixin
+      @extends Ember.Mixin
+      @static
+    */
+    __exports__["default"] = Ember.Mixin.create({
+      /**
+        @method activate
+        @private
+      */
+      activate: function () {
+        routeEntryComplete = true;
+        this._super();
+      },
+
+      /**
+        @method beforeModel
+        @private
+      */
+      beforeModel: function(transition) {
+        this._super(transition);
+        if (!this.get('_authEventListenersAssigned')) {
+          this.set('_authEventListenersAssigned', true);
+          var _this = this;
+          Ember.A([
+            'sessionAuthenticationSucceeded',
+            'sessionAuthenticationFailed',
+            'sessionInvalidationSucceeded',
+            'sessionInvalidationFailed',
+            'authorizationFailed'
+          ]).forEach(function(event) {
+            _this.get(Configuration.sessionPropertyName).on(event, function(error) {
+              Array.prototype.unshift.call(arguments, event);
+              var target = routeEntryComplete ? _this : transition;
+              target.send.apply(target, arguments);
+            });
+          });
+        }
+      },
+
+      actions: {
+        /**
+          This action triggers transition to the
+          [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
+          It can be used in templates as shown above. It is also triggered
+          automatically by the
+          [`AuthenticatedRouteMixin`](#SimpleAuth-AuthenticatedRouteMixin) whenever
+          a route that requries authentication is accessed but the session is not
+          currently authenticated.
+
+          __For an application that works without an authentication route (e.g.
+          because it opens a new window to handle authentication there), this is
+          the action to override, e.g.:__
+
+          ```js
+          App.ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, {
+            actions: {
+              authenticateSession: function() {
+                this.get('session').authenticate('authenticator:custom', {});
+              }
+            }
+          });
+          ```
+
+          @method actions.authenticateSession
+        */
+        authenticateSession: function() {
+          this.transitionTo(Configuration.authenticationRoute);
+        },
+
+        /**
+          This action is triggered whenever the session is successfully
+          authenticated. If there is a transition that was previously intercepted
+          by
+          [`AuthenticatedRouteMixin#beforeModel`](#SimpleAuth-AuthenticatedRouteMixin-beforeModel)
+          it will retry it. If there is no such transition, this action transitions
+          to the
+          [`Configuration.routeAfterAuthentication`](#SimpleAuth-Configuration-routeAfterAuthentication).
+
+          @method actions.sessionAuthenticationSucceeded
+        */
+        sessionAuthenticationSucceeded: function() {
+          var attemptedTransition = this.get(Configuration.sessionPropertyName).get('attemptedTransition');
+          if (attemptedTransition) {
+            attemptedTransition.retry();
+            this.get(Configuration.sessionPropertyName).set('attemptedTransition', null);
+          } else {
+            this.transitionTo(Configuration.routeAfterAuthentication);
+          }
+        },
+
+        /**
+          This action is triggered whenever session authentication fails. The
+          `error` argument is the error object that the promise the authenticator
+          returns rejects with. (see
+          [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
+
+          It can be overridden to display error messages etc.:
+
+          ```js
+          App.ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, {
+            actions: {
+              sessionAuthenticationFailed: function(error) {
+                this.controllerFor('application').set('loginErrorMessage', error.message);
+              }
+            }
+          });
+          ```
+
+          @method actions.sessionAuthenticationFailed
+          @param {any} error The error the promise returned by the authenticator rejects with, see [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)
+        */
+        sessionAuthenticationFailed: function(error) {
+        },
+
+        /**
+          This action invalidates the session (see
+          [`Session#invalidate`](#SimpleAuth-Session-invalidate)).
+          If invalidation succeeds, it reloads the application (see
+          [`ApplicationRouteMixin#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)).
+
+          @method actions.invalidateSession
+        */
+        invalidateSession: function() {
+          this.get(Configuration.sessionPropertyName).invalidate();
+        },
+
+        /**
+          This action is invoked whenever the session is successfully invalidated.
+          It reloads the Ember.js application by redirecting the browser to the
+          application's root URL so that all in-memory data (such as Ember Data
+          stores etc.) gets cleared. The root URL is automatically retrieved from
+          the Ember.js application's router (see
+          http://emberjs.com/guides/routing/#toc_specifying-a-root-url).
+
+          If your Ember.js application will be used in an environment where the
+          users don't have direct access to any data stored on the client (e.g.
+          [cordova](http://cordova.apache.org)) this action can be overridden to
+          simply transition to the `'index'` route.
+
+          @method actions.sessionInvalidationSucceeded
+        */
+        sessionInvalidationSucceeded: function() {
+          if (!Ember.testing) {
+            window.location.replace(Configuration.applicationRootUrl);
+          }
+        },
+
+        /**
+          This action is invoked whenever session invalidation fails. This mainly
+          serves as an extension point to add custom behavior and does nothing by
+          default.
+
+          @method actions.sessionInvalidationFailed
+          @param {any} error The error the promise returned by the authenticator rejects with, see [`Authenticators.Base#invalidate`](#SimpleAuth-Authenticators-Base-invalidate)
+        */
+        sessionInvalidationFailed: function(error) {
+        },
+
+        /**
+          This action is invoked when an authorization error occurs (which is
+          the case __when the server responds with HTTP status 401__). It
+          invalidates the session and reloads the application (see
+          [`ApplicationRouteMixin#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)).
+
+          @method actions.authorizationFailed
+        */
+        authorizationFailed: function() {
+          if (this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
+            this.get(Configuration.sessionPropertyName).invalidate();
+          }
+        }
+      }
+    });
+  });
+define("simple-auth/mixins/authenticated-route-mixin", 
+  ["./../configuration","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+
+    /**
+      This mixin is for routes that require the session to be authenticated to be
+      accessible. Including this mixin in a route automatically adds a hook that
+      enforces the session to be authenticated and redirects to the
+      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute)
+      if it is not.
+
+      ```js
+      // app/routes/protected.js
+      import AuthenticatedRouteMixin from 'simple-auth/mixins/authenticated-route-mixin';
+
+      export default Ember.Route.extend(AuthenticatedRouteMixin);
+      ```
+
+      `AuthenticatedRouteMixin` performs the redirect in the `beforeModel` method
+      so that in all methods executed after that the session is guaranteed to be
+      authenticated. __If `beforeModel` is overridden, ensure that the custom
+      implementation calls `this._super(transition)`__ so that the session
+      enforcement code is actually executed.
+
+      @class AuthenticatedRouteMixin
+      @namespace SimpleAuth
+      @module simple-auth/mixins/authenticated-route-mixin
+      @extends Ember.Mixin
+      @static
+    */
+    __exports__["default"] = Ember.Mixin.create({
+      /**
+        This method implements the enforcement of the session being authenticated.
+        If the session is not authenticated, the current transition will be aborted
+        and a redirect will be triggered to the
+        [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
+        The method also saves the intercepted transition so that it can be retried
+        after the session has been authenticated (see
+        [`ApplicationRouteMixin#sessionAuthenticationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationSucceeded)).
+
+        @method beforeModel
+        @param {Transition} transition The transition that lead to this route
+      */
+      beforeModel: function(transition) {
+        this._super(transition);
+        if (!this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
+          transition.abort();
+          this.get(Configuration.sessionPropertyName).set('attemptedTransition', transition);
+          Ember.assert('The route configured as Configuration.authenticationRoute cannot implement the AuthenticatedRouteMixin mixin as that leads to an infinite transitioning loop.', this.get('routeName') !== Configuration.authenticationRoute);
+          transition.send('authenticateSession');
+        }
+      }
+    });
+  });
+define("simple-auth/mixins/authentication-controller-mixin", 
+  ["./../configuration","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+
+    /**
+      This mixin is for the controller that handles the
+      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
+      It provides the `authenticate` action that will authenticate the session with
+      the configured authenticator (see
+      [`AuthenticationControllerMixin#authenticator`](#SimpleAuth-AuthenticationControllerMixin-authenticator)).
+
+      @class AuthenticationControllerMixin
+      @namespace SimpleAuth
+      @module simple-auth/mixins/authentication-controller-mixin
+      @extends Ember.Mixin
+    */
+    __exports__["default"] = Ember.Mixin.create({
+      /**
+        The authenticator factory to use as it is registered with Ember's
+        container, see
+        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
+
+        @property authenticator
+        @type String
+        @default null
+      */
+      authenticator: null,
+
+      actions: {
+        /**
+          This action will authenticate the session with the configured
+          authenticator (see
+          [`AuthenticationControllerMixin#authenticator`](#SimpleAuth-AuthenticationControllerMixin-authenticator),
+          [`Session#authenticate`](#SimpleAuth-Session-authenticate)).
+
+          @method actions.authenticate
+          @param {Object} options Any options the authenticator needs to authenticate the session
+        */
+        authenticate: function(options) {
+          var authenticator = this.get('authenticator');
+          Ember.assert('AuthenticationControllerMixin/LoginControllerMixin require the authenticator property to be set on the controller', !Ember.isEmpty(authenticator));
+          return this.get(Configuration.sessionPropertyName).authenticate(authenticator, options);
+        }
+      }
+    });
+  });
+define("simple-auth/mixins/login-controller-mixin", 
+  ["./../configuration","./authentication-controller-mixin","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+    var AuthenticationControllerMixin = __dependency2__["default"];
+
+    /**
+      This mixin is for the controller that handles the
+      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute)
+      if the used authentication mechanism works with a login form that asks for
+      user credentials. It provides the `authenticate` action that will
+      authenticate the session with the configured authenticator when invoked.
+      __This is a specialization of
+      [`AuthenticationControllerMixin`](#SimpleAuth-AuthenticationControllerMixin).__
+
+      Accompanying the controller that this mixin is mixed in the application needs
+      to have a `login` template with the fields `identification` and `password` as
+      well as an actionable button or link that triggers the `authenticate` action,
+      e.g.:
+
+      ```handlebars
+      <form {{action 'authenticate' on='submit'}}>
+        <label for="identification">Login</label>
+        {{input value=identification placeholder='Enter Login'}}
+        <label for="password">Password</label>
+        {{input value=password placeholder='Enter Password' type='password'}}
+        <button type="submit">Login</button>
+      </form>
+      ```
+
+      @class LoginControllerMixin
+      @namespace SimpleAuth
+      @module simple-auth/mixins/login-controller-mixin
+      @extends SimpleAuth.AuthenticationControllerMixin
+    */
+    __exports__["default"] = Ember.Mixin.create(AuthenticationControllerMixin, {
+      actions: {
+        /**
+          This action will authenticate the session with the configured
+          authenticator (see
+          [AuthenticationControllerMixin#authenticator](#SimpleAuth-Authentication-authenticator))
+          if both `identification` and `password` are non-empty. It passes both
+          values to the authenticator.
+
+          __The action also resets the `password` property so sensitive data does
+          not stay in memory for longer than necessary.__
+
+          @method actions.authenticate
+        */
+        authenticate: function() {
+          var data = this.getProperties('identification', 'password');
+          this.set('password', null);
+          return this._super(data);
+        }
+      }
+    });
+  });
+define("simple-auth/mixins/unauthenticated-route-mixin", 
+  ["./../configuration","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+
+    /**
+      This mixin is for routes that should only be accessible if the session is
+      not authenticated. This is e.g. the case for the login route that should not
+      be accessible when the session is already authenticated. Including this mixin
+      in a route automatically adds a hook that redirects to the
+      [`Configuration.routeIfAlreadyAuthenticated`](#SimpleAuth-Configuration-routeIfAlreadyAuthenticated),
+      which defaults to `'index'`.
+
+      ```js
+      // app/routes/login.js
+      import UnauthenticatedRouteMixin from 'simple-auth/mixins/unauthenticated-route-mixin';
+
+      export default Ember.Route.extend(UnauthenticatedRouteMixin);
+      ```
+
+      `UnauthenticatedRouteMixin` performs the redirect in the `beforeModel`
+      method. __If `beforeModel` is overridden, ensure that the custom
+      implementation calls `this._super(transition)`__.
+
+      @class UnauthenticatedRouteMixin
+      @namespace SimpleAuth
+      @module simple-auth/mixins/unauthenticated-route-mixin
+      @extends Ember.Mixin
+      @static
+    */
+    __exports__["default"] = Ember.Mixin.create({
+      /**
+        This method implements the enforcement of the session not being
+        authenticated. If the session is authenticated, the current transition will
+        be aborted and a redirect will be triggered to the
+        [`Configuration.routeIfAlreadyAuthenticated`](#SimpleAuth-Configuration-routeIfAlreadyAuthenticated).
+
+        @method beforeModel
+        @param {Transition} transition The transition that lead to this route
+      */
+      beforeModel: function(transition) {
+        if (this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
+          transition.abort();
+          Ember.assert('The route configured as Configuration.routeIfAlreadyAuthenticated cannot implement the UnauthenticatedRouteMixin mixin as that leads to an infinite transitioning loop.', this.get('routeName') !== Configuration.routeIfAlreadyAuthenticated);
+          this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
+        }
+      }
+    });
+  });
+define("simple-auth/session", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+      __The session provides access to the current authentication state as well as
+      any data the authenticator resolved with__ (see
+      [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
+      It is created when Ember Simple Auth is set up and __injected into all
+      controllers and routes so that these parts of the application can always
+      access the current authentication state and other data__, depending on the
+      authenticator in use and whether the session is actually authenticated (see
+      [`Authenticators.Base`](#SimpleAuth-Authenticators-Base)).
+
+      The session also provides methods to authenticate and to invalidate itself
+      (see
+      [`Session#authenticate`](#SimpleAuth-Session-authenticate),
+      [`Session#invaldiate`](#SimpleAuth-Session-invaldiate)).
+      These methods are usually invoked through actions from routes or controllers.
+      To authenticate the session manually, simple call the
+      [`Session#authenticate`](#SimpleAuth-Session-authenticate)
+      method with the authenticator factory to use as well as any options the
+      authenticator needs to authenticate the session:
+
+      ```js
+      this.get('session').authenticate('authenticator:custom', { some: 'option' }).then(function() {
+        // authentication was successful
+      }, function() {
+        // authentication failed
+      });
+      ```
+
+      The session also observes the store and - if it is authenticated - the
+      authenticator for changes (see
+      [`Authenticators.Base`](#SimpleAuth-Authenticators-Base)
+      end [`Stores.Base`](#SimpleAuth-Stores-Base)).
+
+      @class Session
+      @namespace SimpleAuth
+      @module simple-auth/session
+      @extends Ember.ObjectProxy
+      @uses Ember.Evented
+    */
+    __exports__["default"] = Ember.ObjectProxy.extend(Ember.Evented, {
+      /**
+        Triggered __whenever the session is successfully authenticated__. When the
+        application uses the
+        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
+        [`ApplicationRouteMixin.actions#sessionAuthenticationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationSucceeded)
+        will be invoked whenever this event is triggered.
+
+        @event sessionAuthenticationSucceeded
+      */
+      /**
+        Triggered __whenever an attempt to authenticate the session fails__. When
+        the application uses the
+        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
+        [`ApplicationRouteMixin.actions#sessionAuthenticationFailed`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationFailed)
+        will be invoked whenever this event is triggered.
+
+        @event sessionAuthenticationFailed
+        @param {Object} error The error object; this depends on the authenticator in use, see [SimpleAuth.Authenticators.Base#authenticate](#SimpleAuth-Authenticators-Base-authenticate)
+      */
+      /**
+        Triggered __whenever the session is successfully invalidated__. When the
+        application uses the
+        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
+        [`ApplicationRouteMixin.actions#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)
+        will be invoked whenever this event is triggered.
+
+        @event sessionInvalidationSucceeded
+      */
+      /**
+        Triggered __whenever an attempt to invalidate the session fails__. When the
+        application uses the
+        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
+        [`ApplicationRouteMixin.actions#sessionInvalidationFailed`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationFailed)
+        will be invoked whenever this event is triggered.
+
+        @event sessionInvalidationFailed
+        @param {Object} error The error object; this depends on the authenticator in use, see [SimpleAuth.Authenticators.Base#invalidate](#SimpleAuth-Authenticators-Base-invalidate)
+      */
+      /**
+        Triggered __whenever the server rejects the authorization information
+        passed with a request and responds with status 401__. When the application
+        uses the
+        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
+        [`ApplicationRouteMixin.actions#authorizationFailed`](#SimpleAuth-ApplicationRouteMixin-authorizationFailed)
+        will be invoked whenever this event is triggered.
+
+        @event authorizationFailed
+      */
+
+      /**
+        The authenticator factory to use as it is registered with Ember's
+        container, see
+        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
+        This is only set when the session is currently authenticated.
+
+        @property authenticator
+        @type String
+        @readOnly
+        @default null
+      */
+      authenticator: null,
+      /**
+        The store used to persist session properties.
+
+        @property store
+        @type SimpleAuth.Stores.Base
+        @readOnly
+        @default null
+      */
+      store: null,
+      /**
+        The Ember.js container,
+
+        @property container
+        @type Container
+        @readOnly
+        @default null
+      */
+      container: null,
+      /**
+        Returns whether the session is currently authenticated.
+
+        @property isAuthenticated
+        @type Boolean
+        @readOnly
+        @default false
+      */
+      isAuthenticated: false,
+      /**
+        @property attemptedTransition
+        @private
+      */
+      attemptedTransition: null,
+      /**
+        @property content
+        @private
+      */
+      content: {},
+
+      /**
+        Authenticates the session with an `authenticator` and appropriate
+        `options`. __This delegates the actual authentication work to the
+        `authenticator`__ and handles the returned promise accordingly (see
+        [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
+        All data the authenticator resolves with will be saved in the session.
+
+        __This method returns a promise itself. A resolving promise indicates that
+        the session was successfully authenticated__ while a rejecting promise
+        indicates that authentication failed and the session remains
+        unauthenticated.
+
+        @method authenticate
+        @param {String} authenticator The authenticator factory to use as it is registered with Ember's container, see [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register)
+        @param {Any} [...args] The arguments to pass to the authenticator; depending on the type of authenticator these might be a set of credentials, a Facebook OAuth Token, etc.
+        @return {Ember.RSVP.Promise} A promise that resolves when the session was authenticated successfully
+      */
+      authenticate: function() {
+        var args          = Array.prototype.slice.call(arguments);
+        var authenticator = args.shift();
+        Ember.assert('Session#authenticate requires the authenticator factory to be specified, was ' + authenticator, !Ember.isEmpty(authenticator));
+        var _this            = this;
+        var theAuthenticator = this.container.lookup(authenticator);
+        Ember.assert('No authenticator for factory "' + authenticator + '" could be found', !Ember.isNone(theAuthenticator));
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          theAuthenticator.authenticate.apply(theAuthenticator, args).then(function(content) {
+            _this.setup(authenticator, content, true);
+            resolve();
+          }, function(error) {
+            _this.clear();
+            _this.trigger('sessionAuthenticationFailed', error);
+            reject(error);
+          });
+        });
+      },
+
+      /**
+        Invalidates the session with the authenticator it is currently
+        authenticated with (see
+        [`Session#authenticator`](#SimpleAuth-Session-authenticator)). __This
+        invokes the authenticator's `invalidate` method and handles the returned
+        promise accordingly__ (see
+        [`Authenticators.Base#invalidate`](#SimpleAuth-Authenticators-Base-invalidate)).
+
+        __This method returns a promise itself. A resolving promise indicates that
+        the session was successfully invalidated__ while a rejecting promise
+        indicates that the promise returned by the `authenticator` rejected and
+        thus invalidation was cancelled. In that case the session remains
+        authenticated. Once the session is successfully invalidated it clears all
+        of its data.
+
+        @method invalidate
+        @return {Ember.RSVP.Promise} A promise that resolves when the session was invalidated successfully
+      */
+      invalidate: function() {
+        Ember.assert('Session#invalidate requires the session to be authenticated', this.get('isAuthenticated'));
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          var authenticator = _this.container.lookup(_this.authenticator);
+          authenticator.invalidate(_this.content).then(function() {
+            authenticator.off('sessionDataUpdated');
+            _this.clear(true);
+            resolve();
+          }, function(error) {
+            _this.trigger('sessionInvalidationFailed', error);
+            reject(error);
+          });
+        });
+      },
+
+      /**
+        @method restore
+        @private
+      */
+      restore: function() {
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          var restoredContent = _this.store.restore();
+          var authenticator   = restoredContent.authenticator;
+          if (!!authenticator) {
+            delete restoredContent.authenticator;
+            _this.container.lookup(authenticator).restore(restoredContent).then(function(content) {
+              _this.setup(authenticator, content);
+              resolve();
+            }, function() {
+              _this.store.clear();
+              reject();
+            });
+          } else {
+            _this.store.clear();
+            reject();
+          }
+        });
+      },
+
+      /**
+        @method setup
+        @private
+      */
+      setup: function(authenticator, content, trigger) {
+        content = Ember.merge(Ember.merge({}, this.content), content);
+        trigger = !!trigger && !this.get('isAuthenticated');
+        this.beginPropertyChanges();
+        this.setProperties({
+          isAuthenticated: true,
+          authenticator:   authenticator,
+          content:         content
+        });
+        this.bindToAuthenticatorEvents();
+        this.updateStore();
+        this.endPropertyChanges();
+        if (trigger) {
+          this.trigger('sessionAuthenticationSucceeded');
+        }
+      },
+
+      /**
+        @method clear
+        @private
+      */
+      clear: function(trigger) {
+        trigger = !!trigger && this.get('isAuthenticated');
+        this.beginPropertyChanges();
+        this.setProperties({
+          isAuthenticated: false,
+          authenticator:   null,
+          content:         {}
+        });
+        this.store.clear();
+        this.endPropertyChanges();
+        if (trigger) {
+          this.trigger('sessionInvalidationSucceeded');
+        }
+      },
+
+      /**
+        @method setUnknownProperty
+        @private
+      */
+      setUnknownProperty: function(key, value) {
+        var result = this._super(key, value);
+        this.updateStore();
+        return result;
+      },
+
+      /**
+        @method updateStore
+        @private
+      */
+      updateStore: function() {
+        var data = this.content;
+        if (!Ember.isEmpty(this.authenticator)) {
+          data = Ember.merge({ authenticator: this.authenticator }, data);
+        }
+        if (!Ember.isEmpty(data)) {
+          this.store.persist(data);
+        }
+      },
+
+      /**
+        @method bindToAuthenticatorEvents
+        @private
+      */
+      bindToAuthenticatorEvents: function() {
+        var _this = this;
+        var authenticator = this.container.lookup(this.authenticator);
+        authenticator.off('sessionDataUpdated');
+        authenticator.off('sessionDataInvalidated');
+        authenticator.on('sessionDataUpdated', function(content) {
+          _this.setup(_this.authenticator, content);
+        });
+        authenticator.on('sessionDataInvalidated', function(content) {
+          _this.clear(true);
+        });
+      },
+
+      /**
+        @method bindToStoreEvents
+        @private
+      */
+      bindToStoreEvents: function() {
+        var _this = this;
+        this.store.on('sessionDataUpdated', function(content) {
+          var authenticator = content.authenticator;
+          if (!!authenticator) {
+            delete content.authenticator;
+            _this.container.lookup(authenticator).restore(content).then(function(content) {
+              _this.setup(authenticator, content, true);
+            }, function() {
+              _this.clear(true);
+            });
+          } else {
+            _this.clear(true);
+          }
+        });
+      }.observes('store')
+    });
+  });
+define("simple-auth/setup", 
+  ["./configuration","./session","./stores/local-storage","./stores/ephemeral","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+    var Session = __dependency2__["default"];
+    var LocalStorage = __dependency3__["default"];
+    var Ephemeral = __dependency4__["default"];
+
+    function extractLocationOrigin(location) {
+      if (location === '*'){
+          return location;
+      }
+      if (Ember.typeOf(location) === 'string') {
+        var link = document.createElement('a');
+        link.href = location;
+        //IE requires the following line when url is relative.
+        //First assignment of relative url to link.href results in absolute url on link.href but link.hostname and other properties are not set
+        //Second assignment of absolute url to link.href results in link.hostname and other properties being set as expected
+        link.href = link.href;
+        location = link;
+      }
+      var port = location.port;
+      if (Ember.isEmpty(port)) {
+        //need to include the port whether its actually present or not as some versions of IE will always set it
+        port = location.protocol === 'http:' ? '80' : (location.protocol === 'https:' ? '443' : '');
+      }
+      return location.protocol + '//' + location.hostname + (port !== '' ? ':' + port : '');
+    }
+
+    var urlOrigins     = {};
+    var crossOriginWhitelist;
+    function shouldAuthorizeRequest(options) {
+      if (options.crossDomain === false || crossOriginWhitelist.indexOf('*') > -1) {
+        return true;
+      }
+      var urlOrigin = urlOrigins[options.url] = urlOrigins[options.url] || extractLocationOrigin(options.url);
+      return crossOriginWhitelist.indexOf(urlOrigin) > -1;
+    }
+
+    function registerFactories(container) {
+      container.register('simple-auth-session-store:local-storage', LocalStorage);
+      container.register('simple-auth-session-store:ephemeral', Ephemeral);
+      container.register('simple-auth-session:main', Session);
+    }
+
+    function ajaxPrefilter(options, originalOptions, jqXHR) {
+      if (shouldAuthorizeRequest(options)) {
+        jqXHR.__simple_auth_authorized__ = true;
+        ajaxPrefilter.authorizer.authorize(jqXHR, options);
+      }
+    }
+
+    function ajaxError(event, jqXHR, setting, exception) {
+      if (!!jqXHR.__simple_auth_authorized__ && jqXHR.status === 401) {
+        ajaxError.session.trigger('authorizationFailed');
+      }
+    }
+
+    var didSetupAjaxHooks = false;
+
+    /**
+      @method setup
+      @private
+    **/
+    __exports__["default"] = function(container, application) {
+      application.deferReadiness();
+      registerFactories(container);
+
+      var store   = container.lookup(Configuration.store);
+      var session = container.lookup(Configuration.session);
+      session.setProperties({ store: store, container: container });
+      Ember.A(['controller', 'route', 'component']).forEach(function(component) {
+        container.injection(component, Configuration.sessionPropertyName, Configuration.session);
+      });
+
+      crossOriginWhitelist = Ember.A(Configuration.crossOriginWhitelist).map(function(origin) {
+        return extractLocationOrigin(origin);
+      });
+
+      if (!Ember.isEmpty(Configuration.authorizer)) {
+        var authorizer = container.lookup(Configuration.authorizer);
+        Ember.assert('The configured authorizer "' + Configuration.authorizer + '" could not be found in the container.', !Ember.isEmpty(authorizer));
+        authorizer.set('session', session);
+        ajaxPrefilter.authorizer = authorizer;
+        ajaxError.session = session;
+
+        if (!didSetupAjaxHooks) {
+          Ember.$.ajaxPrefilter('+*', ajaxPrefilter);
+          Ember.$(document).ajaxError(ajaxError);
+          didSetupAjaxHooks = true;
+        }
+      } else {
+        Ember.Logger.info('No authorizer was configured for Ember Simple Auth - specify one if backend requests need to be authorized.');
+      }
+
+      var advanceReadiness = function() {
+        application.advanceReadiness();
+      };
+      session.restore().then(advanceReadiness, advanceReadiness);
+    }
+  });
+define("simple-auth/stores/base", 
+  ["../utils/objects-are-equal","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var objectsAreEqual = __dependency1__["default"];
+
+    /**
+      The base for all store types. __This serves as a starting point for
+      implementing custom stores and must not be used directly.__
+
+      Stores are used to persist the session's state so it survives a page reload
+      and is synchronized across multiple tabs or windows of the same application.
+      The store to be used with the application can be configured on the
+      application's environment object:
+
+      ```js
+      ENV['simple-auth'] = {
+        store: 'simple-auth-session-store:local-storage'
+      }
+      ```
+
+      @class Base
+      @namespace SimpleAuth.Stores
+      @module simple-auth/stores/base
+      @extends Ember.Object
+      @uses Ember.Evented
+    */
+    __exports__["default"] = Ember.Object.extend(Ember.Evented, {
+      /**
+        __Triggered when the data that constitutes the session changes in the
+        store. This usually happens because the session is authenticated or
+        invalidated in another tab or window.__ The session automatically catches
+        that event, passes the updated data to its authenticator's
+        [`Authenticators.Base#restore`](#SimpleAuth-Authenticators-Base-restore)
+        method and handles the result of that invocation accordingly.
+
+        @event sessionDataUpdated
+        @param {Object} data The updated session data
+      */
+
+      /**
+        Persists the `data` in the store. This actually replaces all currently
+        stored data.
+
+        `Stores.Base`'s implementation does nothing.
+
+        @method persist
+        @param {Object} data The data to persist
+      */
+      persist: function(data) {
+      },
+
+      /**
+        Restores all data currently saved in the store as a plain object.
+
+        `Stores.Base`'s implementation always returns an empty plain Object.
+
+        @method restore
+        @return {Object} The data currently persisted in the store.
+      */
+      restore: function() {
+        return {};
+      },
+
+      /**
+        Clears the store.
+
+        `Stores.Base`'s implementation does nothing.
+
+        @method clear
+      */
+      clear: function() {
+      }
+    });
+  });
+define("simple-auth/stores/ephemeral", 
+  ["./base","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Base = __dependency1__["default"];
+
+    /**
+      Store that saves its data in memory and thus __is not actually persistent__.
+      It does also not synchronize the session's state across multiple tabs or
+      windows as those cannot share memory.
+
+      __This store is mainly useful for testing.__
+
+      _The factory for this store is registered as
+      `'simple-auth-session-store:ephemeral'` in Ember's container._
+
+      @class Ephemeral
+      @namespace SimpleAuth.Stores
+      @module simple-auth/stores/ephemeral
+      @extends Stores.Base
+    */
+    __exports__["default"] = Base.extend({
+      /**
+        @method init
+        @private
+      */
+      init: function() {
+        this.clear();
+      },
+
+      /**
+        Persists the `data`.
+
+        @method persist
+        @param {Object} data The data to persist
+      */
+      persist: function(data) {
+        this._data = JSON.stringify(data || {});
+      },
+
+      /**
+        Restores all data currently saved as a plain object.
+
+        @method restore
+        @return {Object} All data currently persisted
+      */
+      restore: function() {
+        return JSON.parse(this._data) || {};
+      },
+
+      /**
+        Clears the store.
+
+        @method clear
+      */
+      clear: function() {
+        delete this._data;
+        this._data = '{}';
+      }
+    });
+  });
+define("simple-auth/stores/local-storage", 
+  ["./base","../utils/objects-are-equal","../configuration","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Base = __dependency1__["default"];
+    var objectsAreEqual = __dependency2__["default"];
+    var Configuration = __dependency3__["default"];
+
+    /**
+      Store that saves its data in the browser's `localStorage`.
+
+      _The factory for this store is registered as
+      `'simple-auth-session-store:local-storage'` in Ember's container._
+
+      __`Stores.LocalStorage` is Ember Simple Auth's default store.__
+
+      @class LocalStorage
+      @namespace SimpleAuth.Stores
+      @module simple-auth/stores/local-storage
+      @extends Stores.Base
+    */
+    __exports__["default"] = Base.extend({
+      /**
+        The key the store stores the data in.
+
+        @property key
+        @type String
+        @default 'ember_simple_auth:session'
+      */
+      key: 'ember_simple_auth:session',
+
+      /**
+        @method init
+        @private
+      */
+      init: function() {
+        this.key = Configuration.localStorageKey;
+
+        this.bindToStorageEvents();
+      },
+
+      /**
+        Persists the `data` in the `localStorage`.
+
+        @method persist
+        @param {Object} data The data to persist
+      */
+      persist: function(data) {
+        data = JSON.stringify(data || {});
+        localStorage.setItem(this.key, data);
+        this._lastData = this.restore();
+      },
+
+      /**
+        Restores all data currently saved in the `localStorage` identified by the
+        `keyPrefix` as one plain object.
+
+        @method restore
+        @return {Object} All data currently persisted in the `localStorage`
+      */
+      restore: function() {
+        var data = localStorage.getItem(this.key);
+        return JSON.parse(data) || {};
+      },
+
+      /**
+        Clears the store by deleting all `localStorage` keys prefixed with the
+        `keyPrefix`.
+
+        @method clear
+      */
+      clear: function() {
+        localStorage.removeItem(this.key);
+        this._lastData = {};
+      },
+
+      /**
+        @method bindToStorageEvents
+        @private
+      */
+      bindToStorageEvents: function() {
+        var _this = this;
+        Ember.$(window).bind('storage', function(e) {
+          var data = _this.restore();
+          if (!objectsAreEqual(data, _this._lastData)) {
+            _this._lastData = data;
+            _this.trigger('sessionDataUpdated', data);
+          }
+        });
+      }
+    });
+  });
+define("simple-auth/utils/get-global-config", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var global = (typeof window !== 'undefined') ? window : {};
+
+    __exports__["default"] = function(scope) {
+      return Ember.get(global, 'ENV.' + scope) || {};
+    }
+  });
+define("simple-auth/utils/load-config", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    __exports__["default"] = function(defaults, callback) {
+      return function(container, config) {
+        var wrappedConfig = Ember.Object.create(config);
+        for (var property in this) {
+          if (this.hasOwnProperty(property) && Ember.typeOf(this[property]) !== 'function') {
+            this[property] = wrappedConfig.getWithDefault(property, defaults[property]);
+          }
+        }
+        if (callback) {
+          callback.apply(this, [container, config]);
+        }
+      };
+    }
+  });
+define("simple-auth/utils/objects-are-equal", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /**
+      @method objectsAreEqual
+      @private
+    */
+    function objectsAreEqual(a, b) {
+      if (a === b) {
+        return true;
+      }
+      if (!(a instanceof Object) || !(b instanceof Object)) {
+        return false;
+      }
+      if(a.constructor !== b.constructor) {
+        return false;
+      }
+
+      for (var property in a) {
+        if (!a.hasOwnProperty(property)) {
+          continue;
+        }
+        if (!b.hasOwnProperty(property)) {
+          return false;
+        }
+        if (a[property] === b[property]) {
+          continue;
+        }
+        if (Ember.typeOf(a[property]) !== 'object') {
+          return false;
+        }
+        if (!objectsAreEqual(a[property], b[property])) {
+          return false;
+        }
+      }
+
+      for (property in b) {
+        if (b.hasOwnProperty(property) && !a.hasOwnProperty(property)) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    __exports__["default"] = objectsAreEqual;
+  });
+})(this);
+
+;(function(global) {
+  var define = global.define;
+  var require = global.require;
+  var Ember = global.Ember;
+  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
+    Ember = require('ember');
+  }
+
+Ember.libraries.register('Ember Simple Auth OAuth 2.0', '0.7.2');
+
+define("simple-auth-oauth2/authenticators/oauth2", 
+  ["simple-auth/authenticators/base","./../configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Base = __dependency1__["default"];
+    var Configuration = __dependency2__["default"];
+
+    /**
+      Authenticator that conforms to OAuth 2
+      ([RFC 6749](http://tools.ietf.org/html/rfc6749)), specifically the _"Resource
+      Owner Password Credentials Grant Type"_.
+
+      This authenticator supports access token refresh (see
+      [RFC 6740, section 6](http://tools.ietf.org/html/rfc6749#section-6)).
+
+      _The factory for this authenticator is registered as
+      `'simple-auth-authenticator:oauth2-password-grant'` in Ember's
+      container._
+
+      @class OAuth2
+      @namespace SimpleAuth.Authenticators
+      @module simple-auth-oauth2/authenticators/oauth2
+      @extends Base
+    */
+    __exports__["default"] = Base.extend({
+      /**
+        Triggered when the authenticator refreshes the access token (see
+        [RFC 6740, section 6](http://tools.ietf.org/html/rfc6749#section-6)).
+
+        @event sessionDataUpdated
+        @param {Object} data The updated session data
+      */
+
+      /**
+        The endpoint on the server the authenticator acquires the access token
+        from.
+
+        This value can be configured via
+        [`SimpleAuth.Configuration.OAuth2#serverTokenEndpoint`](#SimpleAuth-Configuration-OAuth2-serverTokenEndpoint).
+
+        @property serverTokenEndpoint
+        @type String
+        @default '/token'
+      */
+      serverTokenEndpoint: '/token',
+
+      /**
+        The endpoint on the server the authenticator uses to revoke tokens. Only
+        set this if the server actually supports token revokation.
+
+        This value can be configured via
+        [`SimpleAuth.Configuration.OAuth2#serverTokenRevocationEndpoint`](#SimpleAuth-Configuration-OAuth2-serverTokenRevocationEndpoint).
+
+        @property serverTokenRevocationEndpoint
+        @type String
+        @default null
+      */
+      serverTokenRevocationEndpoint: null,
+
+      /**
+        Sets whether the authenticator automatically refreshes access tokens.
+
+        This value can be configured via
+        [`SimpleAuth.Configuration.OAuth2#refreshAccessTokens`](#SimpleAuth-Configuration-OAuth2-refreshAccessTokens).
+
+        @property refreshAccessTokens
+        @type Boolean
+        @default true
+      */
+      refreshAccessTokens: true,
+
+      /**
+        @property _refreshTokenTimeout
+        @private
+      */
+      _refreshTokenTimeout: null,
+
+      /**
+        @method init
+        @private
+      */
+      init: function() {
+        this.serverTokenEndpoint           = Configuration.serverTokenEndpoint;
+        this.serverTokenRevocationEndpoint = Configuration.serverTokenRevocationEndpoint;
+        this.refreshAccessTokens           = Configuration.refreshAccessTokens;
+      },
+
+      /**
+        Restores the session from a set of session properties; __will return a
+        resolving promise when there's a non-empty `access_token` in the `data`__
+        and a rejecting promise otherwise.
+
+        This method also schedules automatic token refreshing when there are values
+        for `refresh_token` and `expires_in` in the `data` and automatic token
+        refreshing is not disabled (see
+        [`Authenticators.OAuth2#refreshAccessTokens`](#SimpleAuth-Authenticators-OAuth2-refreshAccessTokens)).
+
+        @method restore
+        @param {Object} data The data to restore the session from
+        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
+      */
+      restore: function(data) {
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          var now = (new Date()).getTime();
+          if (!Ember.isEmpty(data.expires_at) && data.expires_at < now) {
+            if (_this.refreshAccessTokens) {
+              _this.refreshAccessToken(data.expires_in, data.refresh_token).then(function(data) {
+                resolve(data);
+              }, reject);
+            } else {
+              reject();
+            }
+          } else {
+            if (Ember.isEmpty(data.access_token)) {
+              reject();
+            } else {
+              _this.scheduleAccessTokenRefresh(data.expires_in, data.expires_at, data.refresh_token);
+              resolve(data);
+            }
+          }
+        });
+      },
+
+      /**
+        Authenticates the session with the specified `options`; makes a `POST`
+        request to the
+        [`Authenticators.OAuth2#serverTokenEndpoint`](#SimpleAuth-Authenticators-OAuth2-serverTokenEndpoint)
+        with the passed credentials and optional scope and receives the token in
+        response (see http://tools.ietf.org/html/rfc6749#section-4.3).
+
+        __If the credentials are valid (and the optionally requested scope is
+        granted) and thus authentication succeeds, a promise that resolves with the
+        server's response is returned__, otherwise a promise that rejects with the
+        error is returned.
+
+        This method also schedules automatic token refreshing when there are values
+        for `refresh_token` and `expires_in` in the server response and automatic
+        token refreshing is not disabled (see
+        [`Authenticators.OAuth2#refreshAccessTokens`](#SimpleAuth-Authenticators-OAuth2-refreshAccessTokens)).
+
+        @method authenticate
+        @param {Object} options
+        @param {String} options.identification The resource owner username
+        @param {String} options.password The resource owner password
+        @param {String|Array} [options.scope] The scope of the access request (see [RFC 6749, section 3.3](http://tools.ietf.org/html/rfc6749#section-3.3))
+        @return {Ember.RSVP.Promise} A promise that resolves when an access token is successfully acquired from the server and rejects otherwise
+      */
+      authenticate: function(options) {
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          var data = { grant_type: 'password', username: options.identification, password: options.password };
+          if (!Ember.isEmpty(options.scope)) {
+            var scopesString = Ember.makeArray(options.scope).join(' ');
+            Ember.merge(data, { scope: scopesString });
+          }
+          _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
+            Ember.run(function() {
+              var expiresAt = _this.absolutizeExpirationTime(response.expires_in);
+              _this.scheduleAccessTokenRefresh(response.expires_in, expiresAt, response.refresh_token);
+              if (!Ember.isEmpty(expiresAt)) {
+                response = Ember.merge(response, { expires_at: expiresAt });
+              }
+              resolve(response);
+            });
+          }, function(xhr, status, error) {
+            Ember.run(function() {
+              reject(xhr.responseJSON || xhr.responseText);
+            });
+          });
+        });
+      },
+
+      /**
+        Cancels any outstanding automatic token refreshes and returns a resolving
+        promise.
+
+        @method invalidate
+        @param {Object} data The data of the session to be invalidated
+        @return {Ember.RSVP.Promise} A resolving promise
+      */
+      invalidate: function(data) {
+        var _this = this;
+        function success(resolve) {
+          Ember.run.cancel(_this._refreshTokenTimeout);
+          delete _this._refreshTokenTimeout;
+          resolve();
+        }
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          if (!Ember.isEmpty(_this.serverTokenRevocationEndpoint)) {
+            var requests = [];
+            Ember.A(['access_token', 'refresh_token']).forEach(function(tokenType) {
+              if (!Ember.isEmpty(data[tokenType])) {
+                requests.push(_this.makeRequest(_this.serverTokenRevocationEndpoint, {
+                  token_type_hint: tokenType, token: data[tokenType]
+                }));
+              }
+            });
+            Ember.$.when.apply(Ember.$, requests).always(function(responses) {
+              success(resolve);
+            });
+          } else {
+            success(resolve);
+          }
+        });
+      },
+
+      /**
+        Sends an `AJAX` request to the `url`. This will always be a _"POST"_
+        request with content type _"application/x-www-form-urlencoded"_ as
+        specified in [RFC 6749](http://tools.ietf.org/html/rfc6749).
+
+        This method is not meant to be used directly but serves as an extension
+        point to e.g. add _"Client Credentials"_ (see
+        [RFC 6749, section 2.3](http://tools.ietf.org/html/rfc6749#section-2.3)).
+
+        @method makeRequest
+        @param {Object} url The url to send the request to
+        @param {Object} data The data to send with the request, e.g. username and password or the refresh token
+        @return {Deferred object} A Deferred object (see [the jQuery docs](http://api.jquery.com/category/deferred-object/)) that is compatible to Ember.RSVP.Promise; will resolve if the request succeeds, reject otherwise
+        @protected
+      */
+      makeRequest: function(url, data) {
+        return Ember.$.ajax({
+          url:         url,
+          type:        'POST',
+          data:        data,
+          dataType:    'json',
+          contentType: 'application/x-www-form-urlencoded'
+        });
+      },
+
+      /**
+        @method scheduleAccessTokenRefresh
+        @private
+      */
+      scheduleAccessTokenRefresh: function(expiresIn, expiresAt, refreshToken) {
+        var _this = this;
+        if (this.refreshAccessTokens) {
+          var now = (new Date()).getTime();
+          if (Ember.isEmpty(expiresAt) && !Ember.isEmpty(expiresIn)) {
+            expiresAt = new Date(now + expiresIn * 1000).getTime();
+          }
+          var offset = (Math.floor(Math.random() * 5) + 5) * 1000;
+          if (!Ember.isEmpty(refreshToken) && !Ember.isEmpty(expiresAt) && expiresAt > now - offset) {
+            Ember.run.cancel(this._refreshTokenTimeout);
+            delete this._refreshTokenTimeout;
+            if (!Ember.testing) {
+              this._refreshTokenTimeout = Ember.run.later(this, this.refreshAccessToken, expiresIn, refreshToken, expiresAt - now - offset);
+            }
+          }
+        }
+      },
+
+      /**
+        @method refreshAccessToken
+        @private
+      */
+      refreshAccessToken: function(expiresIn, refreshToken) {
+        var _this = this;
+        var data  = { grant_type: 'refresh_token', refresh_token: refreshToken };
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
+            Ember.run(function() {
+              expiresIn     = response.expires_in || expiresIn;
+              refreshToken  = response.refresh_token || refreshToken;
+              var expiresAt = _this.absolutizeExpirationTime(expiresIn);
+              var data      = Ember.merge(response, { expires_in: expiresIn, expires_at: expiresAt, refresh_token: refreshToken });
+              _this.scheduleAccessTokenRefresh(expiresIn, null, refreshToken);
+              _this.trigger('sessionDataUpdated', data);
+              resolve(data);
+            });
+          }, function(xhr, status, error) {
+            Ember.Logger.warn('Access token could not be refreshed - server responded with ' + error + '.');
+            reject();
+          });
+        });
+      },
+
+      /**
+        @method absolutizeExpirationTime
+        @private
+      */
+      absolutizeExpirationTime: function(expiresIn) {
+        if (!Ember.isEmpty(expiresIn)) {
+          return new Date((new Date().getTime()) + expiresIn * 1000).getTime();
+        }
+      }
+    });
+  });
+define("simple-auth-oauth2/authorizers/oauth2", 
+  ["simple-auth/authorizers/base","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Base = __dependency1__["default"];
+
+    /**
+      Authorizer that conforms to OAuth 2
+      ([RFC 6749](http://tools.ietf.org/html/rfc6749)) by sending a bearer token
+      ([RFC 6749](http://tools.ietf.org/html/rfc6750)) in the request's
+      `Authorization` header.
+
+      _The factory for this authorizer is registered as
+      `'simple-auth-authorizer:oauth2-bearer'` in Ember's container._
+
+      @class OAuth2
+      @namespace SimpleAuth.Authorizers
+      @module simple-auth-oauth2/authorizers/oauth2
+      @extends Base
+    */
+    __exports__["default"] = Base.extend({
+      /**
+        Authorizes an XHR request by sending the `access_token` property from the
+        session as a bearer token in the `Authorization` header:
+
+        ```
+        Authorization: Bearer <access_token>
+        ```
+
+        @method authorize
+        @param {jqXHR} jqXHR The XHR request to authorize (see http://api.jquery.com/jQuery.ajax/#jqXHR)
+        @param {Object} requestOptions The options as provided to the `$.ajax` method (see http://api.jquery.com/jQuery.ajaxPrefilter/)
+      */
+      authorize: function(jqXHR, requestOptions) {
+        var accessToken = this.get('session.access_token');
+        if (this.get('session.isAuthenticated') && !Ember.isEmpty(accessToken)) {
+          jqXHR.setRequestHeader('Authorization', 'Bearer ' + accessToken);
+        }
+      }
+    });
+  });
+define("simple-auth-oauth2/configuration", 
+  ["simple-auth/utils/load-config","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var loadConfig = __dependency1__["default"];
+
+    var defaults = {
+      serverTokenEndpoint:           '/token',
+      serverTokenRevocationEndpoint: null,
+      refreshAccessTokens:           true
+    };
+
+    /**
+      Ember Simple Auth OAuth2's configuration object.
+
+      To change any of these values, set them on the application's environment
+      object:
+
+      ```js
+      ENV['simple-auth-oauth2'] = {
+        serverTokenEndpoint: '/some/custom/endpoint'
+      }
+      ```
+
+      @class OAuth2
+      @namespace SimpleAuth.Configuration
+      @module simple-auth/configuration
+    */
+    __exports__["default"] = {
+      /**
+        The endpoint on the server the authenticator acquires the access token
+        from.
+
+        @property serverTokenEndpoint
+        @readOnly
+        @static
+        @type String
+        @default '/token'
+      */
+      serverTokenEndpoint: defaults.serverTokenEndpoint,
+
+      /**
+        The endpoint on the server the authenticator uses to revoke tokens. Only
+        set this if the server actually supports token revokation.
+
+        @property serverTokenRevocationEndpoint
+        @readOnly
+        @static
+        @type String
+        @default null
+      */
+      serverTokenRevocationEndpoint: defaults.serverTokenRevocationEndpoint,
+
+      /**
+        Sets whether the authenticator automatically refreshes access tokens.
+
+        @property refreshAccessTokens
+        @readOnly
+        @static
+        @type Boolean
+        @default true
+      */
+      refreshAccessTokens: defaults.refreshAccessTokens,
+
+      /**
+        @method load
+        @private
+      */
+      load: loadConfig(defaults)
+    };
+  });
+define("simple-auth-oauth2/ember", 
+  ["./initializer"],
+  function(__dependency1__) {
+    "use strict";
+    var initializer = __dependency1__["default"];
+
+    Ember.onLoad('Ember.Application', function(Application) {
+      Application.initializer(initializer);
+    });
+  });
+define("simple-auth-oauth2/initializer", 
+  ["./configuration","simple-auth/utils/get-global-config","simple-auth-oauth2/authenticators/oauth2","simple-auth-oauth2/authorizers/oauth2","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Configuration = __dependency1__["default"];
+    var getGlobalConfig = __dependency2__["default"];
+    var Authenticator = __dependency3__["default"];
+    var Authorizer = __dependency4__["default"];
+
+    __exports__["default"] = {
+      name:       'simple-auth-oauth2',
+      before:     'simple-auth',
+      initialize: function(container, application) {
+        var config = getGlobalConfig('simple-auth-oauth2');
+        Configuration.load(container, config);
+        container.register('simple-auth-authorizer:oauth2-bearer', Authorizer);
+        container.register('simple-auth-authenticator:oauth2-password-grant', Authenticator);
+      }
+    };
+  });
+})(this);
+
+;/**
+ * Torii version: 0.2.2
+ * Built: Mon Nov 17 2014 15:17:01 GMT-0500 (EST)
+ */
+define("torii/adapters/application", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var ApplicationAdapter = Ember.Object.extend({
+
+      open: function(){
+        return new Ember.RSVP.Promise(function(){
+          throw new Error(
+            'The Torii adapter must implement `open` for a session to be opened');
+        });
+      },
+
+      fetch: function(){
+        return new Ember.RSVP.Promise(function(){
+          throw new Error(
+            'The Torii adapter must implement `fetch` for a session to be fetched');
+        });
+      },
+
+      close: function(){
+        return new Ember.RSVP.Promise(function(){
+          throw new Error(
+            'The Torii adapter must implement `close` for a session to be closed');
+        });
+      }
+
+    });
+
+    __exports__["default"] = ApplicationAdapter;
+  });
+define("torii/bootstrap/session", 
+  ["torii/session","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Session = __dependency1__["default"];
+
+    __exports__["default"] = function(container, sessionName){
+      container.register('torii:session', Session);
+      container.injection('torii:session', 'torii', 'torii:main');
+      container.injection('route',      sessionName, 'torii:session');
+      container.injection('controller', sessionName, 'torii:session');
+
+      return container;
+    }
+  });
+define("torii/bootstrap/torii", 
+  ["torii/torii","torii/providers/linked-in-oauth2","torii/providers/google-oauth2","torii/providers/facebook-connect","torii/providers/facebook-oauth2","torii/adapters/application","torii/providers/twitter-oauth1","torii/providers/github-oauth2","torii/services/popup","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
+    "use strict";
+    var Torii = __dependency1__["default"];
+    var LinkedInOauth2Provider = __dependency2__["default"];
+    var GoogleOauth2Provider = __dependency3__["default"];
+    var FacebookConnectProvider = __dependency4__["default"];
+    var FacebookOauth2Provider = __dependency5__["default"];
+    var ApplicationAdapter = __dependency6__["default"];
+    var TwitterProvider = __dependency7__["default"];
+    var GithubOauth2Provider = __dependency8__["default"];
+
+    var PopupService = __dependency9__["default"];
+
+    __exports__["default"] = function(container){
+      container.register('torii:main', Torii);
+      container.register('torii-provider:linked-in-oauth2', LinkedInOauth2Provider);
+      container.register('torii-provider:google-oauth2', GoogleOauth2Provider);
+      container.register('torii-provider:facebook-connect', FacebookConnectProvider);
+      container.register('torii-provider:facebook-oauth2', FacebookOauth2Provider);
+      container.register('torii-provider:twitter', TwitterProvider);
+      container.register('torii-provider:github-oauth2', GithubOauth2Provider);
+      container.register('torii-adapter:application', ApplicationAdapter);
+
+      container.register('torii-service:popup', PopupService);
+
+      container.injection('torii-provider', 'popup', 'torii-service:popup');
+
+      if (window.DS) {
+        container.injection('torii-provider', 'store', 'store:main');
+        container.injection('torii-adapter', 'store', 'store:main');
+      }
+
+      return container;
+    }
+  });
+define("torii/configuration", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var get = Ember.get;
+
+    var configuration       = require("sonatribe-ui/config/environment")["default"].torii || {};
+    configuration.providers = configuration.providers || {};
+
+    function configurable(configKey, defaultValue){
+      return Ember.computed(function(){
+        var namespace = this.get('configNamespace'),
+            fullKey   = namespace ? [namespace, configKey].join('.') : configKey,
+            value     = get(configuration, fullKey);
+        if (typeof value === 'undefined') {
+          if (typeof defaultValue !== 'undefined') {
+            if (typeof defaultValue === 'function') {
+              return defaultValue.call(this);
+            } else {
+              return defaultValue;
+            }
+          } else {
+            throw new Error("Expected configuration value "+fullKey+" to be defined!");
+          }
+        }
+        return value;
+      });
+    }
+
+    __exports__.configurable = configurable;
+
+    __exports__["default"] = configuration;
+  });
+define("torii/initializers/initialize-torii-callback", 
+  ["torii/redirect-handler","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var RedirectHandler = __dependency1__["default"];
+
+    __exports__["default"] = {
+      name: 'torii-callback',
+      before: 'torii',
+      initialize: function(container, app){
+        app.deferReadiness();
+        RedirectHandler.handle(window.location.toString())["catch"](function(){
+          app.advanceReadiness();
+        });
+      }
+    };
+  });
+define("torii/initializers/initialize-torii-session", 
+  ["torii/configuration","torii/bootstrap/session","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var configuration = __dependency1__["default"];
+    var bootstrapSession = __dependency2__["default"];
+
+    __exports__["default"] = {
+      name: 'torii-session',
+      after: 'torii',
+
+      initialize: function(container){
+        if (configuration.sessionServiceName) {
+          bootstrapSession(container, configuration.sessionServiceName);
+          container.injection('adapter', configuration.sessionServiceName, 'torii:session');
+        }
+      }
+    };
+  });
+define("torii/initializers/initialize-torii", 
+  ["torii/bootstrap/torii","torii/configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var bootstrapTorii = __dependency1__["default"];
+    var configuration = __dependency2__["default"];
+
+    var initializer = {
+      name: 'torii',
+      initialize: function(container, app){
+        bootstrapTorii(container);
+
+        // Walk all configured providers and eagerly instantiate
+        // them. This gives providers with initialization side effects
+        // like facebook-connect a chance to load up assets.
+        for (var key in  configuration.providers) {
+          if (configuration.providers.hasOwnProperty(key)) {
+            container.lookup('torii-provider:'+key);
+          }
+        }
+
+        app.inject('route', 'torii', 'torii:main');
+      }
+    };
+
+    if (window.DS) {
+      initializer.after = 'store';
+    }
+
+    __exports__["default"] = initializer;
+  });
+define("torii/lib/load-initializer", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /* global Ember */
+    __exports__["default"] = function(initializer){
+      Ember.onLoad('Ember.Application', function(Application){
+        Application.initializer(initializer);
+      });
+    }
+  });
+define("torii/lib/parse-query-string", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    __exports__["default"] = Ember.Object.extend({
+      init: function(url, validKeys) {
+        this.url = url;
+        this.validKeys = validKeys;
+      },
+
+      parse: function(){
+        var url       = this.url,
+            validKeys = this.validKeys,
+            data      = {};
+
+        for (var i = 0; i < validKeys.length; i++) {
+          var key = validKeys[i],
+              regex = new RegExp(key + "=([^&#]*)"),
+              match = regex.exec(url);
+          if (match) {
+            data[key] = match[1];
+          }
+        }
+        return data;
+      }
+    });
+  });
+define("torii/lib/query-string", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var camelize = Ember.String.camelize,
+        get      = Ember.get;
+
+    function isValue(value){
+      return (value || value === false);
+    }
+
+    function getParamValue(obj, paramName, optional){
+      var camelizedName = camelize(paramName),
+          value         = get(obj, camelizedName);
+
+      if (!optional) {
+        if ( !isValue(value) && isValue(get(obj, paramName))) {
+          throw new Error(
+            'Use camelized versions of url params. (Did not find ' +
+            '"' + camelizedName + '" property but did find ' +
+            '"' + paramName + '".');
+        }
+
+        if (!isValue(value)) {
+          throw new Error(
+            'Missing url param: "'+paramName+'". (Looked for: property named "' +
+            camelizedName + '".'
+          );
+        }
+      }
+
+      return isValue(value) ? encodeURIComponent(value) : undefined;
+    }
+
+    function getOptionalParamValue(obj, paramName){
+      return getParamValue(obj, paramName, true);
+    }
+
+    __exports__["default"] = Ember.Object.extend({
+      init: function(obj, urlParams, optionalUrlParams){
+        this.obj               = obj;
+        this.urlParams         = Ember.A(urlParams).uniq();
+        this.optionalUrlParams = Ember.A(optionalUrlParams || []).uniq();
+
+        this.optionalUrlParams.forEach(function(param){
+          if (this.urlParams.indexOf(param) > -1) {
+            throw "Required parameters cannot also be optional: '" + param + "'";
+          }
+        }, this);
+      },
+
+      toString: function(){
+        var urlParams         = this.urlParams,
+            optionalUrlParams = this.optionalUrlParams,
+            obj               = this.obj,
+            keyValuePairs     = Ember.A([]);
+
+        urlParams.forEach(function(paramName){
+          var paramValue = getParamValue(obj, paramName);
+
+          keyValuePairs.push( [paramName, paramValue] );
+        });
+
+        optionalUrlParams.forEach(function(paramName){
+          var paramValue = getOptionalParamValue(obj, paramName);
+
+          if (isValue(paramValue)) {
+            keyValuePairs.push( [paramName, paramValue] );
+          }
+        });
+
+        return keyValuePairs.map(function(pair){
+          return pair.join('=');
+        }).join('&');
+      }
+    });
+  });
+define("torii/lib/required-property", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function requiredProperty(){
+      return Ember.computed(function(key){
+        throw new Error("Definition of property "+key+" by a subclass is required.");
+      });
+    }
+
+    __exports__["default"] = requiredProperty;
+  });
+define("torii/lib/state-machine", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    /*
+     * Modification of Stefan Penner's StateMachine.js: https://github.com/stefanpenner/state_machine.js/
+     *
+     * This modification requires Ember.js to be loaded first
+     */
+
+    var a_slice = Array.prototype.slice;
+    var o_keys = Ember.keys;
+
+    function makeArray(entry){
+      if (entry.constructor === Array) {
+        return entry;
+      }else if(entry) {
+        return [entry];
+      }else{
+        return [];
+      }
+    }
+
+    function StateMachine(options){
+      var initialState = options.initialState;
+      this.states = options.states;
+
+      if (!this.states) {
+        throw new Error('StateMachine needs states');
+      }
+
+      this.state  = this.states[initialState];
+
+      if (!this.state) {
+        throw new Error('Missing initial state');
+      }
+
+      this.currentStateName = initialState;
+
+      this._subscriptions = {};
+
+      var beforeTransitions = (options.beforeTransitions ||[]);
+      var afterTransitions  = (options.afterTransitions ||[]);
+      var rule;
+
+      var i, length;
+      for(i = 0, length = beforeTransitions.length; length > i; i++){
+        rule = beforeTransitions[i];
+        this.beforeTransition.call(this, rule, rule.fn);
+      }
+
+      for(i = 0, length = afterTransitions.length; length > i; i++){
+        rule = afterTransitions[i];
+        this.afterTransition.call(this, rule, rule.fn);
+      }
+    }
+
+    var SPLAT = StateMachine.SPLAT = '*';
+
+    StateMachine.transitionTo = function(state){
+      return function(){
+        this.transitionTo(state);
+      };
+    };
+
+    StateMachine.prototype = {
+      states: {},
+      toString: function(){
+        return "<StateMachine currentState:'" + this.currentStateName +"' >";
+      },
+
+      transitionTo: function(nextStateName){
+        if (nextStateName.charAt(0) === '.') {
+          var splits = this.currentStateName.split('.').slice(0,-1);
+
+          // maybe all states should have an implicit leading dot (kinda like dns)
+          if (0 < splits.length){
+            nextStateName = splits.join('.') + nextStateName;
+          } else {
+            nextStateName = nextStateName.substring(1);
+          }
+        }
+
+        var state = this.states[nextStateName],
+        stateName = this.currentStateName;
+
+        if (!state) {
+          throw new Error('Unknown State: `' + nextStateName + '`');
+        }
+        this.willTransition(stateName, nextStateName);
+
+        this.state = state;
+
+        this.currentStateName = nextStateName;
+        this.didTransition(stateName, nextStateName);
+      },
+
+      beforeTransition: function(options, fn) {
+        this._transition('willTransition', options, fn);
+      },
+
+      afterTransition: function(options, fn) {
+        this._transition('didTransition', options, fn);
+      },
+
+      _transition: function(event, filter, fn) {
+        var from = filter.from || SPLAT,
+          to = filter.to || SPLAT,
+          context = this,
+          matchingTo, matchingFrom,
+          toSplatOffset, fromSplatOffset,
+          negatedMatchingTo, negatedMatchingFrom;
+
+        if (to.indexOf('!') === 0) {
+          matchingTo = to.substr(1);
+          negatedMatchingTo = true;
+        } else {
+          matchingTo = to;
+          negatedMatchingTo = false;
+        }
+
+        if (from.indexOf('!') === 0) {
+          matchingFrom = from.substr(1);
+          negatedMatchingFrom = true;
+        } else {
+          matchingFrom = from;
+          negatedMatchingFrom = false;
+        }
+
+        fromSplatOffset = matchingFrom.indexOf(SPLAT);
+        toSplatOffset = matchingTo.indexOf(SPLAT);
+
+        if (fromSplatOffset >= 0) {
+          matchingFrom = matchingFrom.substring(fromSplatOffset, 0);
+        }
+
+        if (toSplatOffset >= 0) {
+          matchingTo = matchingTo.substring(toSplatOffset, 0);
+        }
+
+        this.on(event, function(currentFrom, currentTo) {
+          var currentMatcherTo = currentTo,
+            currentMatcherFrom = currentFrom,
+            toMatches, fromMatches;
+
+          if (fromSplatOffset >= 0){
+            currentMatcherFrom = currentFrom.substring(fromSplatOffset, 0);
+          }
+
+          if (toSplatOffset >= 0){
+            currentMatcherTo = currentTo.substring(toSplatOffset, 0);
+          }
+
+          toMatches = (currentMatcherTo === matchingTo) !== negatedMatchingTo;
+          fromMatches = (currentMatcherFrom === matchingFrom) !== negatedMatchingFrom;
+
+          if (toMatches && fromMatches) {
+            fn.call(this, currentFrom, currentTo);
+          }
+        });
+      },
+
+      willTransition: function(from, to) {
+        this._notify('willTransition', from, to);
+      },
+
+      didTransition: function(from, to) {
+        this._notify('didTransition', from, to);
+      },
+
+      _notify: function(name, from, to) {
+        var subscriptions = (this._subscriptions[name] || []);
+
+        for( var i = 0, length = subscriptions.length; i < length; i++){
+          subscriptions[i].call(this, from, to);
+        }
+      },
+
+      on: function(event, fn) {
+        this._subscriptions[event] = this._subscriptions[event] || [];
+        this._subscriptions[event].push(fn);
+      },
+
+      off: function(event, fn) {
+        var idx = this._subscriptions[event].indexOf(fn);
+
+        if (fn){
+          if (idx) {
+            this._subscriptions[event].splice(idx, 1);
+          }
+        }else {
+          this._subscriptions[event] = null;
+        }
+      },
+
+      send: function(eventName) {
+        var event = this.state[eventName];
+        var args = a_slice.call(arguments, 1);
+
+        if (event) {
+          return event.apply(this, args);
+        } else {
+          this.unhandledEvent(eventName);
+        }
+      },
+
+      trySend: function(eventName) {
+        var event = this.state[eventName];
+        var args = a_slice.call(arguments,1);
+
+        if (event) {
+          return event.apply(this, args);
+        }
+      },
+
+      event: function(eventName, callback){
+        var states = this.states;
+
+        var eventApi = {
+          transition: function() {
+            var length = arguments.length,
+            first = arguments[0],
+            second = arguments[1],
+            events = normalizeEvents(eventName, first, second);
+
+            o_keys(events).forEach(function(from){
+              var to = events[from];
+              compileEvent(states, eventName, from, to, StateMachine.transitionTo(to));
+            });
+          }
+        };
+
+        callback.call(eventApi);
+      },
+
+      unhandledEvent: function(event){
+        var currentStateName = this.currentStateName,
+        message = "Unknown Event: `" + event + "` for: " + this.toString();
+
+        throw new Error(message);
+      }
+    };
+
+    function normalizeEvents(eventName, first, second){
+      var events;
+      if (!first) { throw new Error('invalid Transition'); }
+
+      if (second) {
+        var froms = first, to = second;
+        events = expandArrayEvents(froms, to);
+      } else {
+        if (first.constructor === Object) {
+          events = first;
+        } else {
+          throw new Error('something went wrong');
+        }
+      }
+
+      return events;
+    }
+
+    function expandArrayEvents(froms, to){
+      return  makeArray(froms).reduce(function(events, from){
+         events[from] = to;
+         return events;
+       }, {});
+    }
+
+    function compileEvent(states, eventName, from, to, fn){
+      var state = states[from];
+
+      if (from && to && state) {
+        states[from][eventName] = fn;
+      } else {
+        var message = "invalid transition state: " + (state && state.currentStateName) + " from: " + from+ " to: " + to ;
+        throw new Error(message);
+      }
+    }
+
+    __exports__["default"] = StateMachine;
+  });
+define("torii/load-initializers", 
+  ["torii/lib/load-initializer","torii/initializers/initialize-torii","torii/initializers/initialize-torii-callback","torii/initializers/initialize-torii-session","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var loadInitializer = __dependency1__["default"];
+    var initializeTorii = __dependency2__["default"];
+    var initializeToriiCallback = __dependency3__["default"];
+    var initializeToriiSession = __dependency4__["default"];
+
+    __exports__["default"] = function(){
+      loadInitializer(initializeToriiCallback);
+      loadInitializer(initializeTorii);
+      loadInitializer(initializeToriiSession);
+    }
+  });
+define("torii/providers/base", 
+  ["torii/lib/required-property","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var requiredProperty = __dependency1__["default"];
+
+    /**
+     * The base class for all torii providers
+     * @class BaseProvider
+     */
+    var Base = Ember.Object.extend({
+
+     /**
+      * The name of the provider
+      * @property {string} name
+      */
+      name: requiredProperty(),
+
+      /**
+       * The name of the configuration property
+       * that holds config information for this provider.
+       * @property {string} configNamespace
+       */
+      configNamespace: function(){
+        return 'providers.'+this.get('name');
+      }.property('name')
+
+    });
+
+    __exports__["default"] = Base;
+  });
+define("torii/providers/facebook-connect", 
+  ["torii/providers/base","torii/configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    /* global FB, $ */
+
+    /**
+     * This class implements authentication against facebook
+     * connect using the Facebook SDK.
+     */
+
+    var Provider = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+
+    var fbPromise;
+
+    function fbLoad(settings){
+      if (fbPromise) { return fbPromise; }
+
+      var original = window.fbAsyncInit;
+      fbPromise = new Ember.RSVP.Promise(function(resolve, reject){
+        window.fbAsyncInit = function(){
+          FB.init(settings);
+          Ember.run(null, resolve);
+        };
+        $.getScript('//connect.facebook.net/en_US/all.js');
+      }).then(function(){
+        window.fbAsyncInit = original;
+      });
+
+      return fbPromise;
+    }
+
+    function fbLogin(scope){
+      return new Ember.RSVP.Promise(function(resolve, reject){
+        FB.login(function(response){
+          if (response.authResponse) {
+            Ember.run(null, resolve, response.authResponse);
+          } else {
+            Ember.run(null, reject, response.status);
+          }
+        }, { scope: scope });
+      });
+    }
+
+    function fbNormalize(response){
+      return {
+        userId: response.userID,
+        accessToken: response.accessToken
+      };
+    }
+
+    var Facebook = Provider.extend({
+
+      // Required settings:
+      name:  'facebook-connect',
+      scope: configurable('scope', 'email'),
+      appId: configurable('appId'),
+
+      // API:
+      //
+      open: function(){
+        var scope = this.get('scope');
+
+        return fbLoad( this.settings() )
+          .then(function(){
+            return fbLogin(scope);
+          })
+          .then(fbNormalize);
+      },
+
+      settings: function(){
+        return {
+          status: true,
+          cookie: true,
+          xfbml: false,
+          appId: this.get('appId')
+        };
+      },
+
+      // Load Facebook's script eagerly, so that the window.open
+      // in FB.login will be part of the same JS frame as the
+      // click itself.
+      loadFbLogin: function(){
+        fbLoad( this.settings() );
+      }.on('init')
+
+    });
+
+    __exports__["default"] = Facebook;
+  });
+define("torii/providers/facebook-oauth2", 
+  ["torii/configuration","torii/providers/oauth2-code","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var configurable = __dependency1__.configurable;
+    var Oauth2 = __dependency2__["default"];
+
+    __exports__["default"] = Oauth2.extend({
+      name:    'facebook-oauth2',
+      baseUrl: 'https://www.facebook.com/dialog/oauth',
+
+      // Additional url params that this provider requires
+      requiredUrlParams: ['display'],
+
+      responseParams: ['code'],
+
+      scope:        configurable('scope', 'email'),
+
+      display: 'popup',
+      redirectUri: configurable('redirectUri', function(){
+        // A hack that allows redirectUri to be configurable
+        // but default to the superclass
+        return this._super();
+      }),
+
+      open: function() {
+        return this._super().then(function(authData){
+          if (authData.authorizationCode && authData.authorizationCode === '200') {
+            // indication that the user hit 'cancel', not 'ok'
+            throw 'User canceled authorization';
+          }
+
+          return authData;
+        });
+      }
+    });
+  });
+define("torii/providers/github-oauth2", 
+  ["torii/providers/oauth2-code","torii/configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Oauth2 = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+
+    /**
+     * This class implements authentication against Github
+     * using the OAuth2 authorization flow in a popup window.
+     * @class
+     */
+    var GithubOauth2 = Oauth2.extend({
+      name:       'github-oauth2',
+      baseUrl:    'https://github.com/login/oauth/authorize',
+
+      // additional url params that this provider requires
+      requiredUrlParams: ['state'],
+
+      responseParams: ['code'],
+
+      state: 'STATE',
+
+      redirectUri: configurable('redirectUri', function(){
+        // A hack that allows redirectUri to be configurable
+        // but default to the superclass
+        return this._super();
+      })
+    });
+
+    __exports__["default"] = GithubOauth2;
+  });
+define("torii/providers/google-oauth2", 
+  ["torii/providers/oauth2-code","torii/configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    /**
+     * This class implements authentication against google
+     * using the OAuth2 authorization flow in a popup window.
+     */
+
+    var Oauth2 = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+
+    var GoogleOauth2 = Oauth2.extend({
+
+      name:    'google-oauth2',
+      baseUrl: 'https://accounts.google.com/o/oauth2/auth',
+
+      // additional params that this provider requires
+      requiredUrlParams: ['state'],
+      optionalUrlParams: ['scope', 'request_visible_actions'],
+
+      requestVisibleActions: configurable('requestVisibleActions', ''),
+
+      responseParams: ['code'],
+
+      scope: configurable('scope', 'email'),
+
+      state: configurable('state', 'STATE'),
+
+      redirectUri: configurable('redirectUri',
+                                'http://localhost:8000/oauth2callback')
+    });
+
+    __exports__["default"] = GoogleOauth2;
+  });
+define("torii/providers/linked-in-oauth2", 
+  ["torii/providers/oauth2-code","torii/configuration","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Oauth2 = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+
+    /**
+     * This class implements authentication against Linked In
+     * using the OAuth2 authorization flow in a popup window.
+     *
+     * @class LinkedInOauth2
+     */
+    var LinkedInOauth2 = Oauth2.extend({
+      name:       'linked-in-oauth2',
+      baseUrl:    'https://www.linkedin.com/uas/oauth2/authorization',
+
+      // additional url params that this provider requires
+      requiredUrlParams: ['state'],
+
+      responseParams: ['code'],
+
+      state: 'STATE',
+
+      redirectUri: configurable('redirectUri', function(){
+        // A hack that allows redirectUri to be configurable
+        // but default to the superclass
+        return this._super();
+      })
+
+    });
+
+    __exports__["default"] = LinkedInOauth2;
+  });
+define("torii/providers/oauth1", 
+  ["torii/providers/base","torii/configuration","torii/lib/query-string","torii/lib/required-property","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    /*
+     * This class implements authentication against an API
+     * using the OAuth1.0a request token flow in a popup window.
+     */
+
+    var Provider = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+    var QueryString = __dependency3__["default"];
+    var requiredProperty = __dependency4__["default"];
+
+    function currentUrl(){
+      return [window.location.protocol,
+              "//",
+              window.location.host,
+              window.location.pathname].join('');
+    }
+
+    var Oauth1 = Provider.extend({
+      name: 'oauth1',
+
+      requestTokenUri: configurable('requestTokenUri'),
+
+      buildRequestTokenUrl: function(){
+        var requestTokenUri = this.get('requestTokenUri');
+        return requestTokenUri;
+      },
+
+      open: function(){
+        var name        = this.get('name'),
+            url         = this.buildRequestTokenUrl();
+
+        return this.get('popup').open(url, ['code']).then(function(authData){
+          authData.provider = name;
+          return authData;
+        });
+      }
+    });
+
+    __exports__["default"] = Oauth1;
+  });
+define("torii/providers/oauth2-bearer", 
+  ["torii/providers/oauth2-code","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Provider = __dependency1__["default"];
+
+    var Oauth2Bearer = Provider.extend({
+      responseType: 'token',
+
+      /**
+       * @method open
+       * @return {Promise<object>} If the authorization attempt is a success,
+       * the promise will resolve an object containing the following keys:
+       *   - authorizationToken: The `token` from the 3rd-party provider
+       *   - provider: The name of the provider (i.e., google-oauth2)
+       *   - redirectUri: The redirect uri (some server-side exchange flows require this)
+       * If there was an error or the user either canceled the authorization or
+       * closed the popup window, the promise rejects.
+       */
+      open: function(){
+        var name        = this.get('name'),
+            url         = this.buildUrl(),
+            redirectUri = this.get('redirectUri'),
+            responseParams = this.get('responseParams');
+
+        return this.get('popup').open(url, responseParams).then(function(authData){
+          var missingResponseParams = [];
+
+          responseParams.forEach(function(param){
+            if (authData[param] === undefined) {
+              missingResponseParams.push(param);
+            }
+          });
+
+          if (missingResponseParams.length){
+            throw "The response from the provider is missing " +
+                  "these required response params: " + responseParams.join(', ');
+          }
+
+          return {
+            authorizationToken: authData,
+            provider: name,
+            redirectUri: redirectUri
+          };
+        });
+      }
+    });
+
+    __exports__["default"] = Oauth2Bearer;
+  });
+define("torii/providers/oauth2-code", 
+  ["torii/providers/base","torii/configuration","torii/lib/query-string","torii/lib/required-property","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Provider = __dependency1__["default"];
+    var configurable = __dependency2__.configurable;
+    var QueryString = __dependency3__["default"];
+    var requiredProperty = __dependency4__["default"];
+
+    function currentUrl(){
+      return [window.location.protocol,
+              "//",
+              window.location.host,
+              window.location.pathname].join('');
+    }
+
+    /**
+     * Implements authorization against an OAuth2 API
+     * using the OAuth2 authorization flow in a popup window.
+     *
+     * Subclasses should extend this class and define the following properties:
+     *   - requiredUrlParams: If there are additional required params
+     *   - optionalUrlParams: If there are additional optional params
+     *   - name: The name used in the configuration `providers` key
+     *   - baseUrl: The base url for OAuth2 code-based flow at the 3rd-party
+     *
+     *   If there are any additional required or optional url params,
+     *   include default values for them (if appropriate).
+     *
+     * @class Oauth2Provider
+     */
+    var Oauth2 = Provider.extend({
+      concatenatedProperties: ['requiredUrlParams','optionalUrlParams'],
+
+      /**
+       * The parameters that must be included as query params in the 3rd-party provider's url that we build.
+       * These properties are in the format that should be in the URL (i.e.,
+       * usually underscored), but they are looked up as camelCased properties
+       * on the instance of this provider. For example, if the 'client_id' is
+       * a required url param, when building the URL we look up the value of
+       * the 'clientId' (camel-cased) property and put it in the URL as
+       * 'client_id=' + this.get('clientId')
+       * Subclasses can add additional required url params.
+       *
+       * @property {array} requiredUrlParams
+       */
+      requiredUrlParams: ['response_type', 'client_id', 'redirect_uri'],
+
+      /**
+       * Parameters that may be included in the 3rd-party provider's url that we build.
+       * Subclasses can add additional optional url params.
+       *
+       * @property {array} optionalUrlParams
+       */
+      optionalUrlParams: ['scope'],
+
+      /**
+       * The base url for the 3rd-party provider's OAuth2 flow (example: 'https://github.com/login/oauth/authorize')
+       *
+       * @property {string} baseUrl
+       */
+      baseUrl:      requiredProperty(),
+
+      /**
+       * The apiKey (sometimes called app id) that identifies the registered application at the 3rd-party provider
+       *
+       * @property {string} apiKey
+       */
+      apiKey:       configurable('apiKey'),
+
+      scope:        configurable('scope', null),
+      clientId:     Ember.computed.alias('apiKey'),
+
+      /**
+       * The oauth response type we expect from the third party provider. Hardcoded to 'code' for oauth2-code flows
+       * @property {string} responseType
+       */
+      responseType: 'code',
+
+     /**
+      * List of parameters that we expect
+      * to see in the query params that the 3rd-party provider appends to
+      * our `redirectUri` after the user confirms/denies authorization.
+      * If any of these parameters are missing, the OAuth attempt is considered
+      * to have failed (usually this is due to the user hitting the 'cancel' button)
+      *
+      * @property {array} responseParams
+      */
+      responseParams: requiredProperty(),
+
+      redirectUri: function(){
+        return currentUrl();
+      }.property(),
+
+      buildQueryString: function(){
+        var requiredParams = this.get('requiredUrlParams'),
+            optionalParams = this.get('optionalUrlParams');
+
+        var qs = new QueryString(this, requiredParams, optionalParams);
+        return qs.toString();
+      },
+
+      buildUrl: function(){
+        var base = this.get('baseUrl'),
+            qs   = this.buildQueryString();
+
+        return [base, qs].join('?');
+      },
+
+      /**
+       * @method open
+       * @return {Promise<object>} If the authorization attempt is a success,
+       * the promise will resolve an object containing the following keys:
+       *   - authorizationCode: The `code` from the 3rd-party provider
+       *   - provider: The name of the provider (i.e., google-oauth2)
+       *   - redirectUri: The redirect uri (some server-side exchange flows require this)
+       * If there was an error or the user either canceled the authorization or
+       * closed the popup window, the promise rejects.
+       */
+      open: function(){
+        var name        = this.get('name'),
+            url         = this.buildUrl(),
+            redirectUri = this.get('redirectUri'),
+            responseParams = this.get('responseParams');
+
+        return this.get('popup').open(url, responseParams).then(function(authData){
+          var missingResponseParams = [];
+
+          responseParams.forEach(function(param){
+            if (authData[param] === undefined) {
+              missingResponseParams.push(param);
+            }
+          });
+
+          if (missingResponseParams.length){
+            throw "The response from the provider is missing " +
+                  "these required response params: " + responseParams.join(', ');
+          }
+
+          return {
+            authorizationCode: authData.code,
+            provider: name,
+            redirectUri: redirectUri
+          };
+        });
+      }
+    });
+
+    __exports__["default"] = Oauth2;
+  });
+define("torii/providers/twitter-oauth1", 
+  ["torii/providers/oauth1","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Oauth1Provider = __dependency1__["default"];
+
+    __exports__["default"] = Oauth1Provider.extend({
+      name: 'twitter'
+    });
+  });
+define("torii/redirect-handler", 
+  ["./services/popup","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    /**
+     * RedirectHandler will attempt to find
+     * these keys in the URL. If found,
+     * this is an indication to Torii that
+     * the Ember app has loaded inside a popup
+     * and should postMessage this data to window.opener
+     */
+
+    var postMessageFixed = __dependency1__.postMessageFixed;
+    var readToriiMessage = __dependency1__.readToriiMessage;
+
+    var RedirectHandler = Ember.Object.extend({
+
+      init: function(url){
+        this.url = url;
+      },
+
+      run: function(){
+        var url = this.url;
+        return new Ember.RSVP.Promise(function(resolve, reject){
+          if (window.opener && window.opener.name === 'torii-opener') {
+            postMessageFixed(window.opener, url);
+            window.close();
+          } else {
+            reject('No window.opener');
+          }
+        });
+      }
+
+    });
+
+    RedirectHandler.reopenClass({
+      // untested
+      handle: function(url){
+        var handler = new RedirectHandler(url);
+        return handler.run();
+      }
+    });
+
+    __exports__["default"] = RedirectHandler;
+  });
+define("torii/services/popup", 
+  ["torii/lib/parse-query-string","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var ParseQueryString = __dependency1__["default"];
+
+    var postMessageFixed;
+    var postMessageDomain = window.location.protocol+'//'+window.location.host;
+    var postMessagePrefix = "__torii_message:";
+    // in IE11 window.attachEvent was removed.
+    if (window.attachEvent) {
+      postMessageFixed = function postMessageFixed(win, data) {
+        win.postMessageWithFix(postMessagePrefix+data, postMessageDomain);
+      };
+      window.postMessageWithFix = function postMessageWithFix(data, domain) {
+        setTimeout(function(){
+          window.postMessage(data, domain);
+        }, 0);
+      };
+    } else {
+      postMessageFixed = function postMessageFixed(win, data) {
+        win.postMessage(postMessagePrefix+data, postMessageDomain);
+      };
+    }
+
+    __exports__.postMessageFixed = postMessageFixed;
+
+    function stringifyOptions(options){
+      var optionsStrings = [];
+      for (var key in options) {
+        if (options.hasOwnProperty(key)) {
+          var value;
+          switch (options[key]) {
+            case true:
+              value = '1';
+              break;
+            case false:
+              value = '0';
+              break;
+            default:
+              value = options[key];
+          }
+          optionsStrings.push(
+            key+"="+value
+          );
+        }
+      }
+      return optionsStrings.join(',');
+    }
+
+    function prepareOptions(options){
+      var width = options.width || 500,
+          height = options.height || 500;
+      return Ember.$.extend({
+        left: ((screen.width / 2) - (width / 2)),
+        top: ((screen.height / 2) - (height / 2)),
+        width: width,
+        height: height
+      }, options);
+    }
+
+    function readToriiMessage(message){
+      if (message && typeof message === 'string' && message.indexOf(postMessagePrefix) === 0) {
+        return message.slice(postMessagePrefix.length);
+      }
+    }
+
+    __exports__.readToriiMessage = readToriiMessage;
+
+    function parseMessage(url, keys){
+      var parser = new ParseQueryString(url, keys),
+          data = parser.parse();
+      return data;
+    }
+
+    var Popup = Ember.Object.extend(Ember.Evented, {
+
+      // Open a popup window. Returns a promise that resolves or rejects
+      // accoring to if the popup is redirected with arguments in the URL.
+      //
+      // For example, an OAuth2 request:
+      //
+      // popup.open('http://some-oauth.com', ['code']).then(function(data){
+      //   // resolves with data.code, as from http://app.com?code=13124
+      // });
+      //
+      open: function(url, keys, options){
+        var service   = this,
+            lastPopup = this.popup;
+
+        var oldName = window.name;
+        // Is checked by the popup to see if it was opened by Torii
+        window.name = 'torii-opener';
+
+        return new Ember.RSVP.Promise(function(resolve, reject){
+          if (lastPopup) {
+            service.close();
+          }
+
+          var optionsString = stringifyOptions(prepareOptions(options || {}));
+          service.popup = window.open(url, 'torii-auth', optionsString);
+
+          if (service.popup && !service.popup.closed) {
+            service.popup.focus();
+          } else {
+            reject(new Error(
+              'Popup could not open or was closed'));
+            return;
+          }
+
+          service.one('didClose', function(){
+            reject(new Error(
+              'Popup was closed or authorization was denied'));
+          });
+
+          Ember.$(window).on('message.torii', function(event){
+            var message = event.originalEvent.data;
+            var toriiMessage = readToriiMessage(message);
+            if (toriiMessage) {
+              var data = parseMessage(toriiMessage, keys);
+              resolve(data);
+            }
+          });
+
+          service.schedulePolling();
+
+        })["finally"](function(){
+          // didClose will reject this same promise, but it has already resolved.
+          service.close();
+          window.name = oldName;
+          Ember.$(window).off('message.torii');
+        });
+      },
+
+      close: function(){
+        if (this.popup) {
+          this.popup = null;
+          this.trigger('didClose');
+        }
+      },
+
+      pollPopup: function(){
+        if (!this.popup) {
+          return;
+        }
+        if (this.popup.closed) {
+          this.trigger('didClose');
+        }
+      },
+
+      schedulePolling: function(){
+        this.polling = Ember.run.later(this, function(){
+          this.pollPopup();
+          this.schedulePolling();
+        }, 35);
+      },
+
+      stopPolling: function(){
+        Ember.run.cancel(this.polling);
+      }.on('didClose'),
+
+
+    });
+
+    __exports__["default"] = Popup;
+  });
+define("torii/session", 
+  ["torii/session/state-machine","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var createStateMachine = __dependency1__["default"];
+
+    function lookupAdapter(container, authenticationType){
+      var adapter = container.lookup('torii-adapter:'+authenticationType);
+      if (!adapter) {
+        adapter = container.lookup('torii-adapter:application');
+      }
+      return adapter;
+    }
+
+    var Session = Ember.ObjectProxy.extend({
+      state: null,
+
+      stateMachine: function(){
+        return createStateMachine(this);
+      }.property(),
+
+      setupStateProxy: function(){
+        var sm    = this.get('stateMachine'),
+            proxy = this;
+        sm.on('didTransition', function(){
+          proxy.set('content', sm.state);
+          proxy.set('currentStateName', sm.currentStateName);
+        });
+      }.on('init'),
+
+      // Make these properties one-way.
+      setUnknownProperty: Ember.K,
+
+      open: function(provider, options){
+        var container = this.container,
+            torii     = this.get('torii'),
+            sm        = this.get('stateMachine');
+
+        return new Ember.RSVP.Promise(function(resolve){
+          sm.send('startOpen');
+          resolve();
+        }).then(function(){
+          return torii.open(provider, options);
+        }).then(function(authorization){
+          var adapter = lookupAdapter(
+            container, provider
+          );
+
+          return adapter.open(authorization);
+        }).then(function(user){
+          sm.send('finishOpen', user);
+          return user;
+        })["catch"](function(error){
+          sm.send('failOpen', error);
+          return Ember.RSVP.reject(error);
+        });
+      },
+
+      fetch: function(provider, options){
+        var container = this.container,
+            sm        = this.get('stateMachine');
+
+        return new Ember.RSVP.Promise(function(resolve){
+          sm.send('startFetch');
+          resolve();
+        }).then(function(){
+          var adapter = lookupAdapter(
+            container, provider
+          );
+
+          return adapter.fetch(options);
+        }).then(function(data){
+          sm.send('finishFetch', data);
+          return;
+        })["catch"](function(error){
+          sm.send('failFetch', error);
+          return Ember.RSVP.reject(error);
+        });
+      },
+
+      close: function(provider, options){
+        var container = this.container,
+            sm        = this.get('stateMachine');
+
+        return new Ember.RSVP.Promise(function(resolve){
+          sm.send('startClose');
+          resolve();
+        }).then(function(){
+          var adapter = lookupAdapter(container, provider);
+          return adapter.close(options);
+        }).then(function(){
+          sm.send('finishClose');
+        })["catch"](function(error){
+          sm.send('failClose', error);
+          return Ember.RSVP.reject(error);
+        });
+      }
+
+    });
+
+    __exports__["default"] = Session;
+  });
+define("torii/session/state-machine", 
+  ["torii/lib/state-machine","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var StateMachine = __dependency1__["default"];
+
+    var transitionTo = StateMachine.transitionTo;
+
+    function copyProperties(data, target) {
+      for (var key in data) {
+        if (data.hasOwnProperty(key)) {
+          target[key] = data[key];
+        }
+      }
+    }
+
+    function transitionToClearing(target, propertiesToClear) {
+      return function(){
+        for (var i;i<propertiesToClear.length;i++) {
+          this[propertiesToClear[i]] = null;
+        }
+        this.transitionTo(target);
+      };
+    }
+
+    __exports__["default"] = function(session){
+      var sm = new StateMachine({
+        initialState: 'unauthenticated',
+
+        states: {
+          unauthenticated: {
+            errorMessage: null,
+            isAuthenticated: false,
+            // Actions
+            startOpen: transitionToClearing('opening', ['errorMessage']),
+            startFetch: transitionToClearing('fetching', ['errorMessage'])
+          },
+          authenticated: {
+            // Properties
+            currentUser: null,
+            isAuthenticated: true,
+            startClose: transitionTo('closing')
+          },
+          opening: {
+            isWorking: true,
+            isOpening: true,
+            // Actions
+            finishOpen: function(data){
+              copyProperties(data, this.states['authenticated']);
+              this.transitionTo('authenticated');
+            },
+            failOpen: function(errorMessage){
+              this.states['unauthenticated'].errorMessage = errorMessage;
+              this.transitionTo('unauthenticated');
+            }
+          },
+          fetching: {
+            isWorking: true,
+            isFetching: true,
+            // Actions
+            finishFetch: function(data){
+              copyProperties(data, this.states['authenticated']);
+              this.transitionTo('authenticated');
+            },
+            failFetch: function(errorMessage){
+              this.states['unauthenticated'].errorMessage = errorMessage;
+              this.transitionTo('unauthenticated');
+            }
+          },
+          closing: {
+            isWorking: true,
+            isClosing: true,
+            isAuthenticated: true,
+            // Actions
+            finishClose: function(){
+              this.transitionTo('unauthenticated');
+            },
+            failClose: function(errorMessage){
+              this.states['unauthenticated'].errorMessage = errorMessage;
+              this.transitionTo('unauthenticated');
+            }
+          }
+        }
+      });
+      sm.session = session;
+      return sm;
+    }
+  });
+define("torii/torii", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    function lookupProvider(container, providerName){
+      return container.lookup('torii-provider:'+providerName);
+    }
+
+    function proxyToProvider(methodName, requireMethod){
+      return function(providerName, options){
+        var container = this.container;
+        var provider = lookupProvider(container, providerName);
+        if (!provider) {
+          throw new Error("Expected a provider named '"+providerName+"' " +
+                          ", did you forget to register it?");
+        }
+
+        if (!provider[methodName]) {
+          if (requireMethod) {
+            throw new Error("Expected provider '"+providerName+"' to define " +
+                            "the '"+methodName+"' method.");
+          } else {
+            return Ember.RSVP.Promise.resolve({});
+          }
+        }
+        return new Ember.RSVP.Promise(function(resolve, reject){
+          resolve( provider[methodName](options) );
+        });
+      };
+    }
+
+    /**
+     * Torii is an engine for authenticating against various
+     * providers. For example, you can open a session with
+     * Linked In via Oauth2 and authorization codes by doing
+     * the following:
+     *
+     *     Torii.open('linked-in-oauth2').then(function(authData){
+     *       console.log(authData.authorizationCode);
+     *     });
+     *
+     * For traditional authentication flows, you will often use
+     * Torii via the Torii.Session API.
+     *
+     * @class Torii
+     */
+    var Torii = Ember.Object.extend({
+
+      /**
+       * Open an authorization against an API. A promise resolving
+       * with an authentication response object is returned. These
+       * response objects,  are found in the "torii/authentications"
+       * namespace.
+       *
+       * @method open
+       * @param {String} providerName The provider to open
+       * @return {Ember.RSVP.Promise} Promise resolving to an authentication object
+       */
+      open:  proxyToProvider('open', true),
+
+      /**
+       * Return a promise which will resolve if the provider has
+       * already been opened.
+       *
+       * @method fetch
+       * @param {String} providerName The provider to open
+       * @return {Ember.RSVP.Promise} Promise resolving to an authentication object
+       */
+      fetch:  proxyToProvider('fetch'),
+
+      /**
+       * Return a promise which will resolve when the provider has been
+       * closed. Closing a provider may not always be a meaningful action,
+       * and may be better handled by torii's session management instead.
+       *
+       * @method close
+       * @param {String} providerName The provider to open
+       * @return {Ember.RSVP.Promise} Promise resolving when the provider is closed
+       */
+      close:  proxyToProvider('close')
+    });
+
+    __exports__["default"] = Torii;
+  });
+;(function(global) {
+  var define = global.define;
+  var require = global.require;
+  var Ember = global.Ember;
+  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
+    Ember = require('ember');
+  }
+
+Ember.libraries.register('Ember Simple Auth Torii', '0.7.2');
+
+define("simple-auth-torii/authenticators/torii", 
+  ["simple-auth/authenticators/base","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Base = __dependency1__["default"];
+
+    /**
+      Authenticator that wraps the
+      [Torii library](https://github.com/Vestorly/torii).
+
+      _The factory for this authenticator is registered as
+      `'simple-auth-authenticator:torii'` in Ember's container._
+
+      @class Torii
+      @namespace SimpleAuth.Authenticators
+      @module simple-auth-torii/authenticators/torii
+      @extends Base
+    */
+    __exports__["default"] = Base.extend({
+      /**
+        @property torii
+        @private
+      */
+      torii: null,
+
+      /**
+        @property provider
+        @private
+      */
+      provider: null,
+
+      /**
+        Restores the session by calling the torii provider's `fetch` method.
+
+        @method restore
+        @param {Object} data The data to restore the session from
+        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
+      */
+      restore: function(data) {
+        var _this = this;
+        data      = data || {};
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          if (!Ember.isEmpty(data.provider)) {
+            var provider = data.provider;
+            _this.torii.fetch(data.provider, data).then(function(data) {
+              _this.resolveWith(provider, data, resolve);
+            }, function() {
+              delete _this.provider;
+              reject();
+            });
+          } else {
+            delete _this.provider;
+            reject();
+          }
+        });
+      },
+
+      /**
+        Authenticates the session by opening the torii provider. For more
+        documentation on torii, see the
+        [project's README](https://github.com/Vestorly/torii#readme).
+
+        @method authenticate
+        @param {String} provider The provider to authenticate the session with
+        @param {Object} options The options to pass to the torii provider
+        @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully authenticates a user and rejects otherwise
+      */
+      authenticate: function(provider, options) {
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          _this.torii.open(provider, options || {}).then(function(data) {
+            _this.resolveWith(provider, data, resolve);
+          }, reject);
+        });
+      },
+
+      /**
+        Closes the torii provider.
+
+        @method invalidate
+        @param {Object} data The data that's stored in the session
+        @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully closes and rejects otherwise
+      */
+      invalidate: function(data) {
+        var _this = this;
+        return new Ember.RSVP.Promise(function(resolve, reject) {
+          _this.torii.close(_this.provider).then(function() {
+            delete _this.provider;
+            resolve();
+          }, reject);
+        });
+      },
+
+      /**
+        @method resolveWith
+        @private
+      */
+      resolveWith: function(provider, data, resolve) {
+        data.provider = provider;
+        this.provider = data.provider;
+        resolve(data);
+      }
+
+    });
+  });
+define("simple-auth-torii/ember", 
+  ["./initializer"],
+  function(__dependency1__) {
+    "use strict";
+    var initializer = __dependency1__["default"];
+
+    Ember.onLoad('Ember.Application', function(Application) {
+      Application.initializer(initializer);
+    });
+  });
+define("simple-auth-torii/initializer", 
+  ["simple-auth-torii/authenticators/torii","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Authenticator = __dependency1__["default"];
+
+    __exports__["default"] = {
+      name:   'simple-auth-torii',
+      before: 'simple-auth',
+      after:  'torii',
+      initialize: function(container, application) {
+        var torii         = container.lookup('torii:main');
+        var authenticator = Authenticator.create({ torii: torii });
+        container.register('simple-auth-authenticator:torii', authenticator, { instantiate: false });
+      }
+    };
+  });
+})(this);
+
 ;(function(global){
 var enifed, requireModule, eriuqer, requirejs;
 
@@ -76527,6501 +83022,6 @@ enifed("ember-inflector/system/string",
   });
  global.DS = requireModule('ember-data')['default'];
  })(this);
-;(function(global) {
-  var define = global.define;
-  var require = global.require;
-  var Ember = global.Ember;
-  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
-    Ember = require('ember');
-  }
-
-Ember.libraries.register('Ember Simple Auth', '0.7.2');
-
-define("simple-auth/authenticators/base", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-      The base for all authenticators. __This serves as a starting point for
-      implementing custom authenticators and must not be used directly.__
-
-      The authenticator authenticates the session. The actual mechanism used to do
-      this might e.g. be posting a set of credentials to a server and in exchange
-      retrieving an access token, initiating authentication against an external
-      provider like Facebook etc. and depends on the specific authenticator. Any
-      data that the authenticator receives upon successful authentication and
-      resolves with from the
-      [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)
-      method is stored in the session and can then be used by the authorizer (see
-      [`Authorizers.Base`](#SimpleAuth-Authorizers-Base)).
-
-      The authenticator also decides whether a set of data that was restored from
-      the session store (see
-      [`Stores.Base`](#SimpleAuth-Stores-Base)) is sufficient for the session to be
-      authenticated or not.
-
-      __Custom authenticators have to be registered with Ember's dependency
-      injection container__ so that the session can retrieve an instance, e.g.:
-
-      ```js
-      import Base from 'simple-auth/authenticators/base';
-
-      var CustomAuthenticator = Base.extend({
-        ...
-      });
-
-      Ember.Application.initializer({
-        name: 'authentication',
-        initialize: function(container, application) {
-          container.register('authenticator:custom', CustomAuthenticator);
-        }
-      });
-      ```
-
-      ```js
-      // app/controllers/login.js
-      import AuthenticationControllerMixin from 'simple-auth/mixins/authentication-controller-mixin';
-
-      export default Ember.Controller.extend(AuthenticationControllerMixin, {
-        authenticator: 'authenticator:custom'
-      });
-      ```
-
-      @class Base
-      @namespace SimpleAuth.Authenticators
-      @module simple-auth/authenticators/base
-      @extends Ember.Object
-      @uses Ember.Evented
-    */
-    __exports__["default"] = Ember.Object.extend(Ember.Evented, {
-      /**
-        __Triggered when the data that constitutes the session is updated by the
-        authenticator__. This might happen e.g. because the authenticator refreshes
-        it or an event from is triggered from an external authentication provider.
-        The session automatically catches that event, passes the updated data back
-        to the authenticator's
-        [SimpleAuth.Authenticators.Base#restore](#SimpleAuth-Authenticators-Base-restore)
-        method and handles the result of that invocation accordingly.
-
-        @event sessionDataUpdated
-        @param {Object} data The updated session data
-      */
-      /**
-        __Triggered when the data that constitutes the session is invalidated by
-        the authenticator__. This might happen e.g. because the date expires or an
-        event is triggered from an external authentication provider. The session
-        automatically catches that event and invalidates itself.
-
-        @event sessionDataInvalidated
-        @param {Object} data The updated session data
-      */
-
-      /**
-        Restores the session from a set of properties. __This method is invoked by
-        the session either after the application starts up and session data was
-        restored from the store__ or when properties in the store have changed due
-        to external events (e.g. in another tab) and the new set of properties
-        needs to be re-checked for whether it still constitutes an authenticated
-        session.
-
-        __This method returns a promise. A resolving promise will result in the
-        session being authenticated.__ Any properties the promise resolves with
-        will be saved in and accessible via the session. In most cases the `data`
-        argument will simply be forwarded through the promise. A rejecting promise
-        indicates that authentication failed and the session will remain unchanged.
-
-        `SimpleAuth.Authenticators.Base`'s implementation always returns a
-        rejecting promise.
-
-        @method restore
-        @param {Object} data The data to restore the session from
-        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
-      */
-      restore: function(data) {
-        return new Ember.RSVP.reject();
-      },
-
-      /**
-        Authenticates the session with the specified `options`. These options vary
-        depending on the actual authentication mechanism the authenticator
-        implements (e.g. a set of credentials or a Facebook account id etc.). __The
-        session will invoke this method when an action in the application triggers
-        authentication__ (see
-        [SimpleAuth.AuthenticationControllerMixin.actions#authenticate](#SimpleAuth-AuthenticationControllerMixin-authenticate)).
-
-        __This method returns a promise. A resolving promise will result in the
-        session being authenticated.__ Any properties the promise resolves with
-        will be saved in and accessible via the session. A rejecting promise
-        indicates that authentication failed and the session will remain unchanged.
-
-        `SimpleAuth.Authenticators.Base`'s implementation always returns a
-        rejecting promise and thus never authenticates the session.
-
-        @method authenticate
-        @param {Any} [...options] The arguments that the authenticator requires to authenticate the session
-        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
-      */
-      authenticate: function(options) {
-        return new Ember.RSVP.reject();
-      },
-
-      /**
-        This callback is invoked when the session is invalidated. While the session
-        will invalidate itself and clear all session properties, it might be
-        necessary for some authenticators to perform additional tasks (e.g.
-        invalidating an access token on the server), which should be done in this
-        method.
-
-        __This method returns a promise. A resolving promise will result in the
-        session being invalidated.__ A rejecting promise will result in the session
-        invalidation being intercepted and the session being left authenticated.
-
-        `SimpleAuth.Authenticators.Base`'s implementation always returns a
-        resolving promise and thus never intercepts session invalidation.
-
-        @method invalidate
-        @param {Object} data The data that the session currently holds
-        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being invalidated
-      */
-      invalidate: function(data) {
-        return new Ember.RSVP.resolve();
-      }
-    });
-  });
-define("simple-auth/authorizers/base", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-      The base for all authorizers. __This serves as a starting point for
-      implementing custom authorizers and must not be used directly.__
-
-      __The authorizer preprocesses all XHR requests__ (except ones to 3rd party
-      origins, see
-      [Configuration.crossOriginWhitelist](#SimpleAuth-Configuration-crossOriginWhitelist))
-      and makes sure they have the required data attached that allows the server to
-      identify the user making the request. This data might be an HTTP header,
-      query string parameters in the URL, cookies etc. __The authorizer has to fit
-      the authenticator__ (see
-      [SimpleAuth.Authenticators.Base](#SimpleAuth-Authenticators-Base))
-      as it relies on data that the authenticator acquires during authentication.
-
-      @class Base
-      @namespace SimpleAuth.Authorizers
-      @module simple-auth/authorizers/base
-      @extends Ember.Object
-    */
-    __exports__["default"] = Ember.Object.extend({
-      /**
-        The session the authorizer gets the data it needs to authorize requests
-        from.
-
-        @property session
-        @readOnly
-        @type SimpleAuth.Session
-        @default the session instance
-      */
-      session: null,
-
-      /**
-        Authorizes an XHR request by adding some sort of secret information that
-        allows the server to identify the user making the request (e.g. a token in
-        the `Authorization` header or some other secret in the query string etc.).
-
-        `SimpleAuth.Authorizers.Base`'s implementation does nothing.
-
-        @method authorize
-        @param {jqXHR} jqXHR The XHR request to authorize (see http://api.jquery.com/jQuery.ajax/#jqXHR)
-        @param {Object} requestOptions The options as provided to the `$.ajax` method (see http://api.jquery.com/jQuery.ajaxPrefilter/)
-      */
-      authorize: function(jqXHR, requestOptions) {
-      }
-    });
-  });
-define("simple-auth/configuration", 
-  ["simple-auth/utils/load-config","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var loadConfig = __dependency1__["default"];
-
-    var defaults = {
-      authenticationRoute:         'login',
-      routeAfterAuthentication:    'index',
-      routeIfAlreadyAuthenticated: 'index',
-      sessionPropertyName:         'session',
-      authorizer:                  null,
-      session:                     'simple-auth-session:main',
-      store:                       'simple-auth-session-store:local-storage',
-      localStorageKey:             'ember_simple_auth:session',
-      crossOriginWhitelist:        [],
-      applicationRootUrl:          null
-    };
-
-    /**
-      Ember Simple Auth's configuration object.
-
-      To change any of these values, set them on the application's environment
-      object:
-
-      ```js
-      ENV['simple-auth'] = {
-        authenticationRoute: 'sign-in'
-      };
-      ```
-
-      @class Configuration
-      @namespace SimpleAuth
-      @module simple-auth/configuration
-    */
-    __exports__["default"] = {
-      /**
-        The route to transition to for authentication.
-
-        @property authenticationRoute
-        @readOnly
-        @static
-        @type String
-        @default 'login'
-      */
-      authenticationRoute: defaults.authenticationRoute,
-
-      /**
-        The route to transition to after successful authentication.
-
-        @property routeAfterAuthentication
-        @readOnly
-        @static
-        @type String
-        @default 'index'
-      */
-      routeAfterAuthentication: defaults.routeAfterAuthentication,
-
-      /**
-        The route to transition to if a route that implements
-        [`UnauthenticatedRouteMixin`](#SimpleAuth-UnauthenticatedRouteMixin) is
-        accessed when the session is authenticated.
-
-        @property routeIfAlreadyAuthenticated
-        @readOnly
-        @static
-        @type String
-        @default 'index'
-      */
-      routeIfAlreadyAuthenticated: defaults.routeIfAlreadyAuthenticated,
-
-      /**
-        The name of the property that the session is injected with into routes and
-        controllers.
-
-        @property sessionPropertyName
-        @readOnly
-        @static
-        @type String
-        @default 'session'
-      */
-      sessionPropertyName: defaults.sessionPropertyName,
-
-      /**
-        The authorizer factory to use as it is registered with Ember's container,
-        see
-        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register);
-        when the application does not interact with a server that requires
-        authorized requests, no auzthorizer is needed.
-
-        @property authorizer
-        @readOnly
-        @static
-        @type String
-        @default null
-      */
-      authorizer: defaults.authorizer,
-
-      /**
-        The session factory to use as it is registered with Ember's container,
-        see
-        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
-
-        @property session
-        @readOnly
-        @static
-        @type String
-        @default 'simple-auth-session:main'
-      */
-      session: defaults.session,
-
-      /**
-        The store factory to use as it is registered with Ember's container, see
-        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
-
-        @property store
-        @readOnly
-        @static
-        @type String
-        @default simple-auth-session-store:local-storage
-      */
-      store: defaults.store,
-
-      /**
-        The key the store stores the data in.
-
-        @property key
-        @type String
-        @default 'ember_simple_auth:session'
-      */
-      localStorageKey: defaults.localStorageKey,
-
-      /**
-        Ember Simple Auth will never authorize requests going to a different origin
-        than the one the Ember.js application was loaded from; to explicitely
-        enable authorization for additional origins, whitelist those origins with
-        this setting. _Beware that origins consist of protocol, host and port (port
-        can be left out when it is 80 for HTTP or 443 for HTTPS)_, e.g.
-        `http://domain.com:1234`, `https://external.net`. You can also whitelist
-        all external origins by specifying `[*]`.
-
-        @property crossOriginWhitelist
-        @readOnly
-        @static
-        @type Array
-        @default []
-      */
-      crossOriginWhitelist: defaults.crossOriginWhitelist,
-
-      /**
-        @property applicationRootUrl
-        @private
-      */
-      applicationRootUrl: defaults.applicationRootUrl,
-
-      /**
-        @method load
-        @private
-      */
-      load: loadConfig(defaults, function(container, config) {
-        this.applicationRootUrl = container.lookup('router:main').get('rootURL') || '/';
-      })
-    };
-  });
-define("simple-auth/ember", 
-  ["./initializer"],
-  function(__dependency1__) {
-    "use strict";
-    var initializer = __dependency1__["default"];
-
-    Ember.onLoad('Ember.Application', function(Application) {
-      Application.initializer(initializer);
-    });
-  });
-define("simple-auth/initializer", 
-  ["./configuration","./utils/get-global-config","./setup","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-    var getGlobalConfig = __dependency2__["default"];
-    var setup = __dependency3__["default"];
-
-    __exports__["default"] = {
-      name:       'simple-auth',
-      initialize: function(container, application) {
-        var config = getGlobalConfig('simple-auth');
-        Configuration.load(container, config);
-        setup(container, application);
-      }
-    };
-  });
-define("simple-auth/mixins/application-route-mixin", 
-  ["./../configuration","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-
-    var routeEntryComplete = false;
-
-    /**
-      The mixin for the application route; defines actions to authenticate the
-      session as well as to invalidate it. These actions can be used in all
-      templates like this:
-
-      ```handlebars
-      {{#if session.isAuthenticated}}
-        <a {{ action 'invalidateSession' }}>Logout</a>
-      {{else}}
-        <a {{ action 'authenticateSession' }}>Login</a>
-      {{/if}}
-      ```
-
-      or in the case that the application uses a dedicated route for logging in:
-
-      ```handlebars
-      {{#if session.isAuthenticated}}
-        <a {{ action 'invalidateSession' }}>Logout</a>
-      {{else}}
-        {{#link-to 'login'}}Login{{/link-to}}
-      {{/if}}
-      ```
-
-      This mixin also defines actions that are triggered whenever the session is
-      successfully authenticated or invalidated and whenever authentication or
-      invalidation fails. These actions provide a good starting point for adding
-      custom behavior to these events.
-
-      __When this mixin is used and the application's `ApplicationRoute` defines
-      the `beforeModel` method, that method has to call `_super`.__
-
-      Using this mixin is optional. Without using it, the session's events will not
-      be automatically translated into route actions but would have to be handled
-      inidivially, e.g. in an initializer:
-
-      ```js
-      Ember.Application.initializer({
-        name:       'authentication',
-        after:      'simple-auth',
-        initialize: function(container, application) {
-          var applicationRoute = container.lookup('route:application');
-          var session          = container.lookup('simple-auth-session:main');
-          // handle the session events
-          session.on('sessionAuthenticationSucceeded', function() {
-            applicationRoute.transitionTo('index');
-          });
-        }
-      });
-      ```
-
-      @class ApplicationRouteMixin
-      @namespace SimpleAuth
-      @module simple-auth/mixins/application-route-mixin
-      @extends Ember.Mixin
-      @static
-    */
-    __exports__["default"] = Ember.Mixin.create({
-      /**
-        @method activate
-        @private
-      */
-      activate: function () {
-        routeEntryComplete = true;
-        this._super();
-      },
-
-      /**
-        @method beforeModel
-        @private
-      */
-      beforeModel: function(transition) {
-        this._super(transition);
-        if (!this.get('_authEventListenersAssigned')) {
-          this.set('_authEventListenersAssigned', true);
-          var _this = this;
-          Ember.A([
-            'sessionAuthenticationSucceeded',
-            'sessionAuthenticationFailed',
-            'sessionInvalidationSucceeded',
-            'sessionInvalidationFailed',
-            'authorizationFailed'
-          ]).forEach(function(event) {
-            _this.get(Configuration.sessionPropertyName).on(event, function(error) {
-              Array.prototype.unshift.call(arguments, event);
-              var target = routeEntryComplete ? _this : transition;
-              target.send.apply(target, arguments);
-            });
-          });
-        }
-      },
-
-      actions: {
-        /**
-          This action triggers transition to the
-          [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
-          It can be used in templates as shown above. It is also triggered
-          automatically by the
-          [`AuthenticatedRouteMixin`](#SimpleAuth-AuthenticatedRouteMixin) whenever
-          a route that requries authentication is accessed but the session is not
-          currently authenticated.
-
-          __For an application that works without an authentication route (e.g.
-          because it opens a new window to handle authentication there), this is
-          the action to override, e.g.:__
-
-          ```js
-          App.ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, {
-            actions: {
-              authenticateSession: function() {
-                this.get('session').authenticate('authenticator:custom', {});
-              }
-            }
-          });
-          ```
-
-          @method actions.authenticateSession
-        */
-        authenticateSession: function() {
-          this.transitionTo(Configuration.authenticationRoute);
-        },
-
-        /**
-          This action is triggered whenever the session is successfully
-          authenticated. If there is a transition that was previously intercepted
-          by
-          [`AuthenticatedRouteMixin#beforeModel`](#SimpleAuth-AuthenticatedRouteMixin-beforeModel)
-          it will retry it. If there is no such transition, this action transitions
-          to the
-          [`Configuration.routeAfterAuthentication`](#SimpleAuth-Configuration-routeAfterAuthentication).
-
-          @method actions.sessionAuthenticationSucceeded
-        */
-        sessionAuthenticationSucceeded: function() {
-          var attemptedTransition = this.get(Configuration.sessionPropertyName).get('attemptedTransition');
-          if (attemptedTransition) {
-            attemptedTransition.retry();
-            this.get(Configuration.sessionPropertyName).set('attemptedTransition', null);
-          } else {
-            this.transitionTo(Configuration.routeAfterAuthentication);
-          }
-        },
-
-        /**
-          This action is triggered whenever session authentication fails. The
-          `error` argument is the error object that the promise the authenticator
-          returns rejects with. (see
-          [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
-
-          It can be overridden to display error messages etc.:
-
-          ```js
-          App.ApplicationRoute = Ember.Route.extend(SimpleAuth.ApplicationRouteMixin, {
-            actions: {
-              sessionAuthenticationFailed: function(error) {
-                this.controllerFor('application').set('loginErrorMessage', error.message);
-              }
-            }
-          });
-          ```
-
-          @method actions.sessionAuthenticationFailed
-          @param {any} error The error the promise returned by the authenticator rejects with, see [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)
-        */
-        sessionAuthenticationFailed: function(error) {
-        },
-
-        /**
-          This action invalidates the session (see
-          [`Session#invalidate`](#SimpleAuth-Session-invalidate)).
-          If invalidation succeeds, it reloads the application (see
-          [`ApplicationRouteMixin#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)).
-
-          @method actions.invalidateSession
-        */
-        invalidateSession: function() {
-          this.get(Configuration.sessionPropertyName).invalidate();
-        },
-
-        /**
-          This action is invoked whenever the session is successfully invalidated.
-          It reloads the Ember.js application by redirecting the browser to the
-          application's root URL so that all in-memory data (such as Ember Data
-          stores etc.) gets cleared. The root URL is automatically retrieved from
-          the Ember.js application's router (see
-          http://emberjs.com/guides/routing/#toc_specifying-a-root-url).
-
-          If your Ember.js application will be used in an environment where the
-          users don't have direct access to any data stored on the client (e.g.
-          [cordova](http://cordova.apache.org)) this action can be overridden to
-          simply transition to the `'index'` route.
-
-          @method actions.sessionInvalidationSucceeded
-        */
-        sessionInvalidationSucceeded: function() {
-          if (!Ember.testing) {
-            window.location.replace(Configuration.applicationRootUrl);
-          }
-        },
-
-        /**
-          This action is invoked whenever session invalidation fails. This mainly
-          serves as an extension point to add custom behavior and does nothing by
-          default.
-
-          @method actions.sessionInvalidationFailed
-          @param {any} error The error the promise returned by the authenticator rejects with, see [`Authenticators.Base#invalidate`](#SimpleAuth-Authenticators-Base-invalidate)
-        */
-        sessionInvalidationFailed: function(error) {
-        },
-
-        /**
-          This action is invoked when an authorization error occurs (which is
-          the case __when the server responds with HTTP status 401__). It
-          invalidates the session and reloads the application (see
-          [`ApplicationRouteMixin#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)).
-
-          @method actions.authorizationFailed
-        */
-        authorizationFailed: function() {
-          if (this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
-            this.get(Configuration.sessionPropertyName).invalidate();
-          }
-        }
-      }
-    });
-  });
-define("simple-auth/mixins/authenticated-route-mixin", 
-  ["./../configuration","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-
-    /**
-      This mixin is for routes that require the session to be authenticated to be
-      accessible. Including this mixin in a route automatically adds a hook that
-      enforces the session to be authenticated and redirects to the
-      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute)
-      if it is not.
-
-      ```js
-      // app/routes/protected.js
-      import AuthenticatedRouteMixin from 'simple-auth/mixins/authenticated-route-mixin';
-
-      export default Ember.Route.extend(AuthenticatedRouteMixin);
-      ```
-
-      `AuthenticatedRouteMixin` performs the redirect in the `beforeModel` method
-      so that in all methods executed after that the session is guaranteed to be
-      authenticated. __If `beforeModel` is overridden, ensure that the custom
-      implementation calls `this._super(transition)`__ so that the session
-      enforcement code is actually executed.
-
-      @class AuthenticatedRouteMixin
-      @namespace SimpleAuth
-      @module simple-auth/mixins/authenticated-route-mixin
-      @extends Ember.Mixin
-      @static
-    */
-    __exports__["default"] = Ember.Mixin.create({
-      /**
-        This method implements the enforcement of the session being authenticated.
-        If the session is not authenticated, the current transition will be aborted
-        and a redirect will be triggered to the
-        [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
-        The method also saves the intercepted transition so that it can be retried
-        after the session has been authenticated (see
-        [`ApplicationRouteMixin#sessionAuthenticationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationSucceeded)).
-
-        @method beforeModel
-        @param {Transition} transition The transition that lead to this route
-      */
-      beforeModel: function(transition) {
-        this._super(transition);
-        if (!this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
-          transition.abort();
-          this.get(Configuration.sessionPropertyName).set('attemptedTransition', transition);
-          Ember.assert('The route configured as Configuration.authenticationRoute cannot implement the AuthenticatedRouteMixin mixin as that leads to an infinite transitioning loop.', this.get('routeName') !== Configuration.authenticationRoute);
-          transition.send('authenticateSession');
-        }
-      }
-    });
-  });
-define("simple-auth/mixins/authentication-controller-mixin", 
-  ["./../configuration","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-
-    /**
-      This mixin is for the controller that handles the
-      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute).
-      It provides the `authenticate` action that will authenticate the session with
-      the configured authenticator (see
-      [`AuthenticationControllerMixin#authenticator`](#SimpleAuth-AuthenticationControllerMixin-authenticator)).
-
-      @class AuthenticationControllerMixin
-      @namespace SimpleAuth
-      @module simple-auth/mixins/authentication-controller-mixin
-      @extends Ember.Mixin
-    */
-    __exports__["default"] = Ember.Mixin.create({
-      /**
-        The authenticator factory to use as it is registered with Ember's
-        container, see
-        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
-
-        @property authenticator
-        @type String
-        @default null
-      */
-      authenticator: null,
-
-      actions: {
-        /**
-          This action will authenticate the session with the configured
-          authenticator (see
-          [`AuthenticationControllerMixin#authenticator`](#SimpleAuth-AuthenticationControllerMixin-authenticator),
-          [`Session#authenticate`](#SimpleAuth-Session-authenticate)).
-
-          @method actions.authenticate
-          @param {Object} options Any options the authenticator needs to authenticate the session
-        */
-        authenticate: function(options) {
-          var authenticator = this.get('authenticator');
-          Ember.assert('AuthenticationControllerMixin/LoginControllerMixin require the authenticator property to be set on the controller', !Ember.isEmpty(authenticator));
-          return this.get(Configuration.sessionPropertyName).authenticate(authenticator, options);
-        }
-      }
-    });
-  });
-define("simple-auth/mixins/login-controller-mixin", 
-  ["./../configuration","./authentication-controller-mixin","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-    var AuthenticationControllerMixin = __dependency2__["default"];
-
-    /**
-      This mixin is for the controller that handles the
-      [`Configuration.authenticationRoute`](#SimpleAuth-Configuration-authenticationRoute)
-      if the used authentication mechanism works with a login form that asks for
-      user credentials. It provides the `authenticate` action that will
-      authenticate the session with the configured authenticator when invoked.
-      __This is a specialization of
-      [`AuthenticationControllerMixin`](#SimpleAuth-AuthenticationControllerMixin).__
-
-      Accompanying the controller that this mixin is mixed in the application needs
-      to have a `login` template with the fields `identification` and `password` as
-      well as an actionable button or link that triggers the `authenticate` action,
-      e.g.:
-
-      ```handlebars
-      <form {{action 'authenticate' on='submit'}}>
-        <label for="identification">Login</label>
-        {{input value=identification placeholder='Enter Login'}}
-        <label for="password">Password</label>
-        {{input value=password placeholder='Enter Password' type='password'}}
-        <button type="submit">Login</button>
-      </form>
-      ```
-
-      @class LoginControllerMixin
-      @namespace SimpleAuth
-      @module simple-auth/mixins/login-controller-mixin
-      @extends SimpleAuth.AuthenticationControllerMixin
-    */
-    __exports__["default"] = Ember.Mixin.create(AuthenticationControllerMixin, {
-      actions: {
-        /**
-          This action will authenticate the session with the configured
-          authenticator (see
-          [AuthenticationControllerMixin#authenticator](#SimpleAuth-Authentication-authenticator))
-          if both `identification` and `password` are non-empty. It passes both
-          values to the authenticator.
-
-          __The action also resets the `password` property so sensitive data does
-          not stay in memory for longer than necessary.__
-
-          @method actions.authenticate
-        */
-        authenticate: function() {
-          var data = this.getProperties('identification', 'password');
-          this.set('password', null);
-          return this._super(data);
-        }
-      }
-    });
-  });
-define("simple-auth/mixins/unauthenticated-route-mixin", 
-  ["./../configuration","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-
-    /**
-      This mixin is for routes that should only be accessible if the session is
-      not authenticated. This is e.g. the case for the login route that should not
-      be accessible when the session is already authenticated. Including this mixin
-      in a route automatically adds a hook that redirects to the
-      [`Configuration.routeIfAlreadyAuthenticated`](#SimpleAuth-Configuration-routeIfAlreadyAuthenticated),
-      which defaults to `'index'`.
-
-      ```js
-      // app/routes/login.js
-      import UnauthenticatedRouteMixin from 'simple-auth/mixins/unauthenticated-route-mixin';
-
-      export default Ember.Route.extend(UnauthenticatedRouteMixin);
-      ```
-
-      `UnauthenticatedRouteMixin` performs the redirect in the `beforeModel`
-      method. __If `beforeModel` is overridden, ensure that the custom
-      implementation calls `this._super(transition)`__.
-
-      @class UnauthenticatedRouteMixin
-      @namespace SimpleAuth
-      @module simple-auth/mixins/unauthenticated-route-mixin
-      @extends Ember.Mixin
-      @static
-    */
-    __exports__["default"] = Ember.Mixin.create({
-      /**
-        This method implements the enforcement of the session not being
-        authenticated. If the session is authenticated, the current transition will
-        be aborted and a redirect will be triggered to the
-        [`Configuration.routeIfAlreadyAuthenticated`](#SimpleAuth-Configuration-routeIfAlreadyAuthenticated).
-
-        @method beforeModel
-        @param {Transition} transition The transition that lead to this route
-      */
-      beforeModel: function(transition) {
-        if (this.get(Configuration.sessionPropertyName).get('isAuthenticated')) {
-          transition.abort();
-          Ember.assert('The route configured as Configuration.routeIfAlreadyAuthenticated cannot implement the UnauthenticatedRouteMixin mixin as that leads to an infinite transitioning loop.', this.get('routeName') !== Configuration.routeIfAlreadyAuthenticated);
-          this.transitionTo(Configuration.routeIfAlreadyAuthenticated);
-        }
-      }
-    });
-  });
-define("simple-auth/session", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-      __The session provides access to the current authentication state as well as
-      any data the authenticator resolved with__ (see
-      [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
-      It is created when Ember Simple Auth is set up and __injected into all
-      controllers and routes so that these parts of the application can always
-      access the current authentication state and other data__, depending on the
-      authenticator in use and whether the session is actually authenticated (see
-      [`Authenticators.Base`](#SimpleAuth-Authenticators-Base)).
-
-      The session also provides methods to authenticate and to invalidate itself
-      (see
-      [`Session#authenticate`](#SimpleAuth-Session-authenticate),
-      [`Session#invaldiate`](#SimpleAuth-Session-invaldiate)).
-      These methods are usually invoked through actions from routes or controllers.
-      To authenticate the session manually, simple call the
-      [`Session#authenticate`](#SimpleAuth-Session-authenticate)
-      method with the authenticator factory to use as well as any options the
-      authenticator needs to authenticate the session:
-
-      ```js
-      this.get('session').authenticate('authenticator:custom', { some: 'option' }).then(function() {
-        // authentication was successful
-      }, function() {
-        // authentication failed
-      });
-      ```
-
-      The session also observes the store and - if it is authenticated - the
-      authenticator for changes (see
-      [`Authenticators.Base`](#SimpleAuth-Authenticators-Base)
-      end [`Stores.Base`](#SimpleAuth-Stores-Base)).
-
-      @class Session
-      @namespace SimpleAuth
-      @module simple-auth/session
-      @extends Ember.ObjectProxy
-      @uses Ember.Evented
-    */
-    __exports__["default"] = Ember.ObjectProxy.extend(Ember.Evented, {
-      /**
-        Triggered __whenever the session is successfully authenticated__. When the
-        application uses the
-        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
-        [`ApplicationRouteMixin.actions#sessionAuthenticationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationSucceeded)
-        will be invoked whenever this event is triggered.
-
-        @event sessionAuthenticationSucceeded
-      */
-      /**
-        Triggered __whenever an attempt to authenticate the session fails__. When
-        the application uses the
-        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
-        [`ApplicationRouteMixin.actions#sessionAuthenticationFailed`](#SimpleAuth-ApplicationRouteMixin-sessionAuthenticationFailed)
-        will be invoked whenever this event is triggered.
-
-        @event sessionAuthenticationFailed
-        @param {Object} error The error object; this depends on the authenticator in use, see [SimpleAuth.Authenticators.Base#authenticate](#SimpleAuth-Authenticators-Base-authenticate)
-      */
-      /**
-        Triggered __whenever the session is successfully invalidated__. When the
-        application uses the
-        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
-        [`ApplicationRouteMixin.actions#sessionInvalidationSucceeded`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationSucceeded)
-        will be invoked whenever this event is triggered.
-
-        @event sessionInvalidationSucceeded
-      */
-      /**
-        Triggered __whenever an attempt to invalidate the session fails__. When the
-        application uses the
-        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
-        [`ApplicationRouteMixin.actions#sessionInvalidationFailed`](#SimpleAuth-ApplicationRouteMixin-sessionInvalidationFailed)
-        will be invoked whenever this event is triggered.
-
-        @event sessionInvalidationFailed
-        @param {Object} error The error object; this depends on the authenticator in use, see [SimpleAuth.Authenticators.Base#invalidate](#SimpleAuth-Authenticators-Base-invalidate)
-      */
-      /**
-        Triggered __whenever the server rejects the authorization information
-        passed with a request and responds with status 401__. When the application
-        uses the
-        [`ApplicationRouteMixin` mixin](#SimpleAuth-ApplicationRouteMixin),
-        [`ApplicationRouteMixin.actions#authorizationFailed`](#SimpleAuth-ApplicationRouteMixin-authorizationFailed)
-        will be invoked whenever this event is triggered.
-
-        @event authorizationFailed
-      */
-
-      /**
-        The authenticator factory to use as it is registered with Ember's
-        container, see
-        [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register).
-        This is only set when the session is currently authenticated.
-
-        @property authenticator
-        @type String
-        @readOnly
-        @default null
-      */
-      authenticator: null,
-      /**
-        The store used to persist session properties.
-
-        @property store
-        @type SimpleAuth.Stores.Base
-        @readOnly
-        @default null
-      */
-      store: null,
-      /**
-        The Ember.js container,
-
-        @property container
-        @type Container
-        @readOnly
-        @default null
-      */
-      container: null,
-      /**
-        Returns whether the session is currently authenticated.
-
-        @property isAuthenticated
-        @type Boolean
-        @readOnly
-        @default false
-      */
-      isAuthenticated: false,
-      /**
-        @property attemptedTransition
-        @private
-      */
-      attemptedTransition: null,
-      /**
-        @property content
-        @private
-      */
-      content: {},
-
-      /**
-        Authenticates the session with an `authenticator` and appropriate
-        `options`. __This delegates the actual authentication work to the
-        `authenticator`__ and handles the returned promise accordingly (see
-        [`Authenticators.Base#authenticate`](#SimpleAuth-Authenticators-Base-authenticate)).
-        All data the authenticator resolves with will be saved in the session.
-
-        __This method returns a promise itself. A resolving promise indicates that
-        the session was successfully authenticated__ while a rejecting promise
-        indicates that authentication failed and the session remains
-        unauthenticated.
-
-        @method authenticate
-        @param {String} authenticator The authenticator factory to use as it is registered with Ember's container, see [Ember's API docs](http://emberjs.com/api/classes/Ember.Application.html#method_register)
-        @param {Any} [...args] The arguments to pass to the authenticator; depending on the type of authenticator these might be a set of credentials, a Facebook OAuth Token, etc.
-        @return {Ember.RSVP.Promise} A promise that resolves when the session was authenticated successfully
-      */
-      authenticate: function() {
-        var args          = Array.prototype.slice.call(arguments);
-        var authenticator = args.shift();
-        Ember.assert('Session#authenticate requires the authenticator factory to be specified, was ' + authenticator, !Ember.isEmpty(authenticator));
-        var _this            = this;
-        var theAuthenticator = this.container.lookup(authenticator);
-        Ember.assert('No authenticator for factory "' + authenticator + '" could be found', !Ember.isNone(theAuthenticator));
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          theAuthenticator.authenticate.apply(theAuthenticator, args).then(function(content) {
-            _this.setup(authenticator, content, true);
-            resolve();
-          }, function(error) {
-            _this.clear();
-            _this.trigger('sessionAuthenticationFailed', error);
-            reject(error);
-          });
-        });
-      },
-
-      /**
-        Invalidates the session with the authenticator it is currently
-        authenticated with (see
-        [`Session#authenticator`](#SimpleAuth-Session-authenticator)). __This
-        invokes the authenticator's `invalidate` method and handles the returned
-        promise accordingly__ (see
-        [`Authenticators.Base#invalidate`](#SimpleAuth-Authenticators-Base-invalidate)).
-
-        __This method returns a promise itself. A resolving promise indicates that
-        the session was successfully invalidated__ while a rejecting promise
-        indicates that the promise returned by the `authenticator` rejected and
-        thus invalidation was cancelled. In that case the session remains
-        authenticated. Once the session is successfully invalidated it clears all
-        of its data.
-
-        @method invalidate
-        @return {Ember.RSVP.Promise} A promise that resolves when the session was invalidated successfully
-      */
-      invalidate: function() {
-        Ember.assert('Session#invalidate requires the session to be authenticated', this.get('isAuthenticated'));
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          var authenticator = _this.container.lookup(_this.authenticator);
-          authenticator.invalidate(_this.content).then(function() {
-            authenticator.off('sessionDataUpdated');
-            _this.clear(true);
-            resolve();
-          }, function(error) {
-            _this.trigger('sessionInvalidationFailed', error);
-            reject(error);
-          });
-        });
-      },
-
-      /**
-        @method restore
-        @private
-      */
-      restore: function() {
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          var restoredContent = _this.store.restore();
-          var authenticator   = restoredContent.authenticator;
-          if (!!authenticator) {
-            delete restoredContent.authenticator;
-            _this.container.lookup(authenticator).restore(restoredContent).then(function(content) {
-              _this.setup(authenticator, content);
-              resolve();
-            }, function() {
-              _this.store.clear();
-              reject();
-            });
-          } else {
-            _this.store.clear();
-            reject();
-          }
-        });
-      },
-
-      /**
-        @method setup
-        @private
-      */
-      setup: function(authenticator, content, trigger) {
-        content = Ember.merge(Ember.merge({}, this.content), content);
-        trigger = !!trigger && !this.get('isAuthenticated');
-        this.beginPropertyChanges();
-        this.setProperties({
-          isAuthenticated: true,
-          authenticator:   authenticator,
-          content:         content
-        });
-        this.bindToAuthenticatorEvents();
-        this.updateStore();
-        this.endPropertyChanges();
-        if (trigger) {
-          this.trigger('sessionAuthenticationSucceeded');
-        }
-      },
-
-      /**
-        @method clear
-        @private
-      */
-      clear: function(trigger) {
-        trigger = !!trigger && this.get('isAuthenticated');
-        this.beginPropertyChanges();
-        this.setProperties({
-          isAuthenticated: false,
-          authenticator:   null,
-          content:         {}
-        });
-        this.store.clear();
-        this.endPropertyChanges();
-        if (trigger) {
-          this.trigger('sessionInvalidationSucceeded');
-        }
-      },
-
-      /**
-        @method setUnknownProperty
-        @private
-      */
-      setUnknownProperty: function(key, value) {
-        var result = this._super(key, value);
-        this.updateStore();
-        return result;
-      },
-
-      /**
-        @method updateStore
-        @private
-      */
-      updateStore: function() {
-        var data = this.content;
-        if (!Ember.isEmpty(this.authenticator)) {
-          data = Ember.merge({ authenticator: this.authenticator }, data);
-        }
-        if (!Ember.isEmpty(data)) {
-          this.store.persist(data);
-        }
-      },
-
-      /**
-        @method bindToAuthenticatorEvents
-        @private
-      */
-      bindToAuthenticatorEvents: function() {
-        var _this = this;
-        var authenticator = this.container.lookup(this.authenticator);
-        authenticator.off('sessionDataUpdated');
-        authenticator.off('sessionDataInvalidated');
-        authenticator.on('sessionDataUpdated', function(content) {
-          _this.setup(_this.authenticator, content);
-        });
-        authenticator.on('sessionDataInvalidated', function(content) {
-          _this.clear(true);
-        });
-      },
-
-      /**
-        @method bindToStoreEvents
-        @private
-      */
-      bindToStoreEvents: function() {
-        var _this = this;
-        this.store.on('sessionDataUpdated', function(content) {
-          var authenticator = content.authenticator;
-          if (!!authenticator) {
-            delete content.authenticator;
-            _this.container.lookup(authenticator).restore(content).then(function(content) {
-              _this.setup(authenticator, content, true);
-            }, function() {
-              _this.clear(true);
-            });
-          } else {
-            _this.clear(true);
-          }
-        });
-      }.observes('store')
-    });
-  });
-define("simple-auth/setup", 
-  ["./configuration","./session","./stores/local-storage","./stores/ephemeral","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-    var Session = __dependency2__["default"];
-    var LocalStorage = __dependency3__["default"];
-    var Ephemeral = __dependency4__["default"];
-
-    function extractLocationOrigin(location) {
-      if (location === '*'){
-          return location;
-      }
-      if (Ember.typeOf(location) === 'string') {
-        var link = document.createElement('a');
-        link.href = location;
-        //IE requires the following line when url is relative.
-        //First assignment of relative url to link.href results in absolute url on link.href but link.hostname and other properties are not set
-        //Second assignment of absolute url to link.href results in link.hostname and other properties being set as expected
-        link.href = link.href;
-        location = link;
-      }
-      var port = location.port;
-      if (Ember.isEmpty(port)) {
-        //need to include the port whether its actually present or not as some versions of IE will always set it
-        port = location.protocol === 'http:' ? '80' : (location.protocol === 'https:' ? '443' : '');
-      }
-      return location.protocol + '//' + location.hostname + (port !== '' ? ':' + port : '');
-    }
-
-    var urlOrigins     = {};
-    var crossOriginWhitelist;
-    function shouldAuthorizeRequest(options) {
-      if (options.crossDomain === false || crossOriginWhitelist.indexOf('*') > -1) {
-        return true;
-      }
-      var urlOrigin = urlOrigins[options.url] = urlOrigins[options.url] || extractLocationOrigin(options.url);
-      return crossOriginWhitelist.indexOf(urlOrigin) > -1;
-    }
-
-    function registerFactories(container) {
-      container.register('simple-auth-session-store:local-storage', LocalStorage);
-      container.register('simple-auth-session-store:ephemeral', Ephemeral);
-      container.register('simple-auth-session:main', Session);
-    }
-
-    function ajaxPrefilter(options, originalOptions, jqXHR) {
-      if (shouldAuthorizeRequest(options)) {
-        jqXHR.__simple_auth_authorized__ = true;
-        ajaxPrefilter.authorizer.authorize(jqXHR, options);
-      }
-    }
-
-    function ajaxError(event, jqXHR, setting, exception) {
-      if (!!jqXHR.__simple_auth_authorized__ && jqXHR.status === 401) {
-        ajaxError.session.trigger('authorizationFailed');
-      }
-    }
-
-    var didSetupAjaxHooks = false;
-
-    /**
-      @method setup
-      @private
-    **/
-    __exports__["default"] = function(container, application) {
-      application.deferReadiness();
-      registerFactories(container);
-
-      var store   = container.lookup(Configuration.store);
-      var session = container.lookup(Configuration.session);
-      session.setProperties({ store: store, container: container });
-      Ember.A(['controller', 'route', 'component']).forEach(function(component) {
-        container.injection(component, Configuration.sessionPropertyName, Configuration.session);
-      });
-
-      crossOriginWhitelist = Ember.A(Configuration.crossOriginWhitelist).map(function(origin) {
-        return extractLocationOrigin(origin);
-      });
-
-      if (!Ember.isEmpty(Configuration.authorizer)) {
-        var authorizer = container.lookup(Configuration.authorizer);
-        Ember.assert('The configured authorizer "' + Configuration.authorizer + '" could not be found in the container.', !Ember.isEmpty(authorizer));
-        authorizer.set('session', session);
-        ajaxPrefilter.authorizer = authorizer;
-        ajaxError.session = session;
-
-        if (!didSetupAjaxHooks) {
-          Ember.$.ajaxPrefilter('+*', ajaxPrefilter);
-          Ember.$(document).ajaxError(ajaxError);
-          didSetupAjaxHooks = true;
-        }
-      } else {
-        Ember.Logger.info('No authorizer was configured for Ember Simple Auth - specify one if backend requests need to be authorized.');
-      }
-
-      var advanceReadiness = function() {
-        application.advanceReadiness();
-      };
-      session.restore().then(advanceReadiness, advanceReadiness);
-    }
-  });
-define("simple-auth/stores/base", 
-  ["../utils/objects-are-equal","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var objectsAreEqual = __dependency1__["default"];
-
-    /**
-      The base for all store types. __This serves as a starting point for
-      implementing custom stores and must not be used directly.__
-
-      Stores are used to persist the session's state so it survives a page reload
-      and is synchronized across multiple tabs or windows of the same application.
-      The store to be used with the application can be configured on the
-      application's environment object:
-
-      ```js
-      ENV['simple-auth'] = {
-        store: 'simple-auth-session-store:local-storage'
-      }
-      ```
-
-      @class Base
-      @namespace SimpleAuth.Stores
-      @module simple-auth/stores/base
-      @extends Ember.Object
-      @uses Ember.Evented
-    */
-    __exports__["default"] = Ember.Object.extend(Ember.Evented, {
-      /**
-        __Triggered when the data that constitutes the session changes in the
-        store. This usually happens because the session is authenticated or
-        invalidated in another tab or window.__ The session automatically catches
-        that event, passes the updated data to its authenticator's
-        [`Authenticators.Base#restore`](#SimpleAuth-Authenticators-Base-restore)
-        method and handles the result of that invocation accordingly.
-
-        @event sessionDataUpdated
-        @param {Object} data The updated session data
-      */
-
-      /**
-        Persists the `data` in the store. This actually replaces all currently
-        stored data.
-
-        `Stores.Base`'s implementation does nothing.
-
-        @method persist
-        @param {Object} data The data to persist
-      */
-      persist: function(data) {
-      },
-
-      /**
-        Restores all data currently saved in the store as a plain object.
-
-        `Stores.Base`'s implementation always returns an empty plain Object.
-
-        @method restore
-        @return {Object} The data currently persisted in the store.
-      */
-      restore: function() {
-        return {};
-      },
-
-      /**
-        Clears the store.
-
-        `Stores.Base`'s implementation does nothing.
-
-        @method clear
-      */
-      clear: function() {
-      }
-    });
-  });
-define("simple-auth/stores/ephemeral", 
-  ["./base","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Base = __dependency1__["default"];
-
-    /**
-      Store that saves its data in memory and thus __is not actually persistent__.
-      It does also not synchronize the session's state across multiple tabs or
-      windows as those cannot share memory.
-
-      __This store is mainly useful for testing.__
-
-      _The factory for this store is registered as
-      `'simple-auth-session-store:ephemeral'` in Ember's container._
-
-      @class Ephemeral
-      @namespace SimpleAuth.Stores
-      @module simple-auth/stores/ephemeral
-      @extends Stores.Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-        @method init
-        @private
-      */
-      init: function() {
-        this.clear();
-      },
-
-      /**
-        Persists the `data`.
-
-        @method persist
-        @param {Object} data The data to persist
-      */
-      persist: function(data) {
-        this._data = JSON.stringify(data || {});
-      },
-
-      /**
-        Restores all data currently saved as a plain object.
-
-        @method restore
-        @return {Object} All data currently persisted
-      */
-      restore: function() {
-        return JSON.parse(this._data) || {};
-      },
-
-      /**
-        Clears the store.
-
-        @method clear
-      */
-      clear: function() {
-        delete this._data;
-        this._data = '{}';
-      }
-    });
-  });
-define("simple-auth/stores/local-storage", 
-  ["./base","../utils/objects-are-equal","../configuration","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
-    "use strict";
-    var Base = __dependency1__["default"];
-    var objectsAreEqual = __dependency2__["default"];
-    var Configuration = __dependency3__["default"];
-
-    /**
-      Store that saves its data in the browser's `localStorage`.
-
-      _The factory for this store is registered as
-      `'simple-auth-session-store:local-storage'` in Ember's container._
-
-      __`Stores.LocalStorage` is Ember Simple Auth's default store.__
-
-      @class LocalStorage
-      @namespace SimpleAuth.Stores
-      @module simple-auth/stores/local-storage
-      @extends Stores.Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-        The key the store stores the data in.
-
-        @property key
-        @type String
-        @default 'ember_simple_auth:session'
-      */
-      key: 'ember_simple_auth:session',
-
-      /**
-        @method init
-        @private
-      */
-      init: function() {
-        this.key = Configuration.localStorageKey;
-
-        this.bindToStorageEvents();
-      },
-
-      /**
-        Persists the `data` in the `localStorage`.
-
-        @method persist
-        @param {Object} data The data to persist
-      */
-      persist: function(data) {
-        data = JSON.stringify(data || {});
-        localStorage.setItem(this.key, data);
-        this._lastData = this.restore();
-      },
-
-      /**
-        Restores all data currently saved in the `localStorage` identified by the
-        `keyPrefix` as one plain object.
-
-        @method restore
-        @return {Object} All data currently persisted in the `localStorage`
-      */
-      restore: function() {
-        var data = localStorage.getItem(this.key);
-        return JSON.parse(data) || {};
-      },
-
-      /**
-        Clears the store by deleting all `localStorage` keys prefixed with the
-        `keyPrefix`.
-
-        @method clear
-      */
-      clear: function() {
-        localStorage.removeItem(this.key);
-        this._lastData = {};
-      },
-
-      /**
-        @method bindToStorageEvents
-        @private
-      */
-      bindToStorageEvents: function() {
-        var _this = this;
-        Ember.$(window).bind('storage', function(e) {
-          var data = _this.restore();
-          if (!objectsAreEqual(data, _this._lastData)) {
-            _this._lastData = data;
-            _this.trigger('sessionDataUpdated', data);
-          }
-        });
-      }
-    });
-  });
-define("simple-auth/utils/get-global-config", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var global = (typeof window !== 'undefined') ? window : {};
-
-    __exports__["default"] = function(scope) {
-      return Ember.get(global, 'ENV.' + scope) || {};
-    }
-  });
-define("simple-auth/utils/load-config", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    __exports__["default"] = function(defaults, callback) {
-      return function(container, config) {
-        var wrappedConfig = Ember.Object.create(config);
-        for (var property in this) {
-          if (this.hasOwnProperty(property) && Ember.typeOf(this[property]) !== 'function') {
-            this[property] = wrappedConfig.getWithDefault(property, defaults[property]);
-          }
-        }
-        if (callback) {
-          callback.apply(this, [container, config]);
-        }
-      };
-    }
-  });
-define("simple-auth/utils/objects-are-equal", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /**
-      @method objectsAreEqual
-      @private
-    */
-    function objectsAreEqual(a, b) {
-      if (a === b) {
-        return true;
-      }
-      if (!(a instanceof Object) || !(b instanceof Object)) {
-        return false;
-      }
-      if(a.constructor !== b.constructor) {
-        return false;
-      }
-
-      for (var property in a) {
-        if (!a.hasOwnProperty(property)) {
-          continue;
-        }
-        if (!b.hasOwnProperty(property)) {
-          return false;
-        }
-        if (a[property] === b[property]) {
-          continue;
-        }
-        if (Ember.typeOf(a[property]) !== 'object') {
-          return false;
-        }
-        if (!objectsAreEqual(a[property], b[property])) {
-          return false;
-        }
-      }
-
-      for (property in b) {
-        if (b.hasOwnProperty(property) && !a.hasOwnProperty(property)) {
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    __exports__["default"] = objectsAreEqual;
-  });
-})(this);
-
-;/**
- * Torii version: 0.2.2
- * Built: Mon Nov 17 2014 15:17:01 GMT-0500 (EST)
- */
-define("torii/adapters/application", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var ApplicationAdapter = Ember.Object.extend({
-
-      open: function(){
-        return new Ember.RSVP.Promise(function(){
-          throw new Error(
-            'The Torii adapter must implement `open` for a session to be opened');
-        });
-      },
-
-      fetch: function(){
-        return new Ember.RSVP.Promise(function(){
-          throw new Error(
-            'The Torii adapter must implement `fetch` for a session to be fetched');
-        });
-      },
-
-      close: function(){
-        return new Ember.RSVP.Promise(function(){
-          throw new Error(
-            'The Torii adapter must implement `close` for a session to be closed');
-        });
-      }
-
-    });
-
-    __exports__["default"] = ApplicationAdapter;
-  });
-define("torii/bootstrap/session", 
-  ["torii/session","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Session = __dependency1__["default"];
-
-    __exports__["default"] = function(container, sessionName){
-      container.register('torii:session', Session);
-      container.injection('torii:session', 'torii', 'torii:main');
-      container.injection('route',      sessionName, 'torii:session');
-      container.injection('controller', sessionName, 'torii:session');
-
-      return container;
-    }
-  });
-define("torii/bootstrap/torii", 
-  ["torii/torii","torii/providers/linked-in-oauth2","torii/providers/google-oauth2","torii/providers/facebook-connect","torii/providers/facebook-oauth2","torii/adapters/application","torii/providers/twitter-oauth1","torii/providers/github-oauth2","torii/services/popup","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __dependency5__, __dependency6__, __dependency7__, __dependency8__, __dependency9__, __exports__) {
-    "use strict";
-    var Torii = __dependency1__["default"];
-    var LinkedInOauth2Provider = __dependency2__["default"];
-    var GoogleOauth2Provider = __dependency3__["default"];
-    var FacebookConnectProvider = __dependency4__["default"];
-    var FacebookOauth2Provider = __dependency5__["default"];
-    var ApplicationAdapter = __dependency6__["default"];
-    var TwitterProvider = __dependency7__["default"];
-    var GithubOauth2Provider = __dependency8__["default"];
-
-    var PopupService = __dependency9__["default"];
-
-    __exports__["default"] = function(container){
-      container.register('torii:main', Torii);
-      container.register('torii-provider:linked-in-oauth2', LinkedInOauth2Provider);
-      container.register('torii-provider:google-oauth2', GoogleOauth2Provider);
-      container.register('torii-provider:facebook-connect', FacebookConnectProvider);
-      container.register('torii-provider:facebook-oauth2', FacebookOauth2Provider);
-      container.register('torii-provider:twitter', TwitterProvider);
-      container.register('torii-provider:github-oauth2', GithubOauth2Provider);
-      container.register('torii-adapter:application', ApplicationAdapter);
-
-      container.register('torii-service:popup', PopupService);
-
-      container.injection('torii-provider', 'popup', 'torii-service:popup');
-
-      if (window.DS) {
-        container.injection('torii-provider', 'store', 'store:main');
-        container.injection('torii-adapter', 'store', 'store:main');
-      }
-
-      return container;
-    }
-  });
-define("torii/configuration", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var get = Ember.get;
-
-    var configuration       = require("sonatribe-ui/config/environment")["default"].torii || {};
-    configuration.providers = configuration.providers || {};
-
-    function configurable(configKey, defaultValue){
-      return Ember.computed(function(){
-        var namespace = this.get('configNamespace'),
-            fullKey   = namespace ? [namespace, configKey].join('.') : configKey,
-            value     = get(configuration, fullKey);
-        if (typeof value === 'undefined') {
-          if (typeof defaultValue !== 'undefined') {
-            if (typeof defaultValue === 'function') {
-              return defaultValue.call(this);
-            } else {
-              return defaultValue;
-            }
-          } else {
-            throw new Error("Expected configuration value "+fullKey+" to be defined!");
-          }
-        }
-        return value;
-      });
-    }
-
-    __exports__.configurable = configurable;
-
-    __exports__["default"] = configuration;
-  });
-define("torii/initializers/initialize-torii-callback", 
-  ["torii/redirect-handler","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var RedirectHandler = __dependency1__["default"];
-
-    __exports__["default"] = {
-      name: 'torii-callback',
-      before: 'torii',
-      initialize: function(container, app){
-        app.deferReadiness();
-        RedirectHandler.handle(window.location.toString())["catch"](function(){
-          app.advanceReadiness();
-        });
-      }
-    };
-  });
-define("torii/initializers/initialize-torii-session", 
-  ["torii/configuration","torii/bootstrap/session","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var configuration = __dependency1__["default"];
-    var bootstrapSession = __dependency2__["default"];
-
-    __exports__["default"] = {
-      name: 'torii-session',
-      after: 'torii',
-
-      initialize: function(container){
-        if (configuration.sessionServiceName) {
-          bootstrapSession(container, configuration.sessionServiceName);
-          container.injection('adapter', configuration.sessionServiceName, 'torii:session');
-        }
-      }
-    };
-  });
-define("torii/initializers/initialize-torii", 
-  ["torii/bootstrap/torii","torii/configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var bootstrapTorii = __dependency1__["default"];
-    var configuration = __dependency2__["default"];
-
-    var initializer = {
-      name: 'torii',
-      initialize: function(container, app){
-        bootstrapTorii(container);
-
-        // Walk all configured providers and eagerly instantiate
-        // them. This gives providers with initialization side effects
-        // like facebook-connect a chance to load up assets.
-        for (var key in  configuration.providers) {
-          if (configuration.providers.hasOwnProperty(key)) {
-            container.lookup('torii-provider:'+key);
-          }
-        }
-
-        app.inject('route', 'torii', 'torii:main');
-      }
-    };
-
-    if (window.DS) {
-      initializer.after = 'store';
-    }
-
-    __exports__["default"] = initializer;
-  });
-define("torii/lib/load-initializer", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /* global Ember */
-    __exports__["default"] = function(initializer){
-      Ember.onLoad('Ember.Application', function(Application){
-        Application.initializer(initializer);
-      });
-    }
-  });
-define("torii/lib/parse-query-string", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    __exports__["default"] = Ember.Object.extend({
-      init: function(url, validKeys) {
-        this.url = url;
-        this.validKeys = validKeys;
-      },
-
-      parse: function(){
-        var url       = this.url,
-            validKeys = this.validKeys,
-            data      = {};
-
-        for (var i = 0; i < validKeys.length; i++) {
-          var key = validKeys[i],
-              regex = new RegExp(key + "=([^&#]*)"),
-              match = regex.exec(url);
-          if (match) {
-            data[key] = match[1];
-          }
-        }
-        return data;
-      }
-    });
-  });
-define("torii/lib/query-string", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    var camelize = Ember.String.camelize,
-        get      = Ember.get;
-
-    function isValue(value){
-      return (value || value === false);
-    }
-
-    function getParamValue(obj, paramName, optional){
-      var camelizedName = camelize(paramName),
-          value         = get(obj, camelizedName);
-
-      if (!optional) {
-        if ( !isValue(value) && isValue(get(obj, paramName))) {
-          throw new Error(
-            'Use camelized versions of url params. (Did not find ' +
-            '"' + camelizedName + '" property but did find ' +
-            '"' + paramName + '".');
-        }
-
-        if (!isValue(value)) {
-          throw new Error(
-            'Missing url param: "'+paramName+'". (Looked for: property named "' +
-            camelizedName + '".'
-          );
-        }
-      }
-
-      return isValue(value) ? encodeURIComponent(value) : undefined;
-    }
-
-    function getOptionalParamValue(obj, paramName){
-      return getParamValue(obj, paramName, true);
-    }
-
-    __exports__["default"] = Ember.Object.extend({
-      init: function(obj, urlParams, optionalUrlParams){
-        this.obj               = obj;
-        this.urlParams         = Ember.A(urlParams).uniq();
-        this.optionalUrlParams = Ember.A(optionalUrlParams || []).uniq();
-
-        this.optionalUrlParams.forEach(function(param){
-          if (this.urlParams.indexOf(param) > -1) {
-            throw "Required parameters cannot also be optional: '" + param + "'";
-          }
-        }, this);
-      },
-
-      toString: function(){
-        var urlParams         = this.urlParams,
-            optionalUrlParams = this.optionalUrlParams,
-            obj               = this.obj,
-            keyValuePairs     = Ember.A([]);
-
-        urlParams.forEach(function(paramName){
-          var paramValue = getParamValue(obj, paramName);
-
-          keyValuePairs.push( [paramName, paramValue] );
-        });
-
-        optionalUrlParams.forEach(function(paramName){
-          var paramValue = getOptionalParamValue(obj, paramName);
-
-          if (isValue(paramValue)) {
-            keyValuePairs.push( [paramName, paramValue] );
-          }
-        });
-
-        return keyValuePairs.map(function(pair){
-          return pair.join('=');
-        }).join('&');
-      }
-    });
-  });
-define("torii/lib/required-property", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function requiredProperty(){
-      return Ember.computed(function(key){
-        throw new Error("Definition of property "+key+" by a subclass is required.");
-      });
-    }
-
-    __exports__["default"] = requiredProperty;
-  });
-define("torii/lib/state-machine", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    /*
-     * Modification of Stefan Penner's StateMachine.js: https://github.com/stefanpenner/state_machine.js/
-     *
-     * This modification requires Ember.js to be loaded first
-     */
-
-    var a_slice = Array.prototype.slice;
-    var o_keys = Ember.keys;
-
-    function makeArray(entry){
-      if (entry.constructor === Array) {
-        return entry;
-      }else if(entry) {
-        return [entry];
-      }else{
-        return [];
-      }
-    }
-
-    function StateMachine(options){
-      var initialState = options.initialState;
-      this.states = options.states;
-
-      if (!this.states) {
-        throw new Error('StateMachine needs states');
-      }
-
-      this.state  = this.states[initialState];
-
-      if (!this.state) {
-        throw new Error('Missing initial state');
-      }
-
-      this.currentStateName = initialState;
-
-      this._subscriptions = {};
-
-      var beforeTransitions = (options.beforeTransitions ||[]);
-      var afterTransitions  = (options.afterTransitions ||[]);
-      var rule;
-
-      var i, length;
-      for(i = 0, length = beforeTransitions.length; length > i; i++){
-        rule = beforeTransitions[i];
-        this.beforeTransition.call(this, rule, rule.fn);
-      }
-
-      for(i = 0, length = afterTransitions.length; length > i; i++){
-        rule = afterTransitions[i];
-        this.afterTransition.call(this, rule, rule.fn);
-      }
-    }
-
-    var SPLAT = StateMachine.SPLAT = '*';
-
-    StateMachine.transitionTo = function(state){
-      return function(){
-        this.transitionTo(state);
-      };
-    };
-
-    StateMachine.prototype = {
-      states: {},
-      toString: function(){
-        return "<StateMachine currentState:'" + this.currentStateName +"' >";
-      },
-
-      transitionTo: function(nextStateName){
-        if (nextStateName.charAt(0) === '.') {
-          var splits = this.currentStateName.split('.').slice(0,-1);
-
-          // maybe all states should have an implicit leading dot (kinda like dns)
-          if (0 < splits.length){
-            nextStateName = splits.join('.') + nextStateName;
-          } else {
-            nextStateName = nextStateName.substring(1);
-          }
-        }
-
-        var state = this.states[nextStateName],
-        stateName = this.currentStateName;
-
-        if (!state) {
-          throw new Error('Unknown State: `' + nextStateName + '`');
-        }
-        this.willTransition(stateName, nextStateName);
-
-        this.state = state;
-
-        this.currentStateName = nextStateName;
-        this.didTransition(stateName, nextStateName);
-      },
-
-      beforeTransition: function(options, fn) {
-        this._transition('willTransition', options, fn);
-      },
-
-      afterTransition: function(options, fn) {
-        this._transition('didTransition', options, fn);
-      },
-
-      _transition: function(event, filter, fn) {
-        var from = filter.from || SPLAT,
-          to = filter.to || SPLAT,
-          context = this,
-          matchingTo, matchingFrom,
-          toSplatOffset, fromSplatOffset,
-          negatedMatchingTo, negatedMatchingFrom;
-
-        if (to.indexOf('!') === 0) {
-          matchingTo = to.substr(1);
-          negatedMatchingTo = true;
-        } else {
-          matchingTo = to;
-          negatedMatchingTo = false;
-        }
-
-        if (from.indexOf('!') === 0) {
-          matchingFrom = from.substr(1);
-          negatedMatchingFrom = true;
-        } else {
-          matchingFrom = from;
-          negatedMatchingFrom = false;
-        }
-
-        fromSplatOffset = matchingFrom.indexOf(SPLAT);
-        toSplatOffset = matchingTo.indexOf(SPLAT);
-
-        if (fromSplatOffset >= 0) {
-          matchingFrom = matchingFrom.substring(fromSplatOffset, 0);
-        }
-
-        if (toSplatOffset >= 0) {
-          matchingTo = matchingTo.substring(toSplatOffset, 0);
-        }
-
-        this.on(event, function(currentFrom, currentTo) {
-          var currentMatcherTo = currentTo,
-            currentMatcherFrom = currentFrom,
-            toMatches, fromMatches;
-
-          if (fromSplatOffset >= 0){
-            currentMatcherFrom = currentFrom.substring(fromSplatOffset, 0);
-          }
-
-          if (toSplatOffset >= 0){
-            currentMatcherTo = currentTo.substring(toSplatOffset, 0);
-          }
-
-          toMatches = (currentMatcherTo === matchingTo) !== negatedMatchingTo;
-          fromMatches = (currentMatcherFrom === matchingFrom) !== negatedMatchingFrom;
-
-          if (toMatches && fromMatches) {
-            fn.call(this, currentFrom, currentTo);
-          }
-        });
-      },
-
-      willTransition: function(from, to) {
-        this._notify('willTransition', from, to);
-      },
-
-      didTransition: function(from, to) {
-        this._notify('didTransition', from, to);
-      },
-
-      _notify: function(name, from, to) {
-        var subscriptions = (this._subscriptions[name] || []);
-
-        for( var i = 0, length = subscriptions.length; i < length; i++){
-          subscriptions[i].call(this, from, to);
-        }
-      },
-
-      on: function(event, fn) {
-        this._subscriptions[event] = this._subscriptions[event] || [];
-        this._subscriptions[event].push(fn);
-      },
-
-      off: function(event, fn) {
-        var idx = this._subscriptions[event].indexOf(fn);
-
-        if (fn){
-          if (idx) {
-            this._subscriptions[event].splice(idx, 1);
-          }
-        }else {
-          this._subscriptions[event] = null;
-        }
-      },
-
-      send: function(eventName) {
-        var event = this.state[eventName];
-        var args = a_slice.call(arguments, 1);
-
-        if (event) {
-          return event.apply(this, args);
-        } else {
-          this.unhandledEvent(eventName);
-        }
-      },
-
-      trySend: function(eventName) {
-        var event = this.state[eventName];
-        var args = a_slice.call(arguments,1);
-
-        if (event) {
-          return event.apply(this, args);
-        }
-      },
-
-      event: function(eventName, callback){
-        var states = this.states;
-
-        var eventApi = {
-          transition: function() {
-            var length = arguments.length,
-            first = arguments[0],
-            second = arguments[1],
-            events = normalizeEvents(eventName, first, second);
-
-            o_keys(events).forEach(function(from){
-              var to = events[from];
-              compileEvent(states, eventName, from, to, StateMachine.transitionTo(to));
-            });
-          }
-        };
-
-        callback.call(eventApi);
-      },
-
-      unhandledEvent: function(event){
-        var currentStateName = this.currentStateName,
-        message = "Unknown Event: `" + event + "` for: " + this.toString();
-
-        throw new Error(message);
-      }
-    };
-
-    function normalizeEvents(eventName, first, second){
-      var events;
-      if (!first) { throw new Error('invalid Transition'); }
-
-      if (second) {
-        var froms = first, to = second;
-        events = expandArrayEvents(froms, to);
-      } else {
-        if (first.constructor === Object) {
-          events = first;
-        } else {
-          throw new Error('something went wrong');
-        }
-      }
-
-      return events;
-    }
-
-    function expandArrayEvents(froms, to){
-      return  makeArray(froms).reduce(function(events, from){
-         events[from] = to;
-         return events;
-       }, {});
-    }
-
-    function compileEvent(states, eventName, from, to, fn){
-      var state = states[from];
-
-      if (from && to && state) {
-        states[from][eventName] = fn;
-      } else {
-        var message = "invalid transition state: " + (state && state.currentStateName) + " from: " + from+ " to: " + to ;
-        throw new Error(message);
-      }
-    }
-
-    __exports__["default"] = StateMachine;
-  });
-define("torii/load-initializers", 
-  ["torii/lib/load-initializer","torii/initializers/initialize-torii","torii/initializers/initialize-torii-callback","torii/initializers/initialize-torii-session","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var loadInitializer = __dependency1__["default"];
-    var initializeTorii = __dependency2__["default"];
-    var initializeToriiCallback = __dependency3__["default"];
-    var initializeToriiSession = __dependency4__["default"];
-
-    __exports__["default"] = function(){
-      loadInitializer(initializeToriiCallback);
-      loadInitializer(initializeTorii);
-      loadInitializer(initializeToriiSession);
-    }
-  });
-define("torii/providers/base", 
-  ["torii/lib/required-property","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var requiredProperty = __dependency1__["default"];
-
-    /**
-     * The base class for all torii providers
-     * @class BaseProvider
-     */
-    var Base = Ember.Object.extend({
-
-     /**
-      * The name of the provider
-      * @property {string} name
-      */
-      name: requiredProperty(),
-
-      /**
-       * The name of the configuration property
-       * that holds config information for this provider.
-       * @property {string} configNamespace
-       */
-      configNamespace: function(){
-        return 'providers.'+this.get('name');
-      }.property('name')
-
-    });
-
-    __exports__["default"] = Base;
-  });
-define("torii/providers/facebook-connect", 
-  ["torii/providers/base","torii/configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    /* global FB, $ */
-
-    /**
-     * This class implements authentication against facebook
-     * connect using the Facebook SDK.
-     */
-
-    var Provider = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-
-    var fbPromise;
-
-    function fbLoad(settings){
-      if (fbPromise) { return fbPromise; }
-
-      var original = window.fbAsyncInit;
-      fbPromise = new Ember.RSVP.Promise(function(resolve, reject){
-        window.fbAsyncInit = function(){
-          FB.init(settings);
-          Ember.run(null, resolve);
-        };
-        $.getScript('//connect.facebook.net/en_US/all.js');
-      }).then(function(){
-        window.fbAsyncInit = original;
-      });
-
-      return fbPromise;
-    }
-
-    function fbLogin(scope){
-      return new Ember.RSVP.Promise(function(resolve, reject){
-        FB.login(function(response){
-          if (response.authResponse) {
-            Ember.run(null, resolve, response.authResponse);
-          } else {
-            Ember.run(null, reject, response.status);
-          }
-        }, { scope: scope });
-      });
-    }
-
-    function fbNormalize(response){
-      return {
-        userId: response.userID,
-        accessToken: response.accessToken
-      };
-    }
-
-    var Facebook = Provider.extend({
-
-      // Required settings:
-      name:  'facebook-connect',
-      scope: configurable('scope', 'email'),
-      appId: configurable('appId'),
-
-      // API:
-      //
-      open: function(){
-        var scope = this.get('scope');
-
-        return fbLoad( this.settings() )
-          .then(function(){
-            return fbLogin(scope);
-          })
-          .then(fbNormalize);
-      },
-
-      settings: function(){
-        return {
-          status: true,
-          cookie: true,
-          xfbml: false,
-          appId: this.get('appId')
-        };
-      },
-
-      // Load Facebook's script eagerly, so that the window.open
-      // in FB.login will be part of the same JS frame as the
-      // click itself.
-      loadFbLogin: function(){
-        fbLoad( this.settings() );
-      }.on('init')
-
-    });
-
-    __exports__["default"] = Facebook;
-  });
-define("torii/providers/facebook-oauth2", 
-  ["torii/configuration","torii/providers/oauth2-code","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var configurable = __dependency1__.configurable;
-    var Oauth2 = __dependency2__["default"];
-
-    __exports__["default"] = Oauth2.extend({
-      name:    'facebook-oauth2',
-      baseUrl: 'https://www.facebook.com/dialog/oauth',
-
-      // Additional url params that this provider requires
-      requiredUrlParams: ['display'],
-
-      responseParams: ['code'],
-
-      scope:        configurable('scope', 'email'),
-
-      display: 'popup',
-      redirectUri: configurable('redirectUri', function(){
-        // A hack that allows redirectUri to be configurable
-        // but default to the superclass
-        return this._super();
-      }),
-
-      open: function() {
-        return this._super().then(function(authData){
-          if (authData.authorizationCode && authData.authorizationCode === '200') {
-            // indication that the user hit 'cancel', not 'ok'
-            throw 'User canceled authorization';
-          }
-
-          return authData;
-        });
-      }
-    });
-  });
-define("torii/providers/github-oauth2", 
-  ["torii/providers/oauth2-code","torii/configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var Oauth2 = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-
-    /**
-     * This class implements authentication against Github
-     * using the OAuth2 authorization flow in a popup window.
-     * @class
-     */
-    var GithubOauth2 = Oauth2.extend({
-      name:       'github-oauth2',
-      baseUrl:    'https://github.com/login/oauth/authorize',
-
-      // additional url params that this provider requires
-      requiredUrlParams: ['state'],
-
-      responseParams: ['code'],
-
-      state: 'STATE',
-
-      redirectUri: configurable('redirectUri', function(){
-        // A hack that allows redirectUri to be configurable
-        // but default to the superclass
-        return this._super();
-      })
-    });
-
-    __exports__["default"] = GithubOauth2;
-  });
-define("torii/providers/google-oauth2", 
-  ["torii/providers/oauth2-code","torii/configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    /**
-     * This class implements authentication against google
-     * using the OAuth2 authorization flow in a popup window.
-     */
-
-    var Oauth2 = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-
-    var GoogleOauth2 = Oauth2.extend({
-
-      name:    'google-oauth2',
-      baseUrl: 'https://accounts.google.com/o/oauth2/auth',
-
-      // additional params that this provider requires
-      requiredUrlParams: ['state'],
-      optionalUrlParams: ['scope', 'request_visible_actions'],
-
-      requestVisibleActions: configurable('requestVisibleActions', ''),
-
-      responseParams: ['code'],
-
-      scope: configurable('scope', 'email'),
-
-      state: configurable('state', 'STATE'),
-
-      redirectUri: configurable('redirectUri',
-                                'http://localhost:8000/oauth2callback')
-    });
-
-    __exports__["default"] = GoogleOauth2;
-  });
-define("torii/providers/linked-in-oauth2", 
-  ["torii/providers/oauth2-code","torii/configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var Oauth2 = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-
-    /**
-     * This class implements authentication against Linked In
-     * using the OAuth2 authorization flow in a popup window.
-     *
-     * @class LinkedInOauth2
-     */
-    var LinkedInOauth2 = Oauth2.extend({
-      name:       'linked-in-oauth2',
-      baseUrl:    'https://www.linkedin.com/uas/oauth2/authorization',
-
-      // additional url params that this provider requires
-      requiredUrlParams: ['state'],
-
-      responseParams: ['code'],
-
-      state: 'STATE',
-
-      redirectUri: configurable('redirectUri', function(){
-        // A hack that allows redirectUri to be configurable
-        // but default to the superclass
-        return this._super();
-      })
-
-    });
-
-    __exports__["default"] = LinkedInOauth2;
-  });
-define("torii/providers/oauth1", 
-  ["torii/providers/base","torii/configuration","torii/lib/query-string","torii/lib/required-property","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    /*
-     * This class implements authentication against an API
-     * using the OAuth1.0a request token flow in a popup window.
-     */
-
-    var Provider = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-    var QueryString = __dependency3__["default"];
-    var requiredProperty = __dependency4__["default"];
-
-    function currentUrl(){
-      return [window.location.protocol,
-              "//",
-              window.location.host,
-              window.location.pathname].join('');
-    }
-
-    var Oauth1 = Provider.extend({
-      name: 'oauth1',
-
-      requestTokenUri: configurable('requestTokenUri'),
-
-      buildRequestTokenUrl: function(){
-        var requestTokenUri = this.get('requestTokenUri');
-        return requestTokenUri;
-      },
-
-      open: function(){
-        var name        = this.get('name'),
-            url         = this.buildRequestTokenUrl();
-
-        return this.get('popup').open(url, ['code']).then(function(authData){
-          authData.provider = name;
-          return authData;
-        });
-      }
-    });
-
-    __exports__["default"] = Oauth1;
-  });
-define("torii/providers/oauth2-bearer", 
-  ["torii/providers/oauth2-code","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Provider = __dependency1__["default"];
-
-    var Oauth2Bearer = Provider.extend({
-      responseType: 'token',
-
-      /**
-       * @method open
-       * @return {Promise<object>} If the authorization attempt is a success,
-       * the promise will resolve an object containing the following keys:
-       *   - authorizationToken: The `token` from the 3rd-party provider
-       *   - provider: The name of the provider (i.e., google-oauth2)
-       *   - redirectUri: The redirect uri (some server-side exchange flows require this)
-       * If there was an error or the user either canceled the authorization or
-       * closed the popup window, the promise rejects.
-       */
-      open: function(){
-        var name        = this.get('name'),
-            url         = this.buildUrl(),
-            redirectUri = this.get('redirectUri'),
-            responseParams = this.get('responseParams');
-
-        return this.get('popup').open(url, responseParams).then(function(authData){
-          var missingResponseParams = [];
-
-          responseParams.forEach(function(param){
-            if (authData[param] === undefined) {
-              missingResponseParams.push(param);
-            }
-          });
-
-          if (missingResponseParams.length){
-            throw "The response from the provider is missing " +
-                  "these required response params: " + responseParams.join(', ');
-          }
-
-          return {
-            authorizationToken: authData,
-            provider: name,
-            redirectUri: redirectUri
-          };
-        });
-      }
-    });
-
-    __exports__["default"] = Oauth2Bearer;
-  });
-define("torii/providers/oauth2-code", 
-  ["torii/providers/base","torii/configuration","torii/lib/query-string","torii/lib/required-property","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var Provider = __dependency1__["default"];
-    var configurable = __dependency2__.configurable;
-    var QueryString = __dependency3__["default"];
-    var requiredProperty = __dependency4__["default"];
-
-    function currentUrl(){
-      return [window.location.protocol,
-              "//",
-              window.location.host,
-              window.location.pathname].join('');
-    }
-
-    /**
-     * Implements authorization against an OAuth2 API
-     * using the OAuth2 authorization flow in a popup window.
-     *
-     * Subclasses should extend this class and define the following properties:
-     *   - requiredUrlParams: If there are additional required params
-     *   - optionalUrlParams: If there are additional optional params
-     *   - name: The name used in the configuration `providers` key
-     *   - baseUrl: The base url for OAuth2 code-based flow at the 3rd-party
-     *
-     *   If there are any additional required or optional url params,
-     *   include default values for them (if appropriate).
-     *
-     * @class Oauth2Provider
-     */
-    var Oauth2 = Provider.extend({
-      concatenatedProperties: ['requiredUrlParams','optionalUrlParams'],
-
-      /**
-       * The parameters that must be included as query params in the 3rd-party provider's url that we build.
-       * These properties are in the format that should be in the URL (i.e.,
-       * usually underscored), but they are looked up as camelCased properties
-       * on the instance of this provider. For example, if the 'client_id' is
-       * a required url param, when building the URL we look up the value of
-       * the 'clientId' (camel-cased) property and put it in the URL as
-       * 'client_id=' + this.get('clientId')
-       * Subclasses can add additional required url params.
-       *
-       * @property {array} requiredUrlParams
-       */
-      requiredUrlParams: ['response_type', 'client_id', 'redirect_uri'],
-
-      /**
-       * Parameters that may be included in the 3rd-party provider's url that we build.
-       * Subclasses can add additional optional url params.
-       *
-       * @property {array} optionalUrlParams
-       */
-      optionalUrlParams: ['scope'],
-
-      /**
-       * The base url for the 3rd-party provider's OAuth2 flow (example: 'https://github.com/login/oauth/authorize')
-       *
-       * @property {string} baseUrl
-       */
-      baseUrl:      requiredProperty(),
-
-      /**
-       * The apiKey (sometimes called app id) that identifies the registered application at the 3rd-party provider
-       *
-       * @property {string} apiKey
-       */
-      apiKey:       configurable('apiKey'),
-
-      scope:        configurable('scope', null),
-      clientId:     Ember.computed.alias('apiKey'),
-
-      /**
-       * The oauth response type we expect from the third party provider. Hardcoded to 'code' for oauth2-code flows
-       * @property {string} responseType
-       */
-      responseType: 'code',
-
-     /**
-      * List of parameters that we expect
-      * to see in the query params that the 3rd-party provider appends to
-      * our `redirectUri` after the user confirms/denies authorization.
-      * If any of these parameters are missing, the OAuth attempt is considered
-      * to have failed (usually this is due to the user hitting the 'cancel' button)
-      *
-      * @property {array} responseParams
-      */
-      responseParams: requiredProperty(),
-
-      redirectUri: function(){
-        return currentUrl();
-      }.property(),
-
-      buildQueryString: function(){
-        var requiredParams = this.get('requiredUrlParams'),
-            optionalParams = this.get('optionalUrlParams');
-
-        var qs = new QueryString(this, requiredParams, optionalParams);
-        return qs.toString();
-      },
-
-      buildUrl: function(){
-        var base = this.get('baseUrl'),
-            qs   = this.buildQueryString();
-
-        return [base, qs].join('?');
-      },
-
-      /**
-       * @method open
-       * @return {Promise<object>} If the authorization attempt is a success,
-       * the promise will resolve an object containing the following keys:
-       *   - authorizationCode: The `code` from the 3rd-party provider
-       *   - provider: The name of the provider (i.e., google-oauth2)
-       *   - redirectUri: The redirect uri (some server-side exchange flows require this)
-       * If there was an error or the user either canceled the authorization or
-       * closed the popup window, the promise rejects.
-       */
-      open: function(){
-        var name        = this.get('name'),
-            url         = this.buildUrl(),
-            redirectUri = this.get('redirectUri'),
-            responseParams = this.get('responseParams');
-
-        return this.get('popup').open(url, responseParams).then(function(authData){
-          var missingResponseParams = [];
-
-          responseParams.forEach(function(param){
-            if (authData[param] === undefined) {
-              missingResponseParams.push(param);
-            }
-          });
-
-          if (missingResponseParams.length){
-            throw "The response from the provider is missing " +
-                  "these required response params: " + responseParams.join(', ');
-          }
-
-          return {
-            authorizationCode: authData.code,
-            provider: name,
-            redirectUri: redirectUri
-          };
-        });
-      }
-    });
-
-    __exports__["default"] = Oauth2;
-  });
-define("torii/providers/twitter-oauth1", 
-  ["torii/providers/oauth1","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Oauth1Provider = __dependency1__["default"];
-
-    __exports__["default"] = Oauth1Provider.extend({
-      name: 'twitter'
-    });
-  });
-define("torii/redirect-handler", 
-  ["./services/popup","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    /**
-     * RedirectHandler will attempt to find
-     * these keys in the URL. If found,
-     * this is an indication to Torii that
-     * the Ember app has loaded inside a popup
-     * and should postMessage this data to window.opener
-     */
-
-    var postMessageFixed = __dependency1__.postMessageFixed;
-    var readToriiMessage = __dependency1__.readToriiMessage;
-
-    var RedirectHandler = Ember.Object.extend({
-
-      init: function(url){
-        this.url = url;
-      },
-
-      run: function(){
-        var url = this.url;
-        return new Ember.RSVP.Promise(function(resolve, reject){
-          if (window.opener && window.opener.name === 'torii-opener') {
-            postMessageFixed(window.opener, url);
-            window.close();
-          } else {
-            reject('No window.opener');
-          }
-        });
-      }
-
-    });
-
-    RedirectHandler.reopenClass({
-      // untested
-      handle: function(url){
-        var handler = new RedirectHandler(url);
-        return handler.run();
-      }
-    });
-
-    __exports__["default"] = RedirectHandler;
-  });
-define("torii/services/popup", 
-  ["torii/lib/parse-query-string","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var ParseQueryString = __dependency1__["default"];
-
-    var postMessageFixed;
-    var postMessageDomain = window.location.protocol+'//'+window.location.host;
-    var postMessagePrefix = "__torii_message:";
-    // in IE11 window.attachEvent was removed.
-    if (window.attachEvent) {
-      postMessageFixed = function postMessageFixed(win, data) {
-        win.postMessageWithFix(postMessagePrefix+data, postMessageDomain);
-      };
-      window.postMessageWithFix = function postMessageWithFix(data, domain) {
-        setTimeout(function(){
-          window.postMessage(data, domain);
-        }, 0);
-      };
-    } else {
-      postMessageFixed = function postMessageFixed(win, data) {
-        win.postMessage(postMessagePrefix+data, postMessageDomain);
-      };
-    }
-
-    __exports__.postMessageFixed = postMessageFixed;
-
-    function stringifyOptions(options){
-      var optionsStrings = [];
-      for (var key in options) {
-        if (options.hasOwnProperty(key)) {
-          var value;
-          switch (options[key]) {
-            case true:
-              value = '1';
-              break;
-            case false:
-              value = '0';
-              break;
-            default:
-              value = options[key];
-          }
-          optionsStrings.push(
-            key+"="+value
-          );
-        }
-      }
-      return optionsStrings.join(',');
-    }
-
-    function prepareOptions(options){
-      var width = options.width || 500,
-          height = options.height || 500;
-      return Ember.$.extend({
-        left: ((screen.width / 2) - (width / 2)),
-        top: ((screen.height / 2) - (height / 2)),
-        width: width,
-        height: height
-      }, options);
-    }
-
-    function readToriiMessage(message){
-      if (message && typeof message === 'string' && message.indexOf(postMessagePrefix) === 0) {
-        return message.slice(postMessagePrefix.length);
-      }
-    }
-
-    __exports__.readToriiMessage = readToriiMessage;
-
-    function parseMessage(url, keys){
-      var parser = new ParseQueryString(url, keys),
-          data = parser.parse();
-      return data;
-    }
-
-    var Popup = Ember.Object.extend(Ember.Evented, {
-
-      // Open a popup window. Returns a promise that resolves or rejects
-      // accoring to if the popup is redirected with arguments in the URL.
-      //
-      // For example, an OAuth2 request:
-      //
-      // popup.open('http://some-oauth.com', ['code']).then(function(data){
-      //   // resolves with data.code, as from http://app.com?code=13124
-      // });
-      //
-      open: function(url, keys, options){
-        var service   = this,
-            lastPopup = this.popup;
-
-        var oldName = window.name;
-        // Is checked by the popup to see if it was opened by Torii
-        window.name = 'torii-opener';
-
-        return new Ember.RSVP.Promise(function(resolve, reject){
-          if (lastPopup) {
-            service.close();
-          }
-
-          var optionsString = stringifyOptions(prepareOptions(options || {}));
-          service.popup = window.open(url, 'torii-auth', optionsString);
-
-          if (service.popup && !service.popup.closed) {
-            service.popup.focus();
-          } else {
-            reject(new Error(
-              'Popup could not open or was closed'));
-            return;
-          }
-
-          service.one('didClose', function(){
-            reject(new Error(
-              'Popup was closed or authorization was denied'));
-          });
-
-          Ember.$(window).on('message.torii', function(event){
-            var message = event.originalEvent.data;
-            var toriiMessage = readToriiMessage(message);
-            if (toriiMessage) {
-              var data = parseMessage(toriiMessage, keys);
-              resolve(data);
-            }
-          });
-
-          service.schedulePolling();
-
-        })["finally"](function(){
-          // didClose will reject this same promise, but it has already resolved.
-          service.close();
-          window.name = oldName;
-          Ember.$(window).off('message.torii');
-        });
-      },
-
-      close: function(){
-        if (this.popup) {
-          this.popup = null;
-          this.trigger('didClose');
-        }
-      },
-
-      pollPopup: function(){
-        if (!this.popup) {
-          return;
-        }
-        if (this.popup.closed) {
-          this.trigger('didClose');
-        }
-      },
-
-      schedulePolling: function(){
-        this.polling = Ember.run.later(this, function(){
-          this.pollPopup();
-          this.schedulePolling();
-        }, 35);
-      },
-
-      stopPolling: function(){
-        Ember.run.cancel(this.polling);
-      }.on('didClose'),
-
-
-    });
-
-    __exports__["default"] = Popup;
-  });
-define("torii/session", 
-  ["torii/session/state-machine","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var createStateMachine = __dependency1__["default"];
-
-    function lookupAdapter(container, authenticationType){
-      var adapter = container.lookup('torii-adapter:'+authenticationType);
-      if (!adapter) {
-        adapter = container.lookup('torii-adapter:application');
-      }
-      return adapter;
-    }
-
-    var Session = Ember.ObjectProxy.extend({
-      state: null,
-
-      stateMachine: function(){
-        return createStateMachine(this);
-      }.property(),
-
-      setupStateProxy: function(){
-        var sm    = this.get('stateMachine'),
-            proxy = this;
-        sm.on('didTransition', function(){
-          proxy.set('content', sm.state);
-          proxy.set('currentStateName', sm.currentStateName);
-        });
-      }.on('init'),
-
-      // Make these properties one-way.
-      setUnknownProperty: Ember.K,
-
-      open: function(provider, options){
-        var container = this.container,
-            torii     = this.get('torii'),
-            sm        = this.get('stateMachine');
-
-        return new Ember.RSVP.Promise(function(resolve){
-          sm.send('startOpen');
-          resolve();
-        }).then(function(){
-          return torii.open(provider, options);
-        }).then(function(authorization){
-          var adapter = lookupAdapter(
-            container, provider
-          );
-
-          return adapter.open(authorization);
-        }).then(function(user){
-          sm.send('finishOpen', user);
-          return user;
-        })["catch"](function(error){
-          sm.send('failOpen', error);
-          return Ember.RSVP.reject(error);
-        });
-      },
-
-      fetch: function(provider, options){
-        var container = this.container,
-            sm        = this.get('stateMachine');
-
-        return new Ember.RSVP.Promise(function(resolve){
-          sm.send('startFetch');
-          resolve();
-        }).then(function(){
-          var adapter = lookupAdapter(
-            container, provider
-          );
-
-          return adapter.fetch(options);
-        }).then(function(data){
-          sm.send('finishFetch', data);
-          return;
-        })["catch"](function(error){
-          sm.send('failFetch', error);
-          return Ember.RSVP.reject(error);
-        });
-      },
-
-      close: function(provider, options){
-        var container = this.container,
-            sm        = this.get('stateMachine');
-
-        return new Ember.RSVP.Promise(function(resolve){
-          sm.send('startClose');
-          resolve();
-        }).then(function(){
-          var adapter = lookupAdapter(container, provider);
-          return adapter.close(options);
-        }).then(function(){
-          sm.send('finishClose');
-        })["catch"](function(error){
-          sm.send('failClose', error);
-          return Ember.RSVP.reject(error);
-        });
-      }
-
-    });
-
-    __exports__["default"] = Session;
-  });
-define("torii/session/state-machine", 
-  ["torii/lib/state-machine","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var StateMachine = __dependency1__["default"];
-
-    var transitionTo = StateMachine.transitionTo;
-
-    function copyProperties(data, target) {
-      for (var key in data) {
-        if (data.hasOwnProperty(key)) {
-          target[key] = data[key];
-        }
-      }
-    }
-
-    function transitionToClearing(target, propertiesToClear) {
-      return function(){
-        for (var i;i<propertiesToClear.length;i++) {
-          this[propertiesToClear[i]] = null;
-        }
-        this.transitionTo(target);
-      };
-    }
-
-    __exports__["default"] = function(session){
-      var sm = new StateMachine({
-        initialState: 'unauthenticated',
-
-        states: {
-          unauthenticated: {
-            errorMessage: null,
-            isAuthenticated: false,
-            // Actions
-            startOpen: transitionToClearing('opening', ['errorMessage']),
-            startFetch: transitionToClearing('fetching', ['errorMessage'])
-          },
-          authenticated: {
-            // Properties
-            currentUser: null,
-            isAuthenticated: true,
-            startClose: transitionTo('closing')
-          },
-          opening: {
-            isWorking: true,
-            isOpening: true,
-            // Actions
-            finishOpen: function(data){
-              copyProperties(data, this.states['authenticated']);
-              this.transitionTo('authenticated');
-            },
-            failOpen: function(errorMessage){
-              this.states['unauthenticated'].errorMessage = errorMessage;
-              this.transitionTo('unauthenticated');
-            }
-          },
-          fetching: {
-            isWorking: true,
-            isFetching: true,
-            // Actions
-            finishFetch: function(data){
-              copyProperties(data, this.states['authenticated']);
-              this.transitionTo('authenticated');
-            },
-            failFetch: function(errorMessage){
-              this.states['unauthenticated'].errorMessage = errorMessage;
-              this.transitionTo('unauthenticated');
-            }
-          },
-          closing: {
-            isWorking: true,
-            isClosing: true,
-            isAuthenticated: true,
-            // Actions
-            finishClose: function(){
-              this.transitionTo('unauthenticated');
-            },
-            failClose: function(errorMessage){
-              this.states['unauthenticated'].errorMessage = errorMessage;
-              this.transitionTo('unauthenticated');
-            }
-          }
-        }
-      });
-      sm.session = session;
-      return sm;
-    }
-  });
-define("torii/torii", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function lookupProvider(container, providerName){
-      return container.lookup('torii-provider:'+providerName);
-    }
-
-    function proxyToProvider(methodName, requireMethod){
-      return function(providerName, options){
-        var container = this.container;
-        var provider = lookupProvider(container, providerName);
-        if (!provider) {
-          throw new Error("Expected a provider named '"+providerName+"' " +
-                          ", did you forget to register it?");
-        }
-
-        if (!provider[methodName]) {
-          if (requireMethod) {
-            throw new Error("Expected provider '"+providerName+"' to define " +
-                            "the '"+methodName+"' method.");
-          } else {
-            return Ember.RSVP.Promise.resolve({});
-          }
-        }
-        return new Ember.RSVP.Promise(function(resolve, reject){
-          resolve( provider[methodName](options) );
-        });
-      };
-    }
-
-    /**
-     * Torii is an engine for authenticating against various
-     * providers. For example, you can open a session with
-     * Linked In via Oauth2 and authorization codes by doing
-     * the following:
-     *
-     *     Torii.open('linked-in-oauth2').then(function(authData){
-     *       console.log(authData.authorizationCode);
-     *     });
-     *
-     * For traditional authentication flows, you will often use
-     * Torii via the Torii.Session API.
-     *
-     * @class Torii
-     */
-    var Torii = Ember.Object.extend({
-
-      /**
-       * Open an authorization against an API. A promise resolving
-       * with an authentication response object is returned. These
-       * response objects,  are found in the "torii/authentications"
-       * namespace.
-       *
-       * @method open
-       * @param {String} providerName The provider to open
-       * @return {Ember.RSVP.Promise} Promise resolving to an authentication object
-       */
-      open:  proxyToProvider('open', true),
-
-      /**
-       * Return a promise which will resolve if the provider has
-       * already been opened.
-       *
-       * @method fetch
-       * @param {String} providerName The provider to open
-       * @return {Ember.RSVP.Promise} Promise resolving to an authentication object
-       */
-      fetch:  proxyToProvider('fetch'),
-
-      /**
-       * Return a promise which will resolve when the provider has been
-       * closed. Closing a provider may not always be a meaningful action,
-       * and may be better handled by torii's session management instead.
-       *
-       * @method close
-       * @param {String} providerName The provider to open
-       * @return {Ember.RSVP.Promise} Promise resolving when the provider is closed
-       */
-      close:  proxyToProvider('close')
-    });
-
-    __exports__["default"] = Torii;
-  });
-;(function(global) {
-  var define = global.define;
-  var require = global.require;
-  var Ember = global.Ember;
-  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
-    Ember = require('ember');
-  }
-
-Ember.libraries.register('Ember Simple Auth Torii', '0.7.2');
-
-define("simple-auth-torii/authenticators/torii", 
-  ["simple-auth/authenticators/base","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Base = __dependency1__["default"];
-
-    /**
-      Authenticator that wraps the
-      [Torii library](https://github.com/Vestorly/torii).
-
-      _The factory for this authenticator is registered as
-      `'simple-auth-authenticator:torii'` in Ember's container._
-
-      @class Torii
-      @namespace SimpleAuth.Authenticators
-      @module simple-auth-torii/authenticators/torii
-      @extends Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-        @property torii
-        @private
-      */
-      torii: null,
-
-      /**
-        @property provider
-        @private
-      */
-      provider: null,
-
-      /**
-        Restores the session by calling the torii provider's `fetch` method.
-
-        @method restore
-        @param {Object} data The data to restore the session from
-        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
-      */
-      restore: function(data) {
-        var _this = this;
-        data      = data || {};
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          if (!Ember.isEmpty(data.provider)) {
-            var provider = data.provider;
-            _this.torii.fetch(data.provider, data).then(function(data) {
-              _this.resolveWith(provider, data, resolve);
-            }, function() {
-              delete _this.provider;
-              reject();
-            });
-          } else {
-            delete _this.provider;
-            reject();
-          }
-        });
-      },
-
-      /**
-        Authenticates the session by opening the torii provider. For more
-        documentation on torii, see the
-        [project's README](https://github.com/Vestorly/torii#readme).
-
-        @method authenticate
-        @param {String} provider The provider to authenticate the session with
-        @param {Object} options The options to pass to the torii provider
-        @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully authenticates a user and rejects otherwise
-      */
-      authenticate: function(provider, options) {
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          _this.torii.open(provider, options || {}).then(function(data) {
-            _this.resolveWith(provider, data, resolve);
-          }, reject);
-        });
-      },
-
-      /**
-        Closes the torii provider.
-
-        @method invalidate
-        @param {Object} data The data that's stored in the session
-        @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully closes and rejects otherwise
-      */
-      invalidate: function(data) {
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          _this.torii.close(_this.provider).then(function() {
-            delete _this.provider;
-            resolve();
-          }, reject);
-        });
-      },
-
-      /**
-        @method resolveWith
-        @private
-      */
-      resolveWith: function(provider, data, resolve) {
-        data.provider = provider;
-        this.provider = data.provider;
-        resolve(data);
-      }
-
-    });
-  });
-define("simple-auth-torii/ember", 
-  ["./initializer"],
-  function(__dependency1__) {
-    "use strict";
-    var initializer = __dependency1__["default"];
-
-    Ember.onLoad('Ember.Application', function(Application) {
-      Application.initializer(initializer);
-    });
-  });
-define("simple-auth-torii/initializer", 
-  ["simple-auth-torii/authenticators/torii","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Authenticator = __dependency1__["default"];
-
-    __exports__["default"] = {
-      name:   'simple-auth-torii',
-      before: 'simple-auth',
-      after:  'torii',
-      initialize: function(container, application) {
-        var torii         = container.lookup('torii:main');
-        var authenticator = Authenticator.create({ torii: torii });
-        container.register('simple-auth-authenticator:torii', authenticator, { instantiate: false });
-      }
-    };
-  });
-})(this);
-
-;(function(global) {
-  var define = global.define;
-  var require = global.require;
-  var Ember = global.Ember;
-  if (typeof Ember === 'undefined' && typeof require !== 'undefined') {
-    Ember = require('ember');
-  }
-
-Ember.libraries.register('Ember Simple Auth OAuth 2.0', '0.7.2');
-
-define("simple-auth-oauth2/authenticators/oauth2", 
-  ["simple-auth/authenticators/base","./../configuration","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
-    "use strict";
-    var Base = __dependency1__["default"];
-    var Configuration = __dependency2__["default"];
-
-    /**
-      Authenticator that conforms to OAuth 2
-      ([RFC 6749](http://tools.ietf.org/html/rfc6749)), specifically the _"Resource
-      Owner Password Credentials Grant Type"_.
-
-      This authenticator supports access token refresh (see
-      [RFC 6740, section 6](http://tools.ietf.org/html/rfc6749#section-6)).
-
-      _The factory for this authenticator is registered as
-      `'simple-auth-authenticator:oauth2-password-grant'` in Ember's
-      container._
-
-      @class OAuth2
-      @namespace SimpleAuth.Authenticators
-      @module simple-auth-oauth2/authenticators/oauth2
-      @extends Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-        Triggered when the authenticator refreshes the access token (see
-        [RFC 6740, section 6](http://tools.ietf.org/html/rfc6749#section-6)).
-
-        @event sessionDataUpdated
-        @param {Object} data The updated session data
-      */
-
-      /**
-        The endpoint on the server the authenticator acquires the access token
-        from.
-
-        This value can be configured via
-        [`SimpleAuth.Configuration.OAuth2#serverTokenEndpoint`](#SimpleAuth-Configuration-OAuth2-serverTokenEndpoint).
-
-        @property serverTokenEndpoint
-        @type String
-        @default '/token'
-      */
-      serverTokenEndpoint: '/token',
-
-      /**
-        The endpoint on the server the authenticator uses to revoke tokens. Only
-        set this if the server actually supports token revokation.
-
-        This value can be configured via
-        [`SimpleAuth.Configuration.OAuth2#serverTokenRevocationEndpoint`](#SimpleAuth-Configuration-OAuth2-serverTokenRevocationEndpoint).
-
-        @property serverTokenRevocationEndpoint
-        @type String
-        @default null
-      */
-      serverTokenRevocationEndpoint: null,
-
-      /**
-        Sets whether the authenticator automatically refreshes access tokens.
-
-        This value can be configured via
-        [`SimpleAuth.Configuration.OAuth2#refreshAccessTokens`](#SimpleAuth-Configuration-OAuth2-refreshAccessTokens).
-
-        @property refreshAccessTokens
-        @type Boolean
-        @default true
-      */
-      refreshAccessTokens: true,
-
-      /**
-        @property _refreshTokenTimeout
-        @private
-      */
-      _refreshTokenTimeout: null,
-
-      /**
-        @method init
-        @private
-      */
-      init: function() {
-        this.serverTokenEndpoint           = Configuration.serverTokenEndpoint;
-        this.serverTokenRevocationEndpoint = Configuration.serverTokenRevocationEndpoint;
-        this.refreshAccessTokens           = Configuration.refreshAccessTokens;
-      },
-
-      /**
-        Restores the session from a set of session properties; __will return a
-        resolving promise when there's a non-empty `access_token` in the `data`__
-        and a rejecting promise otherwise.
-
-        This method also schedules automatic token refreshing when there are values
-        for `refresh_token` and `expires_in` in the `data` and automatic token
-        refreshing is not disabled (see
-        [`Authenticators.OAuth2#refreshAccessTokens`](#SimpleAuth-Authenticators-OAuth2-refreshAccessTokens)).
-
-        @method restore
-        @param {Object} data The data to restore the session from
-        @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
-      */
-      restore: function(data) {
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          var now = (new Date()).getTime();
-          if (!Ember.isEmpty(data.expires_at) && data.expires_at < now) {
-            if (_this.refreshAccessTokens) {
-              _this.refreshAccessToken(data.expires_in, data.refresh_token).then(function(data) {
-                resolve(data);
-              }, reject);
-            } else {
-              reject();
-            }
-          } else {
-            if (Ember.isEmpty(data.access_token)) {
-              reject();
-            } else {
-              _this.scheduleAccessTokenRefresh(data.expires_in, data.expires_at, data.refresh_token);
-              resolve(data);
-            }
-          }
-        });
-      },
-
-      /**
-        Authenticates the session with the specified `options`; makes a `POST`
-        request to the
-        [`Authenticators.OAuth2#serverTokenEndpoint`](#SimpleAuth-Authenticators-OAuth2-serverTokenEndpoint)
-        with the passed credentials and optional scope and receives the token in
-        response (see http://tools.ietf.org/html/rfc6749#section-4.3).
-
-        __If the credentials are valid (and the optionally requested scope is
-        granted) and thus authentication succeeds, a promise that resolves with the
-        server's response is returned__, otherwise a promise that rejects with the
-        error is returned.
-
-        This method also schedules automatic token refreshing when there are values
-        for `refresh_token` and `expires_in` in the server response and automatic
-        token refreshing is not disabled (see
-        [`Authenticators.OAuth2#refreshAccessTokens`](#SimpleAuth-Authenticators-OAuth2-refreshAccessTokens)).
-
-        @method authenticate
-        @param {Object} options
-        @param {String} options.identification The resource owner username
-        @param {String} options.password The resource owner password
-        @param {String|Array} [options.scope] The scope of the access request (see [RFC 6749, section 3.3](http://tools.ietf.org/html/rfc6749#section-3.3))
-        @return {Ember.RSVP.Promise} A promise that resolves when an access token is successfully acquired from the server and rejects otherwise
-      */
-      authenticate: function(options) {
-        var _this = this;
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          var data = { grant_type: 'password', username: options.identification, password: options.password };
-          if (!Ember.isEmpty(options.scope)) {
-            var scopesString = Ember.makeArray(options.scope).join(' ');
-            Ember.merge(data, { scope: scopesString });
-          }
-          _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
-            Ember.run(function() {
-              var expiresAt = _this.absolutizeExpirationTime(response.expires_in);
-              _this.scheduleAccessTokenRefresh(response.expires_in, expiresAt, response.refresh_token);
-              if (!Ember.isEmpty(expiresAt)) {
-                response = Ember.merge(response, { expires_at: expiresAt });
-              }
-              resolve(response);
-            });
-          }, function(xhr, status, error) {
-            Ember.run(function() {
-              reject(xhr.responseJSON || xhr.responseText);
-            });
-          });
-        });
-      },
-
-      /**
-        Cancels any outstanding automatic token refreshes and returns a resolving
-        promise.
-
-        @method invalidate
-        @param {Object} data The data of the session to be invalidated
-        @return {Ember.RSVP.Promise} A resolving promise
-      */
-      invalidate: function(data) {
-        var _this = this;
-        function success(resolve) {
-          Ember.run.cancel(_this._refreshTokenTimeout);
-          delete _this._refreshTokenTimeout;
-          resolve();
-        }
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          if (!Ember.isEmpty(_this.serverTokenRevocationEndpoint)) {
-            var requests = [];
-            Ember.A(['access_token', 'refresh_token']).forEach(function(tokenType) {
-              if (!Ember.isEmpty(data[tokenType])) {
-                requests.push(_this.makeRequest(_this.serverTokenRevocationEndpoint, {
-                  token_type_hint: tokenType, token: data[tokenType]
-                }));
-              }
-            });
-            Ember.$.when.apply(Ember.$, requests).always(function(responses) {
-              success(resolve);
-            });
-          } else {
-            success(resolve);
-          }
-        });
-      },
-
-      /**
-        Sends an `AJAX` request to the `url`. This will always be a _"POST"_
-        request with content type _"application/x-www-form-urlencoded"_ as
-        specified in [RFC 6749](http://tools.ietf.org/html/rfc6749).
-
-        This method is not meant to be used directly but serves as an extension
-        point to e.g. add _"Client Credentials"_ (see
-        [RFC 6749, section 2.3](http://tools.ietf.org/html/rfc6749#section-2.3)).
-
-        @method makeRequest
-        @param {Object} url The url to send the request to
-        @param {Object} data The data to send with the request, e.g. username and password or the refresh token
-        @return {Deferred object} A Deferred object (see [the jQuery docs](http://api.jquery.com/category/deferred-object/)) that is compatible to Ember.RSVP.Promise; will resolve if the request succeeds, reject otherwise
-        @protected
-      */
-      makeRequest: function(url, data) {
-        return Ember.$.ajax({
-          url:         url,
-          type:        'POST',
-          data:        data,
-          dataType:    'json',
-          contentType: 'application/x-www-form-urlencoded'
-        });
-      },
-
-      /**
-        @method scheduleAccessTokenRefresh
-        @private
-      */
-      scheduleAccessTokenRefresh: function(expiresIn, expiresAt, refreshToken) {
-        var _this = this;
-        if (this.refreshAccessTokens) {
-          var now = (new Date()).getTime();
-          if (Ember.isEmpty(expiresAt) && !Ember.isEmpty(expiresIn)) {
-            expiresAt = new Date(now + expiresIn * 1000).getTime();
-          }
-          var offset = (Math.floor(Math.random() * 5) + 5) * 1000;
-          if (!Ember.isEmpty(refreshToken) && !Ember.isEmpty(expiresAt) && expiresAt > now - offset) {
-            Ember.run.cancel(this._refreshTokenTimeout);
-            delete this._refreshTokenTimeout;
-            if (!Ember.testing) {
-              this._refreshTokenTimeout = Ember.run.later(this, this.refreshAccessToken, expiresIn, refreshToken, expiresAt - now - offset);
-            }
-          }
-        }
-      },
-
-      /**
-        @method refreshAccessToken
-        @private
-      */
-      refreshAccessToken: function(expiresIn, refreshToken) {
-        var _this = this;
-        var data  = { grant_type: 'refresh_token', refresh_token: refreshToken };
-        return new Ember.RSVP.Promise(function(resolve, reject) {
-          _this.makeRequest(_this.serverTokenEndpoint, data).then(function(response) {
-            Ember.run(function() {
-              expiresIn     = response.expires_in || expiresIn;
-              refreshToken  = response.refresh_token || refreshToken;
-              var expiresAt = _this.absolutizeExpirationTime(expiresIn);
-              var data      = Ember.merge(response, { expires_in: expiresIn, expires_at: expiresAt, refresh_token: refreshToken });
-              _this.scheduleAccessTokenRefresh(expiresIn, null, refreshToken);
-              _this.trigger('sessionDataUpdated', data);
-              resolve(data);
-            });
-          }, function(xhr, status, error) {
-            Ember.Logger.warn('Access token could not be refreshed - server responded with ' + error + '.');
-            reject();
-          });
-        });
-      },
-
-      /**
-        @method absolutizeExpirationTime
-        @private
-      */
-      absolutizeExpirationTime: function(expiresIn) {
-        if (!Ember.isEmpty(expiresIn)) {
-          return new Date((new Date().getTime()) + expiresIn * 1000).getTime();
-        }
-      }
-    });
-  });
-define("simple-auth-oauth2/authorizers/oauth2", 
-  ["simple-auth/authorizers/base","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Base = __dependency1__["default"];
-
-    /**
-      Authorizer that conforms to OAuth 2
-      ([RFC 6749](http://tools.ietf.org/html/rfc6749)) by sending a bearer token
-      ([RFC 6749](http://tools.ietf.org/html/rfc6750)) in the request's
-      `Authorization` header.
-
-      _The factory for this authorizer is registered as
-      `'simple-auth-authorizer:oauth2-bearer'` in Ember's container._
-
-      @class OAuth2
-      @namespace SimpleAuth.Authorizers
-      @module simple-auth-oauth2/authorizers/oauth2
-      @extends Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-        Authorizes an XHR request by sending the `access_token` property from the
-        session as a bearer token in the `Authorization` header:
-
-        ```
-        Authorization: Bearer <access_token>
-        ```
-
-        @method authorize
-        @param {jqXHR} jqXHR The XHR request to authorize (see http://api.jquery.com/jQuery.ajax/#jqXHR)
-        @param {Object} requestOptions The options as provided to the `$.ajax` method (see http://api.jquery.com/jQuery.ajaxPrefilter/)
-      */
-      authorize: function(jqXHR, requestOptions) {
-        var accessToken = this.get('session.access_token');
-        if (this.get('session.isAuthenticated') && !Ember.isEmpty(accessToken)) {
-          jqXHR.setRequestHeader('Authorization', 'Bearer ' + accessToken);
-        }
-      }
-    });
-  });
-define("simple-auth-oauth2/configuration", 
-  ["simple-auth/utils/load-config","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var loadConfig = __dependency1__["default"];
-
-    var defaults = {
-      serverTokenEndpoint:           '/token',
-      serverTokenRevocationEndpoint: null,
-      refreshAccessTokens:           true
-    };
-
-    /**
-      Ember Simple Auth OAuth2's configuration object.
-
-      To change any of these values, set them on the application's environment
-      object:
-
-      ```js
-      ENV['simple-auth-oauth2'] = {
-        serverTokenEndpoint: '/some/custom/endpoint'
-      }
-      ```
-
-      @class OAuth2
-      @namespace SimpleAuth.Configuration
-      @module simple-auth/configuration
-    */
-    __exports__["default"] = {
-      /**
-        The endpoint on the server the authenticator acquires the access token
-        from.
-
-        @property serverTokenEndpoint
-        @readOnly
-        @static
-        @type String
-        @default '/token'
-      */
-      serverTokenEndpoint: defaults.serverTokenEndpoint,
-
-      /**
-        The endpoint on the server the authenticator uses to revoke tokens. Only
-        set this if the server actually supports token revokation.
-
-        @property serverTokenRevocationEndpoint
-        @readOnly
-        @static
-        @type String
-        @default null
-      */
-      serverTokenRevocationEndpoint: defaults.serverTokenRevocationEndpoint,
-
-      /**
-        Sets whether the authenticator automatically refreshes access tokens.
-
-        @property refreshAccessTokens
-        @readOnly
-        @static
-        @type Boolean
-        @default true
-      */
-      refreshAccessTokens: defaults.refreshAccessTokens,
-
-      /**
-        @method load
-        @private
-      */
-      load: loadConfig(defaults)
-    };
-  });
-define("simple-auth-oauth2/ember", 
-  ["./initializer"],
-  function(__dependency1__) {
-    "use strict";
-    var initializer = __dependency1__["default"];
-
-    Ember.onLoad('Ember.Application', function(Application) {
-      Application.initializer(initializer);
-    });
-  });
-define("simple-auth-oauth2/initializer", 
-  ["./configuration","simple-auth/utils/get-global-config","simple-auth-oauth2/authenticators/oauth2","simple-auth-oauth2/authorizers/oauth2","exports"],
-  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
-    "use strict";
-    var Configuration = __dependency1__["default"];
-    var getGlobalConfig = __dependency2__["default"];
-    var Authenticator = __dependency3__["default"];
-    var Authorizer = __dependency4__["default"];
-
-    __exports__["default"] = {
-      name:       'simple-auth-oauth2',
-      before:     'simple-auth',
-      initialize: function(container, application) {
-        var config = getGlobalConfig('simple-auth-oauth2');
-        Configuration.load(container, config);
-        container.register('simple-auth-authorizer:oauth2-bearer', Authorizer);
-        container.register('simple-auth-authenticator:oauth2-password-grant', Authenticator);
-      }
-    };
-  });
-})(this);
-
-;/* ========================================================================
- * Bootstrap: transition.js v3.0.0
- * http://twbs.github.com/bootstrap/javascript.html#transitions
- * ========================================================================
- * Copyright 2013 Twitter, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ======================================================================== */
-
-
-+function ($) { "use strict";
-
-  // CSS TRANSITION SUPPORT (Shoutout: http://www.modernizr.com/)
-  // ============================================================
-
-  function transitionEnd() {
-    var el = document.createElement('bootstrap')
-
-    var transEndEventNames = {
-      'WebkitTransition' : 'webkitTransitionEnd'
-    , 'MozTransition'    : 'transitionend'
-    , 'OTransition'      : 'oTransitionEnd otransitionend'
-    , 'transition'       : 'transitionend'
-    }
-
-    for (var name in transEndEventNames) {
-      if (el.style[name] !== undefined) {
-        return { end: transEndEventNames[name] }
-      }
-    }
-  }
-
-  // http://blog.alexmaccaw.com/css-transitions
-  $.fn.emulateTransitionEnd = function (duration) {
-    var called = false, $el = this
-    $(this).one($.support.transition.end, function () { called = true })
-    var callback = function () { if (!called) $($el).trigger($.support.transition.end) }
-    setTimeout(callback, duration)
-    return this
-  }
-
-  $(function () {
-    $.support.transition = transitionEnd()
-  })
-
-}(window.jQuery);
-
-(function() {
-  var Bootstrap;
-
-  Bootstrap = window.Bootstrap = Ember.Namespace.create();
-
-}).call(this);
-
-(function() {
-  var Bootstrap, get;
-
-  Bootstrap = window.Bootstrap;
-
-  get = Ember.get;
-
-  Bootstrap.WithRouter = Ember.Mixin.create({
-    router: Ember.computed(function() {
-      return get(this, "controller").container.lookup("router:main");
-    })
-  });
-
-}).call(this);
-
-(function() {
-  var Bootstrap, get, set;
-
-  Bootstrap = window.Bootstrap;
-
-  get = Ember.get;
-
-  set = Ember.set;
-
-  Bootstrap.TypeSupport = Ember.Mixin.create({
-    classTypePrefix: Ember.required(String),
-    classNameBindings: ['typeClass'],
-    type: 'default',
-    typeClass: (function() {
-      var pref, type;
-      type = this.get('type');
-      if (type == null) {
-        type = 'default';
-      }
-      pref = this.get('classTypePrefix');
-      return "" + pref + "-" + type;
-    }).property('type').cacheable()
-  });
-
-}).call(this);
-
-(function() {
-  var Bootstrap, get, set;
-
-  Bootstrap = window.Bootstrap;
-
-  get = Ember.get;
-
-  set = Ember.set;
-
-  Bootstrap.SizeSupport = Ember.Mixin.create({
-    classTypePrefix: Ember.required(String),
-    classNameBindings: ['sizeClass', 'largeSizeClass', 'smallSizeClass', 'extraSmallSizeClass'],
-    size: null,
-    xs: null,
-    small: null,
-    large: null,
-    extraSmallSizeClass: (function() {
-      var pref;
-      pref = this.get('classTypePrefix');
-      if (this.xs) {
-        return "" + pref + "-xs";
-      } else {
-        return null;
-      }
-    }).property('xs').cacheable(),
-    smallSizeClass: (function() {
-      var pref;
-      pref = this.get('classTypePrefix');
-      if (this.small) {
-        return "" + pref + "-sm";
-      } else {
-        return null;
-      }
-    }).property('small').cacheable(),
-    largeSizeClass: (function() {
-      var pref;
-      pref = this.get('classTypePrefix');
-      if (this.large) {
-        return "" + pref + "-lg";
-      } else {
-        return null;
-      }
-    }).property('large').cacheable(),
-    sizeClass: (function() {
-      var pref, size;
-      size = this.get('size');
-      pref = this.get('classTypePrefix');
-      if (size) {
-        return "" + pref + "-" + size;
-      } else {
-        return null;
-      }
-    }).property('size').cacheable()
-  });
-
-}).call(this);
-
-/*
-A mixin for Items that have a value property
-*/
-
-
-(function() {
-  Bootstrap.ItemValue = Ember.Mixin.create({
-    /*
-    The value of the item, currently Items content supports only an array of strings, so value is the actual 'content' property
-    of the item.
-    */
-
-    value: (function() {
-      var itemsView, value;
-      itemsView = this.get('parentView');
-      if (itemsView == null) {
-        return;
-      }
-      value = this.get('content');
-      return value;
-    }).property('content').cacheable()
-  });
-
-}).call(this);
-
-/*
-A Mixin to enhance items enhanced with the 'IsItem' Mixin with selection capability.
-
-When a click event is received the current item will be stored in the parent view 'selected' property,
-An extra 'active' css class will be assigned to the Item (this) if this is a selected item.
-*/
-
-
-(function() {
-  Bootstrap.ItemSelection = Ember.Mixin.create(Bootstrap.ItemValue, Bootstrap.WithRouter, {
-    classNameBindings: ["isActive:active"],
-    init: function() {
-      this._super();
-      return this.didRouteChange();
-    },
-    didRouteChange: (function() {
-      var itemsView, linkTo, _ref;
-      linkTo = this.get('content.linkTo');
-      if (linkTo == null) {
-        return;
-      }
-      itemsView = this.get('parentView');
-      if (itemsView == null) {
-        return;
-      }
-      if ((_ref = this.get('router')) != null ? _ref.isActive(linkTo) : void 0) {
-        return itemsView.set('selected', this.get('value'));
-      }
-    }).observes('router.url'),
-    /*
-    Determine whether the current item is selected,
-    if true the 'active' css class will be associated with the this DOM's element.
-    
-    This is a calculated property and will be retriggered if the 'value' property of the item has changed or the 'selected' property
-    in the parent ItemsView.
-    */
-
-    isActive: (function() {
-      var itemsView, selected, value;
-      itemsView = this.get('parentView');
-      if (itemsView == null) {
-        return false;
-      }
-      selected = itemsView.get('selected');
-      value = this.get('value');
-      if (value == null) {
-        return false;
-      }
-      return selected === value;
-    }).property('value', 'parentView.selected', 'content.linkTo').cacheable(),
-    /*
-    Handle selection by click event.
-    
-    The identifier of the selection is based on the 'content' property of this item.
-    */
-
-    click: function(event) {
-      var content, itemsView;
-      event.preventDefault();
-      itemsView = this.get('parentView');
-      if (itemsView == null) {
-        return;
-      }
-      content = this.get('content');
-      if (typeof content === 'object') {
-        if (content.get('disabled')) {
-          return;
-        }
-      }
-      if (this.get('content.linkTo') != null) {
-        return;
-      }
-      return itemsView.set('selected', this.get('value'));
-    }
-  });
-
-}).call(this);
-
-/*
-A Mixin to enhance views that extends from 'ItemsView' with selection capability.
-*/
-
-
-(function() {
-  Bootstrap.ItemsSelection = Ember.Mixin.create({
-    /*
-    If true, multiple selection is supported
-    */
-
-    multiSelection: false,
-    /*
-    An array of selected item(s), can be also bound to a controller property via 'selectedBinding'
-    */
-
-    selected: []
-  });
-
-}).call(this);
-
-/*
-A Mixin that provides the basic configuration for rendering a Bootstrap navigation such as tabs and pills
-*/
-
-
-(function() {
-  Bootstrap.Nav = Ember.Mixin.create({
-    classNames: ['nav'],
-    classNameBindings: ['navTypeClass'],
-    tagName: 'ul',
-    navType: null,
-    navTypeClass: (function() {
-      if (this.navType != null) {
-        return "nav-" + this.navType;
-      } else {
-        return null;
-      }
-    }).property('navType').cacheable()
-  });
-
-}).call(this);
-
-/*
-A Mixin that provides the basic configuration for rendering and interacting with Bootstrap navigation item such a pill or a tab.
-*/
-
-
-(function() {
-  Bootstrap.NavItem = Ember.Mixin.create(Bootstrap.SelectableView);
-
-}).call(this);
-
-(function() {
-  var getParentView, getProperty;
-
-  getParentView = function(view) {
-    var ok, parentView;
-    if (!(view && (parentView = view.get('parentView')))) {
-      return;
-    }
-    ok = parentView instanceof Bootstrap.ItemsView;
-    Ember.assert("The parent view must be an instance of Bootstrap.ItemsView or any inherited class", ok);
-    if (ok) {
-      return parentView;
-    } else {
-      return void 0;
-    }
-  };
-
-  getProperty = function(obj, prop, noGetReturns) {
-    if (!(Ember.typeOf(obj) === 'instance' || Ember.canInvoke(obj, 'get'))) {
-      return noGetReturns;
-    }
-    return obj.get(prop);
-  };
-
-  /*
-  Views that are rendered as an Item of the ItemsView should extends from this view.
-  
-  When a click event is received the current item will be stored in the parent view 'selected' property,
-  An extra 'active' css class will be assigned to the Item (this) if this is a selected item.
-  
-  Views that extends this view can be enhanced with:
-  ItemSelection: Makes the item selectable.
-  */
-
-
-  Bootstrap.ItemView = Ember.View.extend({
-    isItem: true,
-    classNameBindings: ['disabled'],
-    /*
-    A calculated property that defines the title of the item.
-    */
-
-    title: (function() {
-      var content, itemTitleKey, itemsView;
-      if (!(itemsView = getParentView(this))) {
-        return;
-      }
-      itemTitleKey = itemsView.get('itemTitleKey') || 'title';
-      content = this.get('content');
-      return getProperty(content, itemTitleKey, content);
-    }).property('content').cacheable(),
-    /*
-    Determine whether the item is disabled or not
-    */
-
-    disabled: (function() {
-      var content, disabled, itemsView;
-      if (!(itemsView = getParentView(this))) {
-        return;
-      }
-      content = this.get('content');
-      disabled = !!getProperty(content, 'disabled', false);
-      if (disabled && this.get('isActive')) {
-        itemsView.set('selected', null);
-      }
-      return disabled;
-    }).property('content', 'content.disabled').cacheable()
-  });
-
-}).call(this);
-
-/*
-A parent view of views that supports multiple items rendering such as Navigations (Tabs, Pills)
-
-Views that inherits from this view can be enhanced with:
-- ItemsSelection: Enhances with selection capability.
-*/
-
-
-(function() {
-  Bootstrap.ItemsView = Ember.CollectionView.extend({
-    didInsertElement: function() {
-      var defaultTab, view, _i, _len, _ref, _ref1;
-      if (this.get('default')) {
-        defaultTab = this.get('default');
-        _ref = this._childViews;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          view = _ref[_i];
-          if (((_ref1 = view.get('content')) != null ? _ref1.get('title') : void 0) === defaultTab) {
-            this.set('selected', view.get('content'));
-          }
-        }
-        return Ember.assert("Could not activate default tab " + defaultTab + " as it doesnt exist", defaultTab);
-      }
-    }
-  });
-
-}).call(this);
-
-(function() {
-  Bootstrap.ItemPaneView = Ember.View.extend({
-    template: Ember.Handlebars.compile(['{{#if view.content.template}}', '{{bsItemPanePartial view.content.template}}', '{{/if}}'].join("\n")),
-    corrItem: (function() {
-      var view, _i, _len, _ref;
-      if (this.get('parentView').get('corrItemsView') != null) {
-        _ref = this.get('parentView').get('corrItemsView')._childViews;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          view = _ref[_i];
-          if (view.content === this.get('content')) {
-            return view;
-          }
-        }
-      }
-    }).property('parentView.corrItemsView'),
-    isVisible: (function() {
-      var _ref;
-      return (_ref = this.get('corrItem')) != null ? _ref.get('isActive') : void 0;
-    }).property('corrItem.isActive'),
-    controller: (function() {
-      var controller, itemController;
-      controller = this.get('parentView.controller');
-      if (this.get('content.controller')) {
-        itemController = this.get('container').lookup("controller:" + (this.get('content.controller')));
-        if (itemController) {
-          controller = itemController;
-        }
-      }
-      return controller;
-    }).property('content')
-  });
-
-  Ember.Handlebars.helper("bsItemPanePartial", function(templateName, options) {
-    var template, view;
-    view = options.data.view;
-    template = view.templateForName(templateName);
-    Ember.assert("Unable to find template with name '" + templateName + "'", template);
-    return template(this, {
-      data: options.data
-    });
-  });
-
-}).call(this);
-
-(function() {
-  Bootstrap.ItemsPanesView = Ember.CollectionView.extend({
-    viewsInserted: false,
-    corrItemsView: (function() {
-      var itemsView;
-      itemsView = Ember.View.views[this.get('items-id')];
-      return itemsView;
-    }).property('viewsInserted'),
-    didInsertElement: function() {
-      this._super();
-      return this.set('viewsInserted', true);
-    }
-  });
-
-}).call(this);
-
-;/* ========================================================================
- * Bootstrap: alert.js v3.0.0
- * http://twbs.github.com/bootstrap/javascript.html#alerts
- * ========================================================================
- * Copyright 2013 Twitter, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ======================================================================== */
-
-
-+function ($) { "use strict";
-
-  // ALERT CLASS DEFINITION
-  // ======================
-
-  var dismiss = '[data-dismiss="alert"]'
-  var Alert   = function (el) {
-    $(el).on('click', dismiss, this.close)
-  }
-
-  Alert.prototype.close = function (e) {
-    var $this    = $(this)
-    var selector = $this.attr('data-target')
-
-    if (!selector) {
-      selector = $this.attr('href')
-      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') // strip for ie7
-    }
-
-    var $parent = $(selector)
-
-    if (e) e.preventDefault()
-
-    if (!$parent.length) {
-      $parent = $this.hasClass('alert') ? $this : $this.parent()
-    }
-
-    $parent.trigger(e = $.Event('close.bs.alert'))
-
-    if (e.isDefaultPrevented()) return
-
-    $parent.removeClass('in')
-
-    function removeElement() {
-      $parent.trigger('closed.bs.alert').remove()
-    }
-
-    $.support.transition && $parent.hasClass('fade') ?
-      $parent
-        .one($.support.transition.end, removeElement)
-        .emulateTransitionEnd(150) :
-      removeElement()
-  }
-
-
-  // ALERT PLUGIN DEFINITION
-  // =======================
-
-  var old = $.fn.alert
-
-  $.fn.alert = function (option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data('bs.alert')
-
-      if (!data) $this.data('bs.alert', (data = new Alert(this)))
-      if (typeof option == 'string') data[option].call($this)
-    })
-  }
-
-  $.fn.alert.Constructor = Alert
-
-
-  // ALERT NO CONFLICT
-  // =================
-
-  $.fn.alert.noConflict = function () {
-    $.fn.alert = old
-    return this
-  }
-
-
-  // ALERT DATA-API
-  // ==============
-
-  $(document).on('click.bs.alert.data-api', dismiss, Alert.prototype.close)
-
-}(window.jQuery);
-
-(function() {
-  Bootstrap.BsAlertComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
-    classNames: ['alert'],
-    classNameBindings: ['fade', 'fade:in'],
-    layoutName: 'components/bs-alert',
-    classTypePrefix: 'alert',
-    attributeBindings: ['data-timeout'],
-    dismissAfter: 0,
-    closedParam: null,
-    didInsertElement: function() {
-      var _this = this;
-      if (this.dismissAfter > 0) {
-        Ember.run.later(this, 'dismiss', this.dismissAfter * 1000);
-      }
-      Ember.$("#" + this.elementId).bind('closed.bs.alert', function() {
-        _this.sendAction('closed', _this.get('closedParam'));
-        return _this.destroy();
-      });
-      return Ember.$("#" + this.elementId).bind('close.bs.alert', function() {
-        return _this.sendAction('close', _this.get('closedParam'));
-      });
-    },
-    dismiss: function() {
-      return Ember.$("#" + this.elementId).alert('close');
-    }
-  });
-
-  Ember.Handlebars.helper('bs-alert', Bootstrap.BsAlertComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-alert"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, self=this, escapeExpression=this.escapeExpression;
-
-function program1(depth0,data) {
-  
-  
-  data.buffer.push("\n    <a class=\"close\" data-dismiss=\"alert\" href=\"#\">&times;</a>\n");
-  }
-
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "dismiss", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "message", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  return buffer;
-  
-});
-;(function() {
-  Bootstrap.BsBadgeComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
-    layoutName: 'components/bs-badge',
-    tagName: 'span',
-    classNames: ['badge'],
-    classTypePrefix: 'badge'
-  });
-
-  Ember.Handlebars.helper('bs-badge', Bootstrap.BsBadgeComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-badge"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
-
-
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "content", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  
-});
-;(function() {
-  Bootstrap.BsWellComponent = Ember.Component.extend({
-    layoutName: 'components/bs-well',
-    classNameBindings: ['small:well-sm', 'large:well-lg'],
-    classNames: ['well'],
-    click: function() {
-      return this.sendAction('clicked');
-    }
-  });
-
-  Ember.Handlebars.helper('bs-well', Bootstrap.BsWellComponent);
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsPageHeaderComponent = Ember.Component.extend({
-    layoutName: 'components/bs-page-header',
-    classNames: ['page-header']
-  });
-
-  Ember.Handlebars.helper('bs-page-header', Bootstrap.BsPageHeaderComponent);
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsPanelComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
-    layoutName: 'components/bs-panel',
-    classNames: ['panel'],
-    classTypePrefix: ['panel'],
-    classNameBindings: ['fade', 'fade:in'],
-    clicked: null,
-    onClose: null,
-    fade: true,
-    collapsible: false,
-    open: true,
-    actions: {
-      close: function(event) {
-        this.sendAction('onClose');
-        this.$().removeClass('in');
-        return setTimeout((function() {
-          return this.destroy();
-        }).bind(this), 250);
-      }
-    },
-    click: function(event) {
-      return this.sendAction('clicked');
-    },
-    collapsibleBodyId: (function() {
-      return "" + (this.get('elementId')) + "_body";
-    }).property('collapsible'),
-    collapsibleBodyLink: (function() {
-      return "#" + (this.get('elementId')) + "_body";
-    }).property('collapsibleBodyId')
-  });
-
-  Ember.Handlebars.helper('bs-panel', Bootstrap.BsPanelComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-page-header"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n        <small>");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "sub", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</small>\n    ");
-  return buffer;
-  }
-
-  data.buffer.push("<h1>\n    ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "title", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n    ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "sub", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n</h1>");
-  return buffer;
-  
-});
-
-this["Ember"]["TEMPLATES"]["components/bs-well"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
-
-
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  
-});
-
-this["Ember"]["TEMPLATES"]["components/bs-panel"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = '', stack1, hashTypes, hashContexts;
-  data.buffer.push("\n    <div class=\"panel-heading\">\n        ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "collapsible", {hash:{},inverse:self.program(4, program4, data),fn:self.program(2, program2, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n        ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "dismiss", {hash:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n    </div>\n");
-  return buffer;
-  }
-function program2(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n            <a class=\"accordion-toggle\" data-toggle=\"collapse\" data-parent=\"#accordion\" ");
-  hashContexts = {'href': depth0};
-  hashTypes = {'href': "ID"};
-  options = {hash:{
-    'href': ("collapsibleBodyLink")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
-  data.buffer.push(">\n                ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "heading", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n            </a>\n        ");
-  return buffer;
-  }
-
-function program4(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n            ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "heading", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n        ");
-  return buffer;
-  }
-
-function program6(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n            <a class=\"close\" data-dismiss=\"panel\" ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.action.call(depth0, "close", {hash:{},contexts:[depth0],types:["STRING"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push(">&times;</a>\n        ");
-  return buffer;
-  }
-
-function program8(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n    <div ");
-  hashContexts = {'id': depth0};
-  hashTypes = {'id': "ID"};
-  options = {hash:{
-    'id': ("collapsibleBodyId")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
-  data.buffer.push(" ");
-  hashContexts = {'class': depth0};
-  hashTypes = {'class': "STRING"};
-  options = {hash:{
-    'class': (":panel-collapse :collapse open:in")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
-  data.buffer.push(">\n        <div class=\"panel-body\">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</div>\n    </div>\n");
-  return buffer;
-  }
-
-function program10(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n    <div id=\"collapseOne\" class=\"panel-body\">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</div>\n");
-  return buffer;
-  }
-
-function program12(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n    <div class=\"panel-footer\">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "footer", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("</div>\n");
-  return buffer;
-  }
-
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "heading", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n\n");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "collapsible", {hash:{},inverse:self.program(10, program10, data),fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n\n");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "footer", {hash:{},inverse:self.noop,fn:self.program(12, program12, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n");
-  return buffer;
-  
-});
-;/*
-Breadcrumbs compponent.
-*/
-
-
-(function() {
-  Bootstrap.BsBreadcrumbsItem = Bootstrap.ItemView.extend({
-    tagName: ['li'],
-    classNameBindings: ["isActive:active"],
-    template: Ember.Handlebars.compile('{{#unless view.isActive}}{{#if view.content.model}}{{#link-to view.content.route model.id}}{{view.content.name}}{{/link-to}}{{else}}{{#link-to view.content.route}}{{view.content.name}}{{/link-to}}{{/if}}{{else}}{{view.content.name}}{{/unless}}'),
-    isActive: (function() {
-      return this.get('content.active');
-    }).property('content.active')
-  });
-
-  Bootstrap.BsBreadcrumbs = Bootstrap.ItemsView.extend(Bootstrap.WithRouter, {
-    tagName: ['ol'],
-    classNames: ['breadcrumb'],
-    currentPathObserver: (function() {
-      this.get('router');
-      return this.send('updateCrumbsByRoute');
-    }).observes('router.url').on('init'),
-    content: [],
-    itemViewClass: Bootstrap.BsBreadcrumbsItem,
-    nameDictionary: void 0,
-    dictionaryNamePrefix: 'breadcrumbs',
-    actions: {
-      currentPathDidChange: function() {
-        return this.send('updateCrumbsByRoute');
-      },
-      updateCrumbsByRoute: function() {
-        var routes,
-          _this = this;
-        this.get('content').clear();
-        routes = this.get('container').lookup('router:main');
-        routes.get('router.currentHandlerInfos').forEach(function(route, i, arr) {
-          var crumb, displayName, name, routeName, _ref, _ref1, _ref2;
-          name = route.name;
-          if (name.indexOf('.index') !== -1 || name === 'application') {
-            return;
-          }
-          if ((_ref = route.handler.breadcrumbs) != null ? _ref.hidden : void 0) {
-            return;
-          }
-          routeName = route.handler.routeName;
-          if ((_ref1 = route.handler.breadcrumbs) != null ? _ref1.name : void 0) {
-            displayName = route.handler.breadcrumbs.name;
-          } else if ((_ref2 = _this.get('nameDictionary')) != null ? _ref2["" + _this.dictionaryNamePrefix + "." + routeName] : void 0) {
-            displayName = _this.get('nameDictionary')["" + _this.dictionaryNamePrefix + "." + routeName];
-          } else {
-            displayName = route.handler.routeName.split('.').pop();
-            displayName = displayName[0].toUpperCase() + displayName.slice(1).toLowerCase();
-          }
-          crumb = Ember.Object.create({
-            route: route.handler.routeName,
-            name: displayName,
-            model: null
-          });
-          if (_this.get('content').length === 0) {
-            crumb.set('icon', 'fa fa-home home-icon');
-          }
-          if (route.isDynamic) {
-            crumb.setProperties({
-              model: route.handler.context,
-              name: route.handler.context.get('name')
-            });
-          }
-          return _this.get('content').pushObject(crumb);
-        });
-        return this.get('content.lastObject').set('active', true);
-      }
-    }
-  });
-
-  Ember.Handlebars.helper('bs-breadcrumbs', Bootstrap.BsBreadcrumbs);
-
-}).call(this);
-
-;/* ========================================================================
- * Bootstrap: button.js v3.0.0
- * http://twbs.github.com/bootstrap/javascript.html#buttons
- * ========================================================================
- * Copyright 2013 Twitter, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ======================================================================== */
-
-
-+function ($) { "use strict";
-
-  // BUTTON PUBLIC CLASS DEFINITION
-  // ==============================
-
-  var Button = function (element, options) {
-    this.$element = $(element)
-    this.options  = $.extend({}, Button.DEFAULTS, options)
-  }
-
-  Button.DEFAULTS = {
-    loadingText: 'loading...'
-  }
-
-  Button.prototype.setState = function (state) {
-    var d    = 'disabled'
-    var $el  = this.$element
-    var val  = $el.is('input') ? 'val' : 'html'
-    var data = $el.data()
-
-    state = state + 'Text'
-
-    if (!data.resetText) $el.data('resetText', $el[val]())
-
-    $el[val](data[state] || this.options[state])
-
-    // push to event loop to allow forms to submit
-    setTimeout(function () {
-      state == 'loadingText' ?
-        $el.addClass(d).attr(d, d) :
-        $el.removeClass(d).removeAttr(d);
-    }, 0)
-  }
-
-  Button.prototype.toggle = function () {
-    var $parent = this.$element.closest('[data-toggle="buttons"]')
-
-    if ($parent.length) {
-      var $input = this.$element.find('input')
-        .prop('checked', !this.$element.hasClass('active'))
-        .trigger('change')
-      if ($input.prop('type') === 'radio') $parent.find('.active').removeClass('active')
-    }
-
-    this.$element.toggleClass('active')
-  }
-
-
-  // BUTTON PLUGIN DEFINITION
-  // ========================
-
-  var old = $.fn.button
-
-  $.fn.button = function (option) {
-    return this.each(function () {
-      var $this   = $(this)
-      var data    = $this.data('bs.button')
-      var options = typeof option == 'object' && option
-
-      if (!data) $this.data('bs.button', (data = new Button(this, options)))
-
-      if (option == 'toggle') data.toggle()
-      else if (option) data.setState(option)
-    })
-  }
-
-  $.fn.button.Constructor = Button
-
-
-  // BUTTON NO CONFLICT
-  // ==================
-
-  $.fn.button.noConflict = function () {
-    $.fn.button = old
-    return this
-  }
-
-
-  // BUTTON DATA-API
-  // ===============
-
-  $(document).on('click.bs.button.data-api', '[data-toggle^=button]', function (e) {
-    var $btn = $(e.target)
-    if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn')
-    $btn.button('toggle')
-    e.preventDefault()
-  })
-
-}(window.jQuery);
-
-(function() {
-  Bootstrap.BsButtonComponent = Ember.Component.extend(Bootstrap.TypeSupport, Bootstrap.SizeSupport, {
-    layoutName: 'components/bs-button',
-    tagName: 'button',
-    classNames: ['btn'],
-    classNameBindings: ['blockClass'],
-    classTypePrefix: 'btn',
-    clickedParam: null,
-    block: null,
-    attributeBindings: ['disabled', 'dismiss:data-dismiss', '_type:type', 'style'],
-    _type: 'button',
-    bubbles: true,
-    allowedProperties: ['title', 'type', 'size', 'block', 'disabled', 'clicked', 'dismiss', 'class'],
-    icon_active: void 0,
-    icon_inactive: void 0
-  }, {
-    init: function() {
-      var attr, c, key, _i, _len, _ref, _results;
-      this._super();
-      if ((this.get('content') != null) && Ember.typeOf(this.get('content')) === 'instance') {
-        c = this.get('content');
-        _ref = this.get('allowedProperties');
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          key = _ref[_i];
-          if (c[key] != null) {
-            this.set(key, c[key]);
-          }
-        }
-      } else {
-        if (this.get('title') == null) {
-          this.set('title', this.get('content'));
-        }
-      }
-      _results = [];
-      for (attr in this) {
-        if (attr.match(/^data-[\w-]*$/) != null) {
-          _results.push(this.attributeBindings.pushObject(attr));
-        }
-      }
-      return _results;
-    },
-    blockClass: (function() {
-      if (this.block) {
-        return "" + this.classTypePrefix + "-block";
-      } else {
-        return null;
-      }
-    }).property('block').cacheable(),
-    click: function(evt) {
-      if (!this.get('bubbles')) {
-        evt.stopPropagation();
-      }
-      return this.sendAction('clicked', this.get('clickedParam'));
-    },
-    loadingChanged: (function() {
-      var loading;
-      loading = this.get('loading') !== null ? this.get('loading') : "reset";
-      return Ember.$("#" + this.elementId).button(loading);
-    }).observes('loading'),
-    icon: (function() {
-      if (this.get('isActive')) {
-        return this.get('icon_active');
-      } else {
-        return this.get('icon_inactive');
-      }
-    }).property('isActive')
-  });
-
-  Ember.Handlebars.helper('bs-button', Bootstrap.BsButtonComponent);
-
-}).call(this);
-
-/*
-Button Group.
-
-In its simple form, each item in the button group is a Bootstrap.Button component,
-In case this is a Radio, each item is rendered as a label.
-*/
-
-
-(function() {
-  Bootstrap.BsBtnGroup = Bootstrap.ItemsView.extend(Bootstrap.SizeSupport, Bootstrap.ItemsSelection, {
-    classTypePrefix: ['btn-group'],
-    classNames: ['btn-group'],
-    classNameBindings: ['vertical:btn-group-vertical'],
-    itemViewClass: Bootstrap.BsButtonComponent.extend(Bootstrap.ItemValue, Bootstrap.ItemSelection, {
-      init: function() {
-        this._super();
-        this.set('icon_active', this.get('parentView.icon_active'));
-        return this.set('icon_inactive', this.get('parentView.icon_inactive'));
-      }
-    })
-  });
-
-  Ember.Handlebars.helper('bs-btn-group', Bootstrap.BsBtnGroup);
-
-}).call(this);
-
-/*
-Button Toolbar.
-
-A collection of button groups
-*/
-
-
-(function() {
-  Bootstrap.BsBtnToolbarComponent = Ember.Component.extend({
-    layoutName: 'components/bs-btn-toolbar',
-    classNames: ['btn-toolbar']
-  });
-
-  Ember.Handlebars.helper('bs-btn-toolbar', Bootstrap.BsBtnToolbarComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-button"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n    <i ");
-  hashContexts = {'class': depth0};
-  hashTypes = {'class': "STRING"};
-  options = {hash:{
-    'class': ("icon")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
-  data.buffer.push("></i>\n");
-  return buffer;
-  }
-
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "icon", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "title", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  return buffer;
-  
-});
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-btn-toolbar"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
-
-
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  
-});
-;/*
-A Growl-like notifications component.
-Originally written by Aaron Haurwitz (http://aaron.haurwitz.com/), licensed under MIT.
-*/
-
-
-(function() {
-  Bootstrap.GrowlNotifications = Ember.CollectionView.extend({
-    /*
-    @property {String[]} The array of concrete class names to put on this view's element
-    */
-
-    classNames: ['growl-notifications'],
-    /*
-    Binding to the GrowlNotificationManager's notifications array
-    Each of the array element will be rendered as a notification view (see ItemViewClass)
-    */
-
-    contentBinding: 'Bootstrap.GNM.notifications',
-    attributeBindings: ['style'],
-    showTime: 10000,
-    /*
-    @property {View} Notification view class
-    Determines what view class to render for each item in the content array.
-    */
-
-    itemViewClass: Ember.View.extend({
-      classNames: ['growl-notification'],
-      template: Ember.Handlebars.compile('<span class="icon"><i class="fa {{unbound view.iconType}}"></i></span>\n<a class="close-notification" {{action "close" target="view"}}>\n    <span style="font-size: 15px;"><i class="fa fa-times"></i></span>\n</a>\n<strong>\n    {{view.content.title}}\n</strong>\n<p>\n    {{view.content.sub}}\n</p>'),
-      classNameBindings: [":growl-notification", "content.closed", "isOpaque"],
-      attributeBindings: ['style'],
-      /*
-      @property {Number} Will be set by `didInsertElement`, used for clearing the auto-hide timeout.
-      */
-
-      timeoutId: null,
-      /*
-      @property {Boolean} should the view be opaque now?
-      Used for fancy fading purposes.
-      */
-
-      isOpaque: false,
-      /*
-      Lifecycle hook - called when view is created.
-      */
-
-      init: function() {
-        var fn,
-          _this = this;
-        this._super();
-        fn = (function() {
-          return _this.notifyPropertyChange("style");
-        });
-        this.set("_recomputeStyle", fn);
-        return $(window).bind("resize", fn);
-      },
-      /*
-      View lifecycle hook - called when the view enters the DOM.
-      */
-
-      didInsertElement: function() {
-        var _this = this;
-        this.set("timeoutId", setTimeout((function() {
-          return _this.send("close");
-        }), this.get("parentView.showTime")));
-        return Ember.run.later(this, (function() {
-          return this.set("isOpaque", true);
-        }), 1);
-      },
-      /*
-      Lifecycle hook - called right before view is destroyed
-      */
-
-      willDestroyElement: function() {
-        return $(window).unbind('resize', this.get('_recomputeStyle'));
-      },
-      style: (function() {
-        var column, index, notifications, rightPx, row, topPx, unitHeight, unitWidth, unitsPerColumn, viewportHeight;
-        notifications = this.get('parentView.content').rejectProperty('closed', true);
-        index = notifications.indexOf(this.get('content'));
-        viewportHeight = $(window).height();
-        unitHeight = 80;
-        unitWidth = 320;
-        unitsPerColumn = Math.floor(viewportHeight / unitHeight);
-        column = Math.floor(index / unitsPerColumn);
-        row = index % unitsPerColumn;
-        if (index === -1) {
-          return '';
-        }
-        topPx = row * unitHeight;
-        rightPx = column * unitWidth;
-        return 'top: ' + topPx + 'px; right: ' + rightPx + 'px;';
-      }).property('parentView.content.@each.closed'),
-      /*
-      This is simply computed property for mapping a meaningful type name to a FontAwesome CSS class.
-      */
-
-      iconType: (function() {
-        var hash, type;
-        type = this.get('content.type');
-        hash = {
-          'info': 'fa-bullhorn',
-          'success': 'fa-check',
-          'warning': 'fa-exclamation',
-          'danger': 'fa-times'
-        };
-        return hash[type] || '';
-      }).property('content.type'),
-      actions: {
-        close: function() {
-          var _this = this;
-          this.set('isOpaque', false);
-          return setTimeout((function() {
-            _this.get('parentView.content').removeObject(_this.get('content'));
-            return clearTimeout(_this.get("timeoutId"));
-          }), 300);
-        }
-      }
-    })
-  });
-
-  Ember.Handlebars.helper('bs-growl-notifications', Bootstrap.GrowlNotifications);
-
-  /*
-  A manager that is responsible for getting told about new notifications and storing them within an array.
-  */
-
-
-  Bootstrap.GNM = Bootstrap.GrowlNotificationManager = Ember.Object.create({
-    /*
-    @property {Array} A global array for storing notification objects.
-    */
-
-    notifications: Ember.A(),
-    /*
-    An exposed method for pushing new notification.
-    @param title {String} leading text
-    @param sub {String} supporting text
-    @param type {String} classification; used for which icon to show
-    */
-
-    push: function(title, sub, type) {
-      var notif;
-      type = type != null ? type : type = 'info';
-      notif = Bootstrap.Notification.create({
-        title: title,
-        sub: sub,
-        type: type,
-        closed: false
-      });
-      return this.get('notifications').pushObject(notif);
-    }
-  });
-
-  /*
-  An object that represents a notification to be displayed.
-  */
-
-
-  Bootstrap.GrowlNotification = Ember.Object.extend();
-
-}).call(this);
-
-;(function() {
-  Bootstrap.ItemsActionBar = Ember.CollectionView.extend({
-    classNames: 'btn-toolbar',
-    classNameBindings: 'rtl:pull-right',
-    role: 'toolbar',
-    selectedItems: [],
-    rtl: false,
-    selection: (function() {
-      var items;
-      items = this.get('selectedItems');
-      if (items == null) {
-        return [];
-      }
-      if (Array.isArray(items)) {
-        return items;
-      } else {
-        return [items];
-      }
-    }).property('selectedItems'),
-    itemViewClass: Ember.CollectionView.extend({
-      tagName: ['div'],
-      classNames: ['btn-group'],
-      itemViewClass: Ember.View.extend({
-        tagName: 'button',
-        classNames: ['btn', 'btn-default'],
-        attributeBindings: ['disabled'],
-        template: Ember.Handlebars.compile("                {{#if view.content.transitionTo}}                    {{link-to view.content.title view.content.transitionTo tagName='div'}}                {{else}}                    {{view.content.title}}                {{/if}}            "),
-        disabled: (function() {
-          var _base;
-          return typeof (_base = this.get('content.disabled')) === "function" ? _base(this.get('parentView.parentView.selection')) : void 0;
-        }).property('parentView.parentView.selection.@each', 'parentView.parentView.selection'),
-        click: function() {
-          if (this.get('content.clickActionName') != null) {
-            return this.get('controller').send(this.get('content.clickActionName'), this.get('parentView.parentView.selection'));
-          } else if (this.get('content.click')) {
-            return this.get('content.click')(this.get('parentView.parentView.selection'));
-          }
-        }
-      })
-    })
-  });
-
-  Ember.Handlebars.helper('bs-items-action-bar', Bootstrap.ItemsActionBar);
-
-}).call(this);
-
-;(function() {
-  Bootstrap.BsLabelComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
-    layoutName: 'components/bs-label',
-    tagName: 'span',
-    classNames: ['label'],
-    classTypePrefix: 'label'
-  });
-
-  Ember.Handlebars.helper('bs-label', Bootstrap.BsLabelComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-label"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var hashTypes, hashContexts, escapeExpression=this.escapeExpression;
-
-
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "content", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  
-});
-;(function() {
-  Bootstrap.BsListGroupComponent = Bootstrap.ItemsView.extend({
-    tagName: 'ul',
-    classNames: ['list-group'],
-    itemViewClass: Bootstrap.ItemView.extend(Bootstrap.ItemSelection, {
-      classNames: ['list-group-item'],
-      template: Ember.Handlebars.compile('{{#if view.badge}}\n    {{bs-badge contentBinding="view.badge"}}\n{{/if}}\n{{#if view.sub}}\n    <h4 class="list-group-item-heading">{{view.title}}</h4>\n    <p class="list-group-item-text">{{view.sub}}</p>\n{{else}}\n    {{view.title}}\n{{/if}}'),
-      badge: (function() {
-        var content;
-        content = this.get('content');
-        if (!(Ember.typeOf(content) === 'instance' || Ember.canInvoke(content, 'get'))) {
-          return null;
-        }
-        return content.get('badge');
-      }).property('content'),
-      sub: (function() {
-        var content;
-        content = this.get('content');
-        if (!(Ember.typeOf(content) === 'instance' || Ember.canInvoke(content, 'get'))) {
-          return null;
-        }
-        return content.get('sub');
-      }).property('content')
-    })
-  });
-
-  Ember.Handlebars.helper('bs-list-group', Bootstrap.BsListGroupComponent);
-
-}).call(this);
-
-;/*
-Modal component.
-*/
-
-
-(function() {
-  Bootstrap.BsModalComponent = Ember.Component.extend(Ember.Evented, {
-    layoutName: 'components/bs-modal',
-    classNames: ['modal'],
-    attributeBindings: ['role', 'aria-labelledby', 'isAriaHidden:aria-hidden', "ariaLabelledBy:aria-labelledby"],
-    isAriaHidden: (function() {
-      return "" + (this.get('isVisible'));
-    }).property('isVisible'),
-    modalBackdrop: '<div class="modal-backdrop fade in"></div>',
-    role: 'dialog',
-    footerViews: [],
-    backdrop: true,
-    title: null,
-    isVisible: false,
-    manual: false,
-    didInsertElement: function() {
-      var name;
-      this._super();
-      this.setupBinders();
-      name = this.get('name');
-      Ember.assert("Modal name is required for modal view " + (this.get('elementId')), this.get('name'));
-      if (name == null) {
-        name = this.get('elementId');
-      }
-      Bootstrap.ModalManager.add(name, this);
-      if (this.manual) {
-        return this.show();
-      }
-    },
-    becameVisible: function() {
-      if (this.get("backdrop")) {
-        return this.appendBackdrop();
-      }
-    },
-    becameHidden: function() {
-      if (this._backdrop) {
-        return this._backdrop.remove();
-      }
-    },
-    appendBackdrop: function() {
-      var parentElement;
-      parentElement = this.$().parent();
-      return this._backdrop = Em.$(this.modalBackdrop).appendTo(parentElement);
-    },
-    show: function() {
-      return this.set('isVisible', true);
-    },
-    hide: function() {
-      return this.set('isVisible', false);
-    },
-    toggle: function() {
-      return this.toggleProperty('isVisible');
-    },
-    click: function(event) {
-      var target, targetDismiss;
-      target = event.target;
-      targetDismiss = target.getAttribute("data-dismiss");
-      if (targetDismiss === 'modal') {
-        return this.close();
-      }
-    },
-    keyPressed: function(event) {
-      if (event.keyCode === 27) {
-        return this.close(event);
-      }
-    },
-    close: function(event) {
-      if (this.get('manual')) {
-        this.destroy();
-      } else {
-        this.hide();
-      }
-      return this.trigger('closed');
-    },
-    willDestroyElement: function() {
-      var name;
-      this.removeHandlers();
-      name = this.get('name');
-      if (name == null) {
-        name = this.get('elementId');
-      }
-      Bootstrap.ModalManager.remove(name, this);
-      if (this._backdrop) {
-        return this._backdrop.remove();
-      }
-    },
-    removeHandlers: function() {
-      return jQuery(window.document).unbind("keyup", this._keyUpHandler);
-    },
-    setupBinders: function() {
-      var handler,
-        _this = this;
-      handler = function(event) {
-        return _this.keyPressed(event);
-      };
-      jQuery(window.document).bind("keyup", handler);
-      return this._keyUpHandler = handler;
-    }
-  });
-
-  /*
-  Bootstrap.BsModalComponent = Bootstrap.BsModalComponent.reopenClass(
-      build: (options) ->
-          options = {}  unless options
-          options.manual = true
-          modalPane = @create(options)
-          modalPane.append()
-  )
-  */
-
-
-  Bootstrap.ModalManager = Ember.Object.create({
-    add: function(name, modalInstance) {
-      return this.set(name, modalInstance);
-    },
-    register: function(name, modalInstance) {
-      this.add(name, modalInstance);
-      return modalInstance.appendTo(modalInstance.get('targetObject').namespace.rootElement);
-    },
-    remove: function(name) {
-      return this.set(name, null);
-    },
-    close: function(name) {
-      return this.get(name).close();
-    },
-    hide: function(name) {
-      return this.get(name).hide();
-    },
-    show: function(name) {
-      return this.get(name).show();
-    },
-    toggle: function(name) {
-      return this.get(name).toggle();
-    },
-    confirm: function(controller, title, message, confirmButtonTitle, cancelButtonTitle) {
-      var body, buttons;
-      if (confirmButtonTitle == null) {
-        confirmButtonTitle = "Confirm";
-      }
-      if (cancelButtonTitle == null) {
-        cancelButtonTitle = "Cancel";
-      }
-      body = Ember.View.extend({
-        template: Ember.Handlebars.compile(message || "Are you sure you would like to perform this action?")
-      });
-      buttons = [
-        Ember.Object.create({
-          title: confirmButtonTitle,
-          clicked: "modalConfirmed",
-          dismiss: 'modal'
-        }), Ember.Object.create({
-          title: cancelButtonTitle,
-          clicked: "modalCanceled",
-          dismiss: 'modal'
-        })
-      ];
-      return this.open('confirm-modal', title || 'Confirmation required!', body, buttons, controller);
-    },
-    openModal: function(modalView, options) {
-      var instance, rootElement;
-      if (options == null) {
-        options = {};
-      }
-      rootElement = options.rootElement || '.ember-application';
-      instance = modalView.create(options);
-      return instance.appendTo(rootElement);
-    },
-    open: function(name, title, view, footerButtons, controller) {
-      var cl, modalComponent, template;
-      cl = controller.container.lookup('component-lookup:main');
-      modalComponent = cl.lookupFactory('bs-modal', controller.get('container')).create();
-      modalComponent.setProperties({
-        name: name,
-        title: title,
-        manual: true,
-        footerButtons: footerButtons,
-        targetObject: controller
-      });
-      if (Ember.typeOf(view) === 'string') {
-        template = controller.container.lookup("template:" + view);
-        Ember.assert("Template " + view + " was specified for Modal but template could not be found.", template);
-        if (template) {
-          modalComponent.setProperties({
-            body: Ember.View.extend({
-              template: template,
-              controller: controller
-            })
-          });
-        }
-      } else if (Ember.typeOf(view) === 'class') {
-        modalComponent.setProperties({
-          body: view,
-          controller: controller
-        });
-      }
-      return modalComponent.appendTo(controller.namespace.rootElement);
-    }
-  });
-
-  Ember.Application.initializer({
-    name: 'bs-modal',
-    initialize: function(container, application) {
-      return container.register('component:bs-modal', Bootstrap.BsModalComponent);
-    }
-  });
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-modal"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n                    <i ");
-  hashContexts = {'class': depth0};
-  hashTypes = {'class': "STRING"};
-  options = {hash:{
-    'class': ("titleIconClasses")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bind-attr'] || depth0['bind-attr']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bind-attr", options))));
-  data.buffer.push("></i>\n                ");
-  return buffer;
-  }
-
-function program3(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n                ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.view.call(depth0, "view.body", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n            ");
-  return buffer;
-  }
-
-function program5(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n                ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n            ");
-  return buffer;
-  }
-
-function program7(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n                ");
-  hashContexts = {'content': depth0,'targetObjectBinding': depth0};
-  hashTypes = {'content': "ID",'targetObjectBinding': "STRING"};
-  options = {hash:{
-    'content': (""),
-    'targetObjectBinding': ("view.targetObject")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bs-button'] || depth0['bs-button']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bs-button", options))));
-  data.buffer.push("\n            ");
-  return buffer;
-  }
-
-function program9(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n                ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers.view.call(depth0, "", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n            ");
-  return buffer;
-  }
-
-  data.buffer.push("<div class=\"modal-dialog\">\n    <div class=\"modal-content\">\n        <div class=\"modal-header\">\n            <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-hidden=\"true\">&times;</button>\n            <h4 class=\"modal-title\">\n                ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "titleIconClasses", {hash:{},inverse:self.noop,fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n                ");
-  hashContexts = {'unescaped': depth0};
-  hashTypes = {'unescaped': "STRING"};
-  stack1 = helpers._triageMustache.call(depth0, "title", {hash:{
-    'unescaped': ("true")
-  },contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n            </h4>\n        </div>\n        <div class=\"modal-body\">\n            ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "body", {hash:{},inverse:self.program(5, program5, data),fn:self.program(3, program3, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n        </div>\n        <div class=\"modal-footer\">\n            ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers.each.call(depth0, "footerButtons", {hash:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n            ");
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers.each.call(depth0, "footerViews", {hash:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  data.buffer.push("\n        </div>\n    </div>\n</div>");
-  return buffer;
-  
-});
-;(function() {
-  Bootstrap.BsPill = Bootstrap.ItemView.extend(Bootstrap.NavItem, Bootstrap.ItemSelection, {
-    template: Ember.Handlebars.compile('{{#if view.content.linkTo}}\n    {{#if view.parentView.dynamicLink}}\n        {{#link-to view.content.linkTo model}}{{view.title}}{{/link-to}}\n    {{else}}\n        {{#link-to view.content.linkTo}}{{view.title}}{{/link-to}}\n    {{/if}}\n{{else}}\n    {{view view.pillAsLinkView}}\n{{/if}}'),
-    pillAsLinkView: Ember.View.extend({
-      tagName: 'a',
-      template: Ember.Handlebars.compile('{{view.parentView.title}}'),
-      attributeBindings: ['href'],
-      href: "#"
-    })
-  });
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsPills = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
-    navType: 'pills',
-    classNameBindings: ['stacked:nav-stacked', 'justified:nav-justified'],
-    attributeBindings: ['style'],
-    itemViewClass: Bootstrap.BsPill
-  });
-
-  Ember.Handlebars.helper('bs-pills', Bootstrap.BsPills);
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsTabPane = Bootstrap.ItemPaneView.extend();
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsTabsPanes = Bootstrap.ItemsPanesView.extend({
-    classNames: ['tab-content'],
-    itemViewClass: Bootstrap.BsTabPane
-  });
-
-  Ember.Handlebars.helper('bs-tabs-panes', Bootstrap.BsTabsPanes);
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsTabs = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
-    navType: 'tabs',
-    classNameBindings: ['justified:nav-justified'],
-    attributeBindings: ['style'],
-    itemViewClass: Bootstrap.BsPill
-  });
-
-  Ember.Handlebars.helper('bs-tabs', Bootstrap.BsTabs);
-
-}).call(this);
-
-;/*
-A view that displays notification (messages).
-
-Currently a single notification is displayed as an Alert on top of the screen, each notification in a time.
-*/
-
-
-(function() {
-  Bootstrap.NotificationsView = Ember.CollectionView.extend({
-    classNames: ['notifications'],
-    attributeBindings: ['style'],
-    contentBinding: 'Bootstrap.NM.content',
-    showTime: 2000,
-    fadeInTime: 500,
-    fadeOutTime: 3000,
-    showTimeTimeoutId: null,
-    /*
-    itemViewClass: Bootstrap.BsAlertComponent.extend(
-        messageBinding: 'content.message'
-        typeBinding: 'content.type'
-        fadeInTimeBinding: 'parentView.fadeInTime'
-        isVisible: false
-    
-        didInsertElement: ->
-            @$().fadeIn(@get('fadeInTime'))
-    )
-    */
-
-    itemViewClass: Ember.View.extend({
-      classNames: ['alert', 'notification'],
-      template: Ember.Handlebars.compile('{{view.content.message}}'),
-      classNameBindings: ["alertType"],
-      isVisible: false,
-      alertType: (function() {
-        return this.get('content').get('classType');
-      }).property('content'),
-      didInsertElement: function() {
-        return this.$().fadeIn(this.get('fadeInTime'));
-      }
-    }),
-    contentChanged: (function() {
-      if (this.get('content').length > 0) {
-        return this.resetShowTime();
-      }
-    }).observes('content.length'),
-    resetShowTime: function() {
-      var _this = this;
-      this.$().css({
-        display: 'block'
-      });
-      if (this.$().is(":animated")) {
-        this.$().stop().animate({
-          opacity: "100"
-        });
-      }
-      if (this.showTimeTimeoutId != null) {
-        clearTimeout(this.showTimeTimeoutId);
-      }
-      return this.showTimeTimeoutId = setTimeout(function() {
-        return _this.fadeOut(_this);
-      }, this.showTime);
-    },
-    fadeOut: function(that) {
-      return that.$().fadeOut(that.fadeOutTime, function() {
-        return that.get('content').clear();
-      });
-    },
-    mouseEnter: function() {
-      if (this.$().is(":animated")) {
-        return this.$().stop().animate({
-          opacity: "100"
-        });
-      }
-    },
-    mouseLeave: function() {
-      return this.resetShowTime();
-    }
-  });
-
-  Ember.Handlebars.helper('bs-notifications', Bootstrap.NotificationsView);
-
-  Bootstrap.NM = Bootstrap.NotificationManager = Ember.Object.create({
-    content: Ember.A(),
-    push: function(message, type) {
-      var notif;
-      type = type != null ? type : type = 'info';
-      notif = Bootstrap.Notification.create({
-        message: message,
-        type: type
-      });
-      return this.get('content').pushObject(notif);
-    }
-  });
-
-  /*
-  This object represents a notification to be displayed.
-  Notification(s) are added into the NotificationQueue by the pushNotification function.
-  */
-
-
-  Bootstrap.Notification = Ember.Object.extend({
-    classType: (function() {
-      if (this.type != null) {
-        return "alert-" + this.type;
-      } else {
-        return null;
-      }
-    }).property('type').cacheable()
-  });
-
-}).call(this);
-
-;(function() {
-  var popoverTemplate, template, tooltipTemplate;
-
-  popoverTemplate = '' + '<div class="arrow"></div>' + '{{#if title}}<h3 class="popover-title">{{title}}</h3>{{/if}}' + '<div class="popover-content">' + '{{#if template}}' + '   {{partial partialTemplateName}}' + '{{else}}' + '   {{#if content}}' + '       {{#if html}}' + '           {{{content}}}' + '       {{else}}' + '           {{content}}' + '       {{/if}}' + '   {{else}}' + '       {{yield}}' + '   {{/if}}' + '{{/if}}' + '    </div>';
-
-  Ember.TEMPLATES["components/bs-popover"] = Ember.Handlebars.compile(popoverTemplate);
-
-  tooltipTemplate = '' + '<div class="tooltip-arrow"></div>' + '<div class="tooltip-inner">' + '{{#if html}}' + '   {{{content}}}' + '{{else}}' + '   {{content}}' + '{{/if}}' + '</div>';
-
-  Ember.TEMPLATES["components/bs-tooltip"] = Ember.Handlebars.compile(tooltipTemplate);
-
-  Bootstrap.BsPopoverComponent = Ember.Component.extend({
-    layoutName: 'components/bs-popover',
-    classNames: "popover",
-    classNameBindings: ["fade", "in", "top", "left", "right", "bottom"],
-    top: (function() {
-      return this.get("realPlacement") === "top";
-    }).property("realPlacement"),
-    left: (function() {
-      return this.get("realPlacement") === "left";
-    }).property("realPlacement"),
-    right: (function() {
-      return this.get("realPlacement") === "right";
-    }).property("realPlacement"),
-    bottom: (function() {
-      return this.get("realPlacement") === "bottom";
-    }).property("realPlacement"),
-    titleBinding: "data.title",
-    content: Ember.computed.alias('data.content'),
-    html: false,
-    delay: 0,
-    animation: true,
-    fade: (function() {
-      return this.get("animation");
-    }).property("animation"),
-    "in": (function() {
-      return this.get("isVisible");
-    }).property("isVisible"),
-    placement: (function() {
-      return this.get("data.placement") || "top";
-    }).property("data.placement"),
-    $element: null,
-    $tip: null,
-    inserted: false,
-    styleUpdater: (function() {
-      var actualHeight, actualWidth, calculatedOffset, placement, pos;
-      if (!this.$tip || !this.get("isVisible")) {
-        return;
-      }
-      this.$tip.css({
-        top: 0,
-        left: 0,
-        display: "block"
-      }).addClass(this.get("realPlacement"));
-      placement = this.get("realPlacement");
-      pos = this.getPosition();
-      actualWidth = this.$tip[0].offsetWidth;
-      actualHeight = this.$tip[0].offsetHeight;
-      calculatedOffset = this.getCalculatedOffset(placement, pos, actualWidth, actualHeight);
-      this.$tip.css("top", calculatedOffset.top);
-      this.$tip.css("left", calculatedOffset.left);
-      if (this.firstTime) {
-        this.firstTime = false;
-        this.styleUpdater();
-        return this.firstTime = true;
-      }
-    }).observes("content", "realPlacement", "inserted", "isVisible"),
-    init: function() {
-      var name, tpl;
-      this._super();
-      this.set("html", this.get("data.html") || false);
-      this.set("template", this.get("data.template") !== undefined);
-      if (this.get("template")) {
-        name = "components/bs-popover/partial-content-" + this.get("tip_id");
-        tpl = this.get("data.template");
-        if (typeof tpl === "function") {
-          Ember.TEMPLATES[name] = tpl;
-        } else {
-          Ember.TEMPLATES[name] = Ember.Handlebars.compile(tpl);
-        }
-        return this.set("partialTemplateName", name);
-      }
-    },
-    didInsertElement: function() {
-      var name,
-        _this = this;
-      this.$tip = this.$();
-      name = Bootstrap.TooltipBoxManager.attribute;
-      name = "[" + name + "='" + this.get("tip_id") + "']";
-      this.$element = $(name);
-      this.set("inserted", true);
-      if (this.get("data.trigger") === "hover" && this.get("data.sticky")) {
-        this.$().on("mouseenter", function() {
-          return clearTimeout(Bootstrap.TooltipBoxManager.timeout);
-        });
-      }
-      this.$().on("mouseleave", function() {
-        return Bootstrap.TooltipBoxManager.removeTip(_this.get("tip_id"));
-      });
-      return this.$().find("img").load(function() {
-        return _this.afterRender();
-      });
-    },
-    afterRender: function() {
-      return this.notifyPropertyChange("content");
-    },
-    realPlacement: (function() {
-      var $parent, actualHeight, actualWidth, autoPlace, autoToken, docScroll, orgPlacement, parentHeight, parentLeft, parentWidth, placement, pos;
-      if (!this.$tip) {
-        return null;
-      }
-      placement = this.get("placement") || "";
-      autoToken = /\s?auto?\s?/i;
-      autoPlace = autoToken.test(placement);
-      if (autoPlace) {
-        placement = placement.replace(autoToken, "") || "top";
-      }
-      pos = this.getPosition();
-      actualWidth = this.$tip[0].offsetWidth;
-      actualHeight = this.$tip[0].offsetHeight;
-      if (autoPlace) {
-        $parent = this.$element.parent();
-        orgPlacement = placement;
-        docScroll = document.documentElement.scrollTop || document.body.scrollTop;
-        parentWidth = window.innerWidth;
-        parentHeight = window.innerHeight;
-        parentLeft = 0;
-        placement = (placement === "bottom" && pos.top + pos.height + actualHeight - docScroll > parentHeight ? "top" : (placement === "top" && pos.top - docScroll - actualHeight < 0 ? "bottom" : (placement === "right" && pos.right + actualWidth > parentWidth ? "left" : (placement === "left" && pos.left - actualWidth < parentLeft ? "right" : placement))));
-      }
-      return placement;
-    }).property("placement", "inserted"),
-    hasContent: function() {
-      return this.get("title");
-    },
-    getPosition: function() {
-      var el;
-      el = this.$element[0];
-      return $.extend({}, (typeof el.getBoundingClientRect === "function" ? el.getBoundingClientRect() : {
-        width: el.offsetWidth,
-        height: el.offsetHeight
-      }), this.$element.offset());
-    },
-    getCalculatedOffset: function(placement, pos, actualWidth, actualHeight) {
-      if (placement === "bottom") {
-        return {
-          top: pos.top + pos.height,
-          left: pos.left + pos.width / 2 - actualWidth / 2
-        };
-      } else if (placement === "top") {
-        return {
-          top: pos.top - actualHeight,
-          left: pos.left + pos.width / 2 - actualWidth / 2
-        };
-      } else if (placement === "left") {
-        return {
-          top: pos.top + pos.height / 2 - actualHeight / 2,
-          left: pos.left - actualWidth
-        };
-      } else {
-        return {
-          top: pos.top + pos.height / 2 - actualHeight / 2,
-          left: pos.left + pos.width
-        };
-      }
-    },
-    actions: {
-      close: function() {
-        return Bootstrap.TooltipBoxManager.removeTip(this.get("tip_id"));
-      }
-    }
-  });
-
-  Ember.Handlebars.helper('bs-popover', Bootstrap.BsPopoverComponent);
-
-  Bootstrap.BsTooltipComponent = Bootstrap.BsPopoverComponent.extend({
-    classNames: "tooltip",
-    layoutName: 'components/bs-tooltip',
-    init: function() {
-      this._super();
-      this.classNames.removeObject("popover");
-      return this.set("content", this.get("content") || this.get("title"));
-    }
-  });
-
-  Ember.Handlebars.helper('bs-tooltip', Bootstrap.BsTooltipComponent);
-
-  /*
-  The tooltipBox controller is used to render the popovers into the named outlet "bs-tooltip-box"
-  with the template tooltip-box
-  */
-
-
-  Bootstrap.TooltipBoxController = Ember.Controller.extend({
-    popoversBinding: "Bootstrap.TooltipBoxManager.popovers",
-    tooltipsBinding: "Bootstrap.TooltipBoxManager.tooltips"
-  });
-
-  template = "" + "{{#each pop in popovers}}" + "   {{bs-popover" + "       tip_id=pop.tip_id" + "       data=pop.data" + "   }}" + "{{/each}}" + "{{#each pop in tooltips}}" + "   {{bs-tooltip" + "       tip_id=pop.tip_id" + "       data=pop.data" + "   }}" + "{{/each}}";
-
-  Ember.TEMPLATES["bs-tooltip-box"] = Ember.Handlebars.compile(template);
-
-  /*
-  The Manager is based on the code from the emberjs action helper.
-  the tooltip/popover helper sets the attribute TooltipBoxManager.attribute (currently: bootstrap-tip-id)
-  with an id that will be increased with each tip.
-  AfterRender the manager binds a function to each element containing the attribute "bootstrap-tip-id"
-  and on "willClearRender" it will be removed
-  */
-
-
-  Bootstrap.TooltipBoxManager = Ember.Object.create({
-    uuid: 0,
-    attribute: "bootstrap-tip-id",
-    willSetup: false,
-    registeredTips: {},
-    registerTip: function(type, object, options) {
-      var id, self;
-      id = ++this.uuid;
-      self = this;
-      this.registeredTips[id] = {
-        id: id,
-        data: object,
-        eventName: object.trigger || (type === "popover" ? "click" : "hover"),
-        bound: false,
-        type: type,
-        sticky: object.sticky,
-        show: function() {
-          self.showTip(id);
-        },
-        hide: function() {
-          self.hideTip(id, true);
-        },
-        toggle: function() {
-          self.toggleTip(id);
-        }
-      };
-      if (!this.willSetup) {
-        this.willSetup = true;
-        Ember.run.scheduleOnce("afterRender", this, function() {
-          self.setupBindings();
-        });
-      }
-      options.data.view.on("willClearRender", function() {
-        Bootstrap.TooltipBoxManager.removeTip(id);
-        $("[" + self.attribute + "='" + id + "']").unbind();
-        delete Bootstrap.TooltipBoxManager.registeredTips[id];
-      });
-      return id;
-    },
-    setupBindings: function() {
-      var elem, i, pop;
-      for (i in this.registeredTips) {
-        pop = this.registeredTips[i];
-        if (pop.bound === false) {
-          pop.bound = true;
-          elem = $("[" + this.attribute + "='" + i + "']");
-          switch (pop.eventName) {
-            case "click":
-              elem.on("click", $.proxy(pop.toggle, pop));
-              break;
-            case "hover":
-              elem.on("mouseenter", $.proxy(pop.show, pop));
-              elem.on("mouseleave", $.proxy(pop.hide, pop));
-              break;
-            case "focus":
-              elem.on("focusin", $.proxy(pop.show, pop));
-              elem.on("focusout", $.proxy(pop.hide, pop));
-              break;
-            case "manual":
-              pop.data.addObserver("show", pop, function(sender, key) {
-                var value;
-                value = sender.get(key);
-                if (value) {
-                  this.show();
-                } else {
-                  this.hide();
-                }
-              });
-              if (pop.data.show) {
-                this.show();
-              }
-          }
-        }
-      }
-      this.willSetup = false;
-    },
-    popovers: [],
-    tooltips: [],
-    showing: {},
-    timeout: null,
-    showTip: function(id) {
-      var data, obj, type;
-      data = this.registeredTips[id].data;
-      type = this.registeredTips[id].type;
-      if (!this.showing[id]) {
-        this.showing[id] = true;
-        obj = Ember.Object.create({
-          data: data,
-          tip_id: id
-        });
-        if (type === "tooltip") {
-          this.tooltips.pushObject(obj);
-        } else {
-          this.popovers.pushObject(obj);
-        }
-      }
-    },
-    hideTip: function(id, allowTimer) {
-      var data;
-      if (this.showing[id]) {
-        data = this.registeredTips[id].data;
-        if (allowTimer && data.sticky) {
-          this.timedRemove(id);
-        } else {
-          this.removeTip(id);
-        }
-      }
-    },
-    toggleTip: function(id) {
-      if (this.showing[id]) {
-        this.hideTip(id);
-      } else {
-        this.showTip(id);
-      }
-    },
-    timedRemove: function(id) {
-      var self;
-      self = this;
-      this.timeout = setTimeout(function() {
-        self.removeTip(id);
-      }, 100);
-    },
-    removeTip: function(id) {
-      var pop;
-      pop = this.popovers.findProperty("tip_id", id) || this.tooltips.findProperty("tip_id");
-      this.popovers.removeObject(pop);
-      this.tooltips.removeObject(pop);
-      delete this.showing[id];
-    },
-    addFromView: function(view, type, object) {
-      var id, options;
-      if (!view.attributeBindings.contains(Bootstrap.TooltipBoxManager.attribute)) {
-        console.warn("TooltipBoxManager.addFromView: You need to add \"TooltipBoxManager.attribute\" to the attributeBindings!");
-        return;
-      }
-      options = {
-        data: {
-          view: view
-        }
-      };
-      id = Bootstrap.TooltipBoxManager.registerTip(type, object, options);
-      view.set(Bootstrap.TooltipBoxManager.attribute, id);
-    },
-    helper: function(path, object, options) {
-      var binding, keyword, name, o, p, type, value;
-      if ((typeof path === "string") && path !== "") {
-        p = path.split(".");
-        keyword = p[0];
-        o = options.data.keywords[keyword];
-        if (o) {
-          p.removeAt(0);
-          p.insertAt(0, "this");
-          p = p.join(".");
-          object = o.get(p);
-        } else {
-          object = this.get(path);
-        }
-      }
-      if (path instanceof Object) {
-        object = Ember.Object.create({});
-        for (name in path.hash) {
-          value = path.hash[name];
-          type = options.hashTypes[name];
-          if (type === "STRING") {
-            object.set(name, value);
-          } else if (type === "ID") {
-            p = value.split(".");
-            keyword = p[0];
-            o = options.data.keywords[keyword];
-            if (!o) {
-              o = this;
-            } else {
-              p.removeAt(0);
-            }
-            if (!object._bindings) {
-              object._bindings = o;
-            }
-            p.insertAt(0, "_bindings");
-            p = p.join(".");
-            object[name] = "";
-            binding = Ember.Binding.from(p).to(name);
-            binding.connect(object);
-          }
-        }
-      }
-      return object;
-    }
-  });
-
-  Ember.Handlebars.registerHelper("bs-bind-popover", function(path) {
-    var id, object, options;
-    options = arguments[arguments.length - 1];
-    object = this;
-    object = Bootstrap.TooltipBoxManager.helper.call(this, path, object, options);
-    id = Bootstrap.TooltipBoxManager.registerTip("popover", object, options);
-    return new Ember.Handlebars.SafeString(Bootstrap.TooltipBoxManager.attribute + "='" + id + "'");
-  });
-
-  Ember.Handlebars.registerHelper("bs-bind-tooltip", function(path) {
-    var id, object, options;
-    options = arguments[arguments.length - 1];
-    object = this;
-    object = Bootstrap.TooltipBoxManager.helper.call(this, path, object, options);
-    id = Bootstrap.TooltipBoxManager.registerTip("tooltip", object, options);
-    return new Ember.Handlebars.SafeString(Bootstrap.TooltipBoxManager.attribute + "='" + id + "'");
-  });
-
-}).call(this);
-
-;/*
-Parent component of a progressbar component
-*/
-
-
-(function() {
-  Bootstrap.BsProgressComponent = Ember.Component.extend({
-    layoutName: 'components/bs-progress',
-    classNames: ['progress'],
-    classNameBindings: ['animated:active', 'stripped:progress-striped'],
-    progress: null,
-    stripped: false,
-    animated: false,
-    "default": (function() {
-      return this.progress;
-    }).property('progress')
-  });
-
-  Ember.Handlebars.helper('bs-progress', Bootstrap.BsProgressComponent);
-
-}).call(this);
-
-(function() {
-  Bootstrap.BsProgressbarComponent = Ember.Component.extend(Bootstrap.TypeSupport, {
-    layoutName: 'components/bs-progressbar',
-    classNames: ['progress-bar'],
-    attributeBindings: ['style', 'role', 'aria-valuemin', 'ariaValueNow:aria-valuenow', 'aria-valuemax'],
-    classTypePrefix: 'progress-bar',
-    role: 'progressbar',
-    'aria-valuemin': 0,
-    'aria-valuemax': 100,
-    init: function() {
-      return this._super();
-    },
-    style: (function() {
-      return "width:" + this.progress + "%;";
-    }).property('progress').cacheable(),
-    ariaValueNow: (function() {
-      return this.progress;
-    }).property('progress').cacheable()
-  });
-
-  Ember.Handlebars.helper('bs-progressbar', Bootstrap.BsProgressbarComponent);
-
-}).call(this);
-
-this["Ember"] = this["Ember"] || {};
-this["Ember"]["TEMPLATES"] = this["Ember"]["TEMPLATES"] || {};
-
-this["Ember"]["TEMPLATES"]["components/bs-progress"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var stack1, hashTypes, hashContexts, helperMissing=helpers.helperMissing, escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = '', stack1, hashContexts, hashTypes, options;
-  data.buffer.push("\n    ");
-  hashContexts = {'progress': depth0,'type': depth0};
-  hashTypes = {'progress': "ID",'type': "ID"};
-  options = {hash:{
-    'progress': ("progress"),
-    'type': ("type")
-  },contexts:[],types:[],hashContexts:hashContexts,hashTypes:hashTypes,data:data};
-  data.buffer.push(escapeExpression(((stack1 = helpers['bs-progressbar'] || depth0['bs-progressbar']),stack1 ? stack1.call(depth0, options) : helperMissing.call(depth0, "bs-progressbar", options))));
-  data.buffer.push("\n");
-  return buffer;
-  }
-
-function program3(depth0,data) {
-  
-  var buffer = '', hashTypes, hashContexts;
-  data.buffer.push("\n    ");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "yield", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("\n");
-  return buffer;
-  }
-
-  hashTypes = {};
-  hashContexts = {};
-  stack1 = helpers['if'].call(depth0, "default", {hash:{},inverse:self.program(3, program3, data),fn:self.program(1, program1, data),contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data});
-  if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-  else { data.buffer.push(''); }
-  
-});
-
-this["Ember"]["TEMPLATES"]["components/bs-progressbar"] = Ember.Handlebars.template(function anonymous(Handlebars,depth0,helpers,partials,data) {
-this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Ember.Handlebars.helpers); data = data || {};
-  var buffer = '', hashTypes, hashContexts, escapeExpression=this.escapeExpression;
-
-
-  data.buffer.push("<span class=\"sr-only\">");
-  hashTypes = {};
-  hashContexts = {};
-  data.buffer.push(escapeExpression(helpers._triageMustache.call(depth0, "progress", {hash:{},contexts:[depth0],types:["ID"],hashContexts:hashContexts,hashTypes:hashTypes,data:data})));
-  data.buffer.push("% Complete</span>");
-  return buffer;
-  
-});
-;(function() {
-  Bootstrap.BsWizardStep = Bootstrap.ItemView.extend(Bootstrap.ItemSelection, Bootstrap.NavItem, {
-    classNames: ['wizard-step'],
-    classNameBindings: ['completed'],
-    completed: false,
-    template: Ember.Handlebars.compile(['{{view view.stepAsLink}}'].join("\n")),
-    stepAsLink: Ember.View.extend({
-      tagName: 'a',
-      template: Ember.Handlebars.compile('{{view.parentView.title}}'),
-      attributeBindings: ['href'],
-      href: "#"
-    })
-  });
-
-  Bootstrap.BsWizardSteps = Bootstrap.ItemsView.extend(Bootstrap.Nav, {
-    navType: 'pills',
-    classNames: ['wizard-steps'],
-    itemViewClass: Bootstrap.BsWizardStep,
-    currentItemIdx: (function() {
-      var i, selected, selectedItem, view, _i, _len, _ref;
-      selected = this.get('selected');
-      i = 0;
-      _ref = this._childViews;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        view = _ref[_i];
-        if (view.get('content') === selected) {
-          selectedItem = view;
-          break;
-        }
-        i++;
-      }
-      if (selectedItem) {
-        return i;
-      } else {
-        return null;
-      }
-    }).property('selected')
-  });
-
-  Bootstrap.BsWizardStepPane = Bootstrap.ItemPaneView.extend();
-
-  Bootstrap.BsWizardStepsPanes = Bootstrap.ItemsPanesView.extend({
-    classNames: ['wizard-panes'],
-    itemViewClass: Bootstrap.BsWizardStepPane
-  });
-
-  Bootstrap.BsWizardComponent = Ember.ContainerView.extend(Ember.TargetActionSupport, {
-    classNames: ['wizard'],
-    childViews: ['steps', 'panes', 'controls'],
-    prevAllowed: true,
-    items: (function() {
-      var _ref;
-      return (_ref = this._childViews) != null ? _ref[0] : void 0;
-    }).property('content'),
-    panes: (function() {
-      return this._childViews[1];
-    }).property('content'),
-    steps: Bootstrap.BsWizardSteps.extend({
-      contentBinding: 'parentView.content',
-      selectedBinding: 'parentView.selected'
-    }),
-    panes: Bootstrap.BsWizardStepsPanes.extend({
-      contentBinding: 'parentView.content'
-    }),
-    controls: Ember.ContainerView.extend({
-      childViews: ['prev', 'next', 'finish'],
-      prev: Bootstrap.BsButtonComponent.extend({
-        layoutName: 'components/bs-button',
-        title: 'Prev',
-        size: 'xs',
-        "data-rel": 'PREV',
-        isVisible: (function() {
-          return this.get('parentView').get('parentView').get('hasPrev');
-        }).property('parentView.parentView.items.selected')
-      }),
-      next: Bootstrap.BsButtonComponent.extend({
-        layoutName: 'components/bs-button',
-        title: 'Next',
-        size: 'xs',
-        "data-rel": 'NEXT',
-        isVisible: (function() {
-          return this.get('parentView').get('parentView').get('hasNext');
-        }).property('parentView.parentView.items.selected')
-      }),
-      finish: Bootstrap.BsButtonComponent.extend({
-        layoutName: 'components/bs-button',
-        title: 'Finish',
-        size: 'xs',
-        "data-rel": 'FINISH',
-        isVisible: (function() {
-          return this.get('parentView').get('parentView').get('isLast');
-        }).property('parentView.parentView.items.selected')
-      })
-    }),
-    currentStepIdx: (function() {
-      return this.get('items').get('currentItemIdx');
-    }).property('items.selected'),
-    willInsertElement: function() {
-      this.get('panes').set('items-id', this.get('items').get('elementId'));
-      return this.get('items').set('default', this.get('items')._childViews[0].get('content').get('title'));
-    },
-    click: function(event) {
-      var b;
-      b = event.target.getAttribute("data-rel");
-      if (b === 'PREV') {
-        this.prev();
-      }
-      if (b === 'NEXT') {
-        this.next();
-      }
-      if (b === 'FINISH') {
-        return this.close();
-      }
-    },
-    next: function() {
-      var currIdx;
-      if (this.get('hasNext')) {
-        this.stepCompleted(this.get('currentStepIdx'));
-        currIdx = this.get('currentStepIdx') + 1;
-        this.move(currIdx);
-        return this.triggerAction({
-          action: 'onNext',
-          actionContext: this.get('targetObject')
-        });
-      }
-    },
-    prev: function() {
-      var currIdx;
-      if (this.get('hasPrev')) {
-        currIdx = this.get('currentStepIdx') - 1;
-        this.stepCompleted(currIdx, false);
-        this.move(currIdx);
-        return this.triggerAction({
-          action: 'onPrev',
-          actionContext: this.get('targetObject')
-        });
-      }
-    },
-    move: function(idx) {
-      var _ref, _ref1;
-      return (_ref = this._childViews[0]) != null ? _ref.set('selected', (_ref1 = this._childViews[0]._childViews[idx]) != null ? _ref1.get('content') : void 0) : void 0;
-    },
-    hasNext: (function() {
-      return this.get('items')._childViews.length > this.get('currentStepIdx') + 1;
-    }).property('currentStepIdx'),
-    hasPrev: (function() {
-      this.get('currentStepIdx') > 0;
-      return this.get('currentStepIdx') > 0 && this.get('prevAllowed');
-    }).property('currentStepIdx'),
-    isLast: (function() {
-      return this.get('items')._childViews.length === this.get('currentStepIdx') + 1;
-    }).property('currentStepIdx'),
-    close: (function() {
-      this.triggerAction({
-        action: 'onFinish',
-        actionContext: this.get('targetObject')
-      });
-      return this.destroy();
-    }),
-    stepCompleted: function(idx, compl) {
-      if (compl == null) {
-        compl = true;
-      }
-      return this._childViews[0]._childViews[idx].set('completed', compl);
-    }
-  });
-
-  Bootstrap.BsWizardComponent = Bootstrap.BsWizardComponent.reopenClass({
-    build: function(options) {
-      var wizard;
-      if (!options) {
-        options = {};
-      }
-      options.manual = true;
-      wizard = this.create(options);
-      return wizard.append();
-    }
-  });
-
-  Ember.Handlebars.helper('bs-wizard', Bootstrap.BsWizardComponent);
-
-}).call(this);
-
-;/* globals Bootstrap */
-
-define('bootstrap', [], function() {
-  "use strict";
-
-  return {
-    'default': Bootstrap
-  };
-});
-
 ;/**
  * @license
  * Lo-Dash 2.4.1 (Custom Build) <http://lodash.com/>
@@ -92220,6 +92220,590 @@ define("ember-cli-bootstrap", ["ember-cli-bootstrap/index","exports"], function(
   });
 });
 
+define("ember-idx-forms/checkbox", 
+  ["ember","ember-idx-forms/group","ember-idx-forms/checkbox","ember-idx-forms/mixins/control","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var FormGroupComponent = __dependency2__["default"];
+    var FormCheckboxComponent = __dependency3__["default"];
+    var ControlMixin = __dependency4__["default"];
+
+    /*
+    Form Input
+
+    Syntax:
+    {{em-checkbox property="property name"}}
+     */
+    __exports__["default"] = FormGroupComponent.extend({
+      v_icons: false,
+      validations: false,
+      yieldInLabel: true,
+      controlView: Em.Checkbox.extend(ControlMixin, {
+        "class": false,
+        model: Em.computed.alias('parentView.parentView.model'),
+        propertyName: Em.computed.alias('parentView.parentView.propertyName'),
+        init: function() {
+          this._super();
+          return Em.Binding.from("model." + (this.get('propertyName'))).to('checked').connect(this);
+        }
+      }),
+      wrapperClass: (function() {
+        if (this.get('form.form_layout') === 'horizontal') {
+          return 'col-sm-offset-2 col-sm-10';
+        }
+      }).property('form.form_layout'),
+      labelWrapperClass: (function() {
+        if (this.get('form.form_layout') === 'horizontal') {
+          return 'checkbox';
+        }
+        return null;
+      }).property('form.form_layout'),
+      "class": (function() {
+        if (this.get('form.form_layout') !== 'horizontal') {
+          return 'checkbox';
+        }
+        return 'form-group';
+      }).property('form.form_layout')
+    });
+  });
+define("ember-idx-forms/control_help", 
+  ["ember","ember-idx-forms/mixins/in_form","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var InFormMixin = __dependency2__["default"];
+
+    /*
+    Form Control Help
+
+    Renders a textual help of the control.
+
+    Note: currently must be a direct descendant of a form-group or 'property' must be explicitly defined
+
+    Syntax:
+    {{em-form-control-help}}
+     */
+    __exports__["default"] = Em.Component.extend(InFormMixin, {
+      tagName: 'span',
+      classNames: ['help-block'],
+      classNameBindings: ['extraClass', 'horiClassCalc'],
+      text: void 0,
+      extraClass: void 0,
+      horiClass: 'col-sm-offset-2 col-sm-10',
+      horiClassCalc: (function() {
+        if (this.get('form.isHorizontal') && this.get('horiClass')) {
+          return this.get('horiClass');
+        }
+      }).property('form.isHorizontal'),
+      init: function() {
+        this._super();
+        return Em.Binding.from('model.errors.' + this.get('parentView.propertyName')).to('errors').connect(this);
+      },
+      helpText: (function() {
+        return this.get('errors.firstObject') || this.get('text');
+      }).property('text', 'errors.firstObject'),
+      hasHelp: (function() {
+        var _ref;
+        return ((_ref = this.get('helpText')) != null ? _ref.length : void 0) > 0;
+      }).property('helpText'),
+      hasError: (function() {
+        var _ref;
+        return (_ref = this.get('errors')) != null ? _ref.length : void 0;
+      }).property('errors.length')
+    });
+  });
+define("ember-idx-forms/form", 
+  ["ember","ember-idx-forms/utils/utils","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var Utils = __dependency2__["default"];
+
+
+    /*
+    Form View
+
+    A component for rendering a form element.
+
+    Syntax:
+    {{em-form
+        //The layout of the form
+        form_layout="form|inline|horizontal"
+        //The model bound to the form if any
+        model="some_model_instance"
+        //The action to be invoked on the controller when a form is submitted.
+        action="some_action"
+        //if true a submit button will be rendered
+        submit_button=true|false
+        //if true validation icons will be rendered
+        v_icons=true|false
+    }}
+    */
+    __exports__["default"] = Em.Component.extend({
+      tagName: 'form',
+      classNameBindings: ['form_layout_class'],
+      attributeBindings: ['role'],
+      role: 'form',
+      form_layout_class: (function() {
+        switch (this.get('form_layout')) {
+          case 'horizontal':
+          case 'inline':
+            return "form-" + (this.get('form_layout'));
+          default:
+            return 'form';
+        }
+      }).property('form_layout'),
+      isDefaultLayout: Utils.createBoundSwitchAccessor('form', 'form_layout', 'form'),
+      isInline: Utils.createBoundSwitchAccessor('inline', 'form_layout', 'form'),
+      isHorizontal: Utils.createBoundSwitchAccessor('horizontal', 'form_layout', 'form'),
+      action: 'submit',
+      model: void 0,
+      form_layout: 'form',
+      submit_button: true,
+      v_icons: true,
+
+      /*
+      Form submit
+      
+      Optionally execute model validations and perform a form submission.
+       */
+      submit: function(e) {
+        var promise;
+        if (e) {
+          e.preventDefault();
+        }
+        if (Em.isNone(this.get('model.validate'))) {
+          return this.get('targetObject').send(this.get('action'));
+        } else {
+          promise = this.get('model').validate();
+          return promise.then((function(_this) {
+            return function() {
+              if (_this.get('model.isValid')) {
+                return _this.get('targetObject').send(_this.get('action'));
+              }
+            };
+          })(this));
+        }
+      }
+    });
+  });
+define("ember-idx-forms/group", 
+  ["ember","ember-idx-forms/mixins/in_form","ember-idx-forms/mixins/has_property","ember-idx-forms/mixins/has_property_validation","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var InFormMixin = __dependency2__["default"];
+    var HasPropertyMixin = __dependency3__["default"];
+    var HasPropertyValidationMixin = __dependency4__["default"];
+
+    /*
+    Form Group
+
+    Wraps labels, controls and help message for optimum spacing and validation styles.
+    A wrapper for a single input with its assistances views such as label, help message.
+
+    A form group can yield the control's view after or within a label, this is dependent on the control
+        required layout and is defined byt he yieldInLabel property
+
+
+    Syntax:
+    {{em-form-group
+        //The state of the form group
+        status="none|error|warning|success"
+        //If true the control view is yieled within the label
+        yieldInLabel=true|false
+        //If true validation icons will be rendered, by default inherited from the form
+        v_icons: true
+        //Label of the form group, default is a human friendly form of the property name
+        label="Some label"
+    }}
+     */
+    __exports__["default"] = Em.Component.extend(InFormMixin, HasPropertyMixin, HasPropertyValidationMixin, {
+      tagName: 'div',
+      "class": 'form-group',
+      layoutName: 'components/em-form-group',
+      classNameBindings: ['class', 'hasSuccess', 'hasWarning', 'hasError', 'v_icons:has-feedback'],
+      attributeBindings: ['disabled'],
+      canShowErrors: false,
+      hasSuccess: (function() {
+        var success;
+        success = this.get('validations') && this.get('status') === 'success' && this.get('canShowErrors');
+        this.set('success', success);
+        return success;
+      }).property('status', 'canShowErrors'),
+      hasWarning: (function() {
+        var warning;
+        warning = this.get('validations') && this.get('status') === 'warning' && this.get('canShowErrors');
+        this.set('warning', warning);
+        return warning;
+      }).property('status', 'canShowErrors'),
+      hasError: (function() {
+        var error;
+        error = this.get('validations') && this.get('status') === 'error' && this.get('canShowErrors');
+        this.set('error', error);
+        return error;
+      }).property('status', 'canShowErrors'),
+      v_icons: Em.computed.alias('form.v_icons'),
+      v_success_icon: 'fa fa-check',
+      v_warn_icon: 'fa fa-exclamation-triangle',
+      v_error_icon: 'fa fa-times',
+      validations: true,
+      yieldInLabel: false,
+      v_icon: (function() {
+        if (!this.get('canShowErrors')) {
+          return;
+        }
+        switch (this.get('status')) {
+          case 'success':
+            return this.get('v_success_icon');
+          case 'warning':
+          case 'warn':
+            return this.get('v_warn_icon');
+          case 'error':
+            return this.get('v_error_icon');
+          default:
+            return null;
+        }
+      }).property('status', 'canShowErrors'),
+      init: function() {
+        return this._super();
+      },
+
+      /*
+      Observes the helpHasErrors of the help control and modify the 'status' property accordingly.
+       */
+
+      /*
+      Listen to the focus out of the form group and display the errors
+       */
+      focusOut: function() {
+        return this.set('canShowErrors', true);
+      }
+    });
+  });
+define("ember-idx-forms/input", 
+  ["ember","ember-idx-forms/group","ember-idx-forms/mixins/control","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var FormGroupComponent = __dependency2__["default"];
+    var ControlMixin = __dependency3__["default"];
+
+    /*
+    Form Input
+
+    Syntax:
+    {{em-input property="property name"}}
+     */
+    __exports__["default"] = FormGroupComponent.extend({
+      controlView: Em.TextField.extend(ControlMixin, {
+        attributeBindings: ['placeholder', 'required', 'autofocus', 'disabled'],
+        placeholder: Em.computed.alias('parentView.placeholder'),
+        required: Em.computed.alias('parentView.required'),
+        autofocus: Em.computed.alias('parentView.autofocus'),
+        disabled: Em.computed.alias('parentView.disabled'),
+        type: Em.computed.alias('parentView.type'),
+        model: Em.computed.alias('parentView.model'),
+        propertyName: Em.computed.alias('parentView.propertyName')
+      }),
+      property: void 0,
+      label: void 0,
+      placeholder: void 0,
+      required: void 0,
+      autofocus: void 0,
+      disabled: void 0,
+      controlWrapper: (function() {
+        if (this.get('form.form_layout') === 'horizontal') {
+          return 'col-sm-10';
+        }
+        return null;
+      }).property('form.form_layout')
+    });
+  });
+define("ember-idx-forms/label", 
+  ["ember","ember-idx-forms/mixins/in_form","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var InFormMixin = __dependency2__["default"];
+
+    /*
+    Form Label
+
+    When styled with bootstrap, when form is rendered horizontally, the label require the 'extraClass' property to
+        be set to a value such 'col-sm-2' to be aligned properly.
+
+    Syntax:
+    {{em-form-label
+        text="Some label"
+        extraClass="col-sm-2"
+    }}
+
+    Or can serve as a block helper for elements that needs to be wrapped within label element.
+    {{#em-form-label text="Active?"}}
+        {{em-checkbox}}
+    {{/em-form-label}}
+     */
+    __exports__["default"] = Em.Component.extend(InFormMixin, {
+      tagName: 'label',
+      classNames: ['control-label'],
+      classNameBindings: ['extraClass', 'inlineClassCalc', 'horiClassCalc'],
+      attributeBindings: ['for'],
+      horiClass: 'col-sm-2',
+      horiClassCalc: (function() {
+        if (this.get('form.isHorizontal') && this.get('horiClass')) {
+          return this.get('horiClass');
+        }
+      }).property('form.isHorizontal'),
+      inlineClass: 'sr-only',
+      inlineClassCalc: (function() {
+        if (this.get('form.isInline') && this.get('inlineClass')) {
+          return this.get('inlineClass');
+        }
+      }).property('form.form_layout')
+    });
+  });
+define("ember-idx-forms/mixins/control", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+
+    /***
+    Mixin that should be applied for all controls
+     */
+    __exports__["default"] = Em.Mixin.create({
+      classNameBindings: ['class'],
+      "class": 'form-control',
+      init: function() {
+        this._super();
+        return Em.Binding.from("model." + (this.get('propertyName'))).to('value').connect(this);
+      },
+      hasValue: (function() {
+        return this.get('value') !== null;
+      }).property('value').readOnly()
+    });
+  });
+define("ember-idx-forms/mixins/has_property", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+
+    /*
+    A mixin that enriches a view that is attached to a model property.
+
+    The property name by default is taken from the parentView unless explictly
+        defined in the `property` variable.
+
+    This mixin also binds a property named `errors` to the model's `model.errors.@propertyName` array
+     */
+
+    __exports__["default"] = Em.Mixin.create({
+      property: void 0,
+      propertyName: (function() {
+        if (this.get('property')) {
+          return this.get('property');
+        } else if (this.get('parentView.property')) {
+          return this.get('parentView.property');
+        } else {
+          return Em.assert(false, 'Property could not be found.');
+        }
+      }).property('parentView.property'),
+      init: function() {
+        this._super();
+        return Em.Binding.from('model.errors.' + this.get('propertyName')).to('errors').connect(this);
+      }
+    });
+  });
+define("ember-idx-forms/mixins/has_property_validation", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+
+    /*
+    A mixin that enriches a view that is attached to a model property that has validation
+        support.
+
+    This mixin binds a property named `errors` to the model's `model.errors.@propertyName` array
+     */
+
+    __exports__["default"] = Em.Mixin.create({
+      init: function() {
+        this._super();
+        Em.assert(!Em.isNone(this.get('propertyName')), 'propertyName is required.');
+        return Em.Binding.from('model.errors.' + this.get('propertyName')).to('errors').connect(this);
+      },
+      status: (function() {
+        if (this.get('errors.length')) {
+          return 'error';
+        } else {
+          return 'success';
+        }
+      }).property('errors.length')
+    });
+  });
+define("ember-idx-forms/mixins/in_form", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+
+    /*
+    Find the form of the view that merges this mixin
+     */
+    __exports__["default"] = Em.Mixin.create({
+      form: (function() {
+        var parentView;
+        parentView = this.get('parentView');
+        while (parentView) {
+          if (parentView.get('tagName') === 'form') {
+            return parentView;
+          }
+          parentView = parentView.get('parentView');
+        }
+        return Em.assert(false, 'Cannot find form');
+      }).property('parentView'),
+      model: (function() {
+        return this.get('form.model');
+      }).property('form')
+    });
+  });
+define("ember-idx-forms/select", 
+  ["ember","ember-idx-forms/group","ember-idx-forms/mixins/control","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var FormGroupComponent = __dependency2__["default"];
+    var ControlMixin = __dependency3__["default"];
+
+    /*
+    Form Select
+
+    Syntax:
+    {{em-select property="property name"
+        content=array_of_options
+        optionValuePath=keyForValue
+        optionLabelPath=keyForLabel
+        prompt="Optional default prompt"}}
+     */
+    __exports__["default"] = FormGroupComponent.extend({
+      v_icons: false,
+      controlView: Em.Select.extend(ControlMixin, {
+        model: Em.computed.alias('parentView.model'),
+        propertyName: Em.computed.alias('parentView.propertyName'),
+        content: Em.computed.alias('parentView.content'),
+        optionValuePath: Em.computed.alias('parentView.optionValuePath'),
+        optionLabelPath: Em.computed.alias('parentView.optionLabelPath'),
+        prompt: Em.computed.alias('parentView.prompt')
+      }),
+      property: void 0,
+      content: void 0,
+      optionValuePath: void 0,
+      optionLabelPath: void 0,
+      prompt: void 0,
+      controlWrapper: (function() {
+        if (this.get('form.form_layout') === 'horizontal') {
+          return 'col-sm-10';
+        }
+        return null;
+      }).property('form.form_layout')
+    });
+  });
+define("ember-idx-forms/submit_button", 
+  ["ember","ember-idx-forms/mixins/in_form","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var InFormMixin = __dependency2__["default"];
+
+    /*
+    Form Submit Button
+
+    Syntax:
+    {{em-form-submit text="Submit"}}
+     */
+    __exports__["default"] = Em.Component.extend(InFormMixin, {
+      classes: 'btn btn-default',
+      classNames: ['form-group'],
+      text: 'Submit',
+      type: 'submit',
+      attributeBindings: ['disabled'],
+      horiClass: 'col-sm-offset-2 col-sm-10',
+      disabled: (function() {
+        if (!Em.isNone(this.get('model.isValid'))) {
+          return !this.get('model.isValid');
+        } else {
+          return false;
+        }
+      }).property('model.isValid')
+    });
+  });
+define("ember-idx-forms/text", 
+  ["ember","ember-idx-forms/group","ember-idx-forms/mixins/control","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Em = __dependency1__["default"];
+    var FormGroupComponent = __dependency2__["default"];
+    var ControlMixin = __dependency3__["default"];
+
+    /*
+    Form Input
+
+    Syntax:
+    {{em-text property="property name" rows=4}}
+     */
+    __exports__["default"] = FormGroupComponent.extend({
+      controlView: Em.TextArea.extend(ControlMixin, {
+        attributeBindings: ['placeholder'],
+        placeholder: Em.computed.alias('parentView.placeholder'),
+        model: Em.computed.alias('parentView.model'),
+        propertyName: Em.computed.alias('parentView.propertyName'),
+        rows: Em.computed.alias('parentView.rows')
+      }),
+      property: void 0,
+      label: void 0,
+      placeholder: void 0,
+      rows: 4,
+      controlWrapper: (function() {
+        if (this.get('form.form_layout') === 'horizontal') {
+          return 'col-sm-10';
+        }
+        return null;
+      }).property('form.form_layout')
+    });
+  });
+define("ember-idx-forms/utils/utils", 
+  ["exports"],
+  function(__exports__) {
+    "use strict";
+    var Utils;
+    __exports__["default"] = Utils = {
+      createBoundSwitchAccessor: function(switchValue, myProperty, myDefault) {
+        if (myDefault == null) {
+          myDefault = 'default';
+        }
+        return (function(key, value) {
+          if (arguments.length === 2) {
+            this.set(myProperty, (value ? switchValue : myDefault));
+          }
+          return this.get(myProperty) === switchValue;
+        }).property(myProperty);
+      },
+      namelize: function(string) {
+        return string.underscore().split('_').join(' ').capitalize();
+      }
+    };
+  });
+define("ember-idx-forms", ["ember-idx-forms/index","exports"], function(__index__, __exports__) {
+  "use strict";
+  Object.keys(__index__).forEach(function(key){
+    __exports__[key] = __index__[key];
+  });
+});
+
 define("ember-idx-modal/modal-body", 
   ["ember","ember-idx-utils/mixin/with-config","ember-idx-utils/mixin/style-bindings","exports"],
   function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
@@ -93101,6 +93685,793 @@ define("ember-idx-utils/utils/delay",
     __exports__["default"] = delay;
   });
 define("ember-idx-utils", ["ember-idx-utils/index","exports"], function(__index__, __exports__) {
+  "use strict";
+  Object.keys(__index__).forEach(function(key){
+    __exports__[key] = __index__[key];
+  });
+});
+
+define("ember-validations/errors", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Ember.Object.extend({
+      unknownProperty: function(property) {
+        set(this, property, Ember.A());
+        return get(this, property);
+      }
+    });
+  });
+define("ember-validations/index", 
+  ["ember-validations/mixin","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Mixin = __dependency1__["default"];
+
+    __exports__["default"] = {
+      Mixin: Mixin,
+      validator: function(callback) {
+        return { callback: callback };
+      }
+    };
+  });
+define("ember-validations/messages", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    __exports__["default"] = {
+      render: function(attribute, context) {
+        if (Ember.I18n) {
+          return Ember.I18n.t('errors.' + attribute, context);
+        } else {
+          var regex = new RegExp("{{(.*?)}}"),
+              attributeName = "";
+          if (regex.test(this.defaults[attribute])) {
+            attributeName = regex.exec(this.defaults[attribute])[1];
+          }
+          return this.defaults[attribute].replace(regex, context[attributeName]);
+        }
+      },
+      defaults: {
+        inclusion: "is not included in the list",
+        exclusion: "is reserved",
+        invalid: "is invalid",
+        confirmation: "doesn't match {{attribute}}",
+        accepted: "must be accepted",
+        empty: "can't be empty",
+        blank: "can't be blank",
+        present: "must be blank",
+        tooLong: "is too long (maximum is {{count}} characters)",
+        tooShort: "is too short (minimum is {{count}} characters)",
+        wrongLength: "is the wrong length (should be {{count}} characters)",
+        notANumber: "is not a number",
+        notAnInteger: "must be an integer",
+        greaterThan: "must be greater than {{count}}",
+        greaterThanOrEqualTo: "must be greater than or equal to {{count}}",
+        equalTo: "must be equal to {{count}}",
+        lessThan: "must be less than {{count}}",
+        lessThanOrEqualTo: "must be less than or equal to {{count}}",
+        otherThan: "must be other than {{count}}",
+        odd: "must be odd",
+        even: "must be even",
+        url: "is not a valid URL"
+      }
+    };
+  });
+define("ember-validations/mixin", 
+  ["ember","ember-validations/errors","ember-validations/validators/base","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Errors = __dependency2__["default"];
+    var Base = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    var setValidityMixin = Ember.Mixin.create({
+      isValid: Ember.computed('validators.@each.isValid', function() {
+        var compactValidators = get(this, 'validators').compact();
+        var filteredValidators = Ember.EnumerableUtils.filter(compactValidators, function(validator) {
+          return !get(validator, 'isValid');
+        });
+
+        return get(filteredValidators, 'length') === 0;
+      }),
+      isInvalid: Ember.computed.not('isValid')
+    });
+
+    var pushValidatableObject = function(model, property) {
+      var content = get(model, property);
+
+      model.removeObserver(property, pushValidatableObject);
+      if (Ember.isArray(content)) {
+        model.validators.pushObject(ArrayValidatorProxy.create({model: model, property: property, contentBinding: 'model.' + property}));
+      } else {
+        model.validators.pushObject(content);
+      }
+    };
+
+    var lookupValidator = function(validatorName) {
+      var container = get(this, 'container');
+      var local = container.lookupFactory('validator:local/'+validatorName);
+      var remote = container.lookupFactory('validator:remote/'+validatorName);
+
+      if (local || remote) { return [local, remote]; }
+
+      var base = container.lookupFactory('validator:'+validatorName);
+
+      if (base) { return [base]; }
+
+      local = container.lookupFactory('ember-validations@validator:local/'+validatorName);
+      remote = container.lookupFactory('ember-validations@validator:remote/'+validatorName);
+
+      if (local || remote) { return [local, remote]; }
+
+      Ember.warn('Could not the "'+validatorName+'" validator.');
+    };
+
+    var ArrayValidatorProxy = Ember.ArrayProxy.extend(setValidityMixin, {
+      validate: function() {
+        return this._validate();
+      },
+      _validate: Ember.on('init', function() {
+        var promises = get(this, 'content').invoke('_validate').without(undefined);
+        return Ember.RSVP.all(promises);
+      }),
+      validators: Ember.computed.alias('content')
+    });
+
+    __exports__["default"] = Ember.Mixin.create(setValidityMixin, {
+      init: function() {
+        this._super();
+        this.errors = Errors.create();
+        this.dependentValidationKeys = {};
+        this.validators = Ember.A();
+        if (get(this, 'validations') === undefined) {
+          this.validations = {};
+        }
+        this.buildValidators();
+        this.validators.forEach(function(validator) {
+          validator.addObserver('errors.[]', this, function(sender) {
+            var errors = Ember.A();
+            this.validators.forEach(function(validator) {
+              if (validator.property === sender.property) {
+                errors.addObjects(validator.errors);
+              }
+            }, this);
+            set(this, 'errors.' + sender.property, errors);
+          });
+        }, this);
+      },
+      buildValidators: function() {
+        var property;
+
+        for (property in this.validations) {
+          if (this.validations[property].constructor === Object) {
+            this.buildRuleValidator(property);
+          } else {
+            this.buildObjectValidator(property);
+          }
+        }
+      },
+      buildRuleValidator: function(property) {
+        var pushValidator = function(validator) {
+          if (validator) {
+            this.validators.pushObject(validator.create({model: this, property: property, options: this.validations[property][validatorName]}));
+          }
+        };
+
+        if (this.validations[property].callback) {
+          this.validations[property] = { inline: this.validations[property] };
+        }
+
+        var createInlineClass = function(callback) {
+          return Base.extend({
+            call: function() {
+              var errorMessage = this.callback.call(this);
+
+              if (errorMessage) {
+                this.errors.pushObject(errorMessage);
+              }
+            },
+            callback: callback
+          });
+        };
+
+        for (var validatorName in this.validations[property]) {
+          if (validatorName === 'inline') {
+            pushValidator.call(this, createInlineClass(this.validations[property][validatorName].callback));
+          } else if (this.validations[property].hasOwnProperty(validatorName)) {
+            Ember.EnumerableUtils.forEach(lookupValidator.call(this, validatorName), pushValidator, this);
+          }
+        }
+      },
+      buildObjectValidator: function(property) {
+        if (Ember.isNone(get(this, property))) {
+          this.addObserver(property, this, pushValidatableObject);
+        } else {
+          pushValidatableObject(this, property);
+        }
+      },
+      validate: function() {
+        var self = this;
+        return this._validate().then(function(vals) {
+          var errors = get(self, 'errors');
+          if (Ember.EnumerableUtils.indexOf(vals, false) > -1) {
+            return Ember.RSVP.reject(errors);
+          }
+          return errors;
+        });
+      },
+      _validate: Ember.on('init', function() {
+        var promises = this.validators.invoke('_validate').without(undefined);
+        return Ember.RSVP.all(promises);
+      })
+    });
+  });
+define("ember-validations/patterns", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    __exports__["default"] = Ember.Namespace.create({
+      numericality: /^(-|\+)?(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$/,
+      blank: /^\s*$/
+    });
+  });
+define("ember-validations/validators/base", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Ember.Object.extend({
+      init: function() {
+        set(this, 'errors', Ember.A());
+        this.dependentValidationKeys = Ember.A();
+        this.conditionals = {
+          'if': get(this, 'options.if'),
+          unless: get(this, 'options.unless')
+        };
+        this.model.addObserver(this.property, this, this._validate);
+      },
+      addObserversForDependentValidationKeys: Ember.on('init', function() {
+        this.dependentValidationKeys.forEach(function(key) {
+          this.model.addObserver(key, this, this._validate);
+        }, this);
+      }),
+      pushDependentValidationKeyToModel: Ember.on('init', function() {
+        var model = get(this, 'model');
+        if (model.dependentValidationKeys[this.property] === undefined) {
+          model.dependentValidationKeys[this.property] = Ember.A();
+        }
+        model.dependentValidationKeys[this.property].addObjects(this.dependentValidationKeys);
+      }),
+      call: function () {
+        throw 'Not implemented!';
+      },
+      unknownProperty: function(key) {
+        var model = get(this, 'model');
+        if (model) {
+          return get(model, key);
+        }
+      },
+      isValid: Ember.computed.empty('errors.[]'),
+      validate: function() {
+        var self = this;
+        return this._validate().then(function(success) {
+          // Convert validation failures to rejects.
+          var errors = get(self, 'model.errors');
+          if (success) {
+            return errors;
+          } else {
+            return Ember.RSVP.reject(errors);
+          }
+        });
+      },
+      _validate: Ember.on('init', function() {
+        this.errors.clear();
+        if (this.canValidate()) {
+          this.call();
+        }
+        if (get(this, 'isValid')) {
+          return Ember.RSVP.resolve(true);
+        } else {
+          return Ember.RSVP.resolve(false);
+        }
+      }),
+      canValidate: function() {
+        if (typeof(this.conditionals) === 'object') {
+          if (this.conditionals['if']) {
+            if (typeof(this.conditionals['if']) === 'function') {
+              return this.conditionals['if'](this.model, this.property);
+            } else if (typeof(this.conditionals['if']) === 'string') {
+              if (typeof(this.model[this.conditionals['if']]) === 'function') {
+                return this.model[this.conditionals['if']]();
+              } else {
+                return get(this.model, this.conditionals['if']);
+              }
+            }
+          } else if (this.conditionals.unless) {
+            if (typeof(this.conditionals.unless) === 'function') {
+              return !this.conditionals.unless(this.model, this.property);
+            } else if (typeof(this.conditionals.unless) === 'string') {
+              if (typeof(this.model[this.conditionals.unless]) === 'function') {
+                return !this.model[this.conditionals.unless]();
+              } else {
+                return !get(this.model, this.conditionals.unless);
+              }
+            }
+          } else {
+            return true;
+          }
+        } else {
+          return true;
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/absence", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        /*jshint expr:true*/
+        if (this.options === true) {
+          set(this, 'options', {});
+        }
+
+        if (this.options.message === undefined) {
+          set(this, 'options.message', Messages.render('present', this.options));
+        }
+      },
+      call: function() {
+        if (!Ember.isEmpty(get(this.model, this.property))) {
+          this.errors.pushObject(this.options.message);
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/acceptance", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        /*jshint expr:true*/
+        if (this.options === true) {
+          set(this, 'options', {});
+        }
+
+        if (this.options.message === undefined) {
+          set(this, 'options.message', Messages.render('accepted', this.options));
+        }
+      },
+      call: function() {
+        if (this.options.accept) {
+          if (get(this.model, this.property) !== this.options.accept) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (get(this.model, this.property) !== '1' && get(this.model, this.property) !== 1 && get(this.model, this.property) !== true) {
+          this.errors.pushObject(this.options.message);
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/confirmation", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this.originalProperty = this.property;
+        this.property = this.property + 'Confirmation';
+        this._super();
+        this.dependentValidationKeys.pushObject(this.originalProperty);
+        /*jshint expr:true*/
+        if (this.options === true) {
+          set(this, 'options', { attribute: this.originalProperty });
+          set(this, 'options', { message: Messages.render('confirmation', this.options) });
+        }
+      },
+      call: function() {
+        if (get(this.model, this.originalProperty) !== get(this.model, this.property)) {
+          this.errors.pushObject(this.options.message);
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/exclusion", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        if (this.options.constructor === Array) {
+          set(this, 'options', { 'in': this.options });
+        }
+
+        if (this.options.message === undefined) {
+          set(this, 'options.message', Messages.render('exclusion', this.options));
+        }
+      },
+      call: function() {
+        /*jshint expr:true*/
+        var lower, upper;
+
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          if (this.options.allowBlank === undefined) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (this.options['in']) {
+          if (Ember.$.inArray(get(this.model, this.property), this.options['in']) !== -1) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (this.options.range) {
+          lower = this.options.range[0];
+          upper = this.options.range[1];
+
+          if (get(this.model, this.property) >= lower && get(this.model, this.property) <= upper) {
+            this.errors.pushObject(this.options.message);
+          }
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/format", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        if (this.options.constructor === RegExp) {
+          set(this, 'options', { 'with': this.options });
+        }
+
+        if (this.options.message === undefined) {
+          set(this, 'options.message',  Messages.render('invalid', this.options));
+        }
+       },
+       call: function() {
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          if (this.options.allowBlank === undefined) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (this.options['with'] && !this.options['with'].test(get(this.model, this.property))) {
+          this.errors.pushObject(this.options.message);
+        } else if (this.options.without && this.options.without.test(get(this.model, this.property))) {
+          this.errors.pushObject(this.options.message);
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/inclusion", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        if (this.options.constructor === Array) {
+          set(this, 'options', { 'in': this.options });
+        }
+
+        if (this.options.message === undefined) {
+          set(this, 'options.message', Messages.render('inclusion', this.options));
+        }
+      },
+      call: function() {
+        var lower, upper;
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          if (this.options.allowBlank === undefined) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (this.options['in']) {
+          if (Ember.$.inArray(get(this.model, this.property), this.options['in']) === -1) {
+            this.errors.pushObject(this.options.message);
+          }
+        } else if (this.options.range) {
+          lower = this.options.range[0];
+          upper = this.options.range[1];
+
+          if (get(this.model, this.property) < lower || get(this.model, this.property) > upper) {
+            this.errors.pushObject(this.options.message);
+          }
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/length", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+    var set = Ember.set;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        var index, key;
+        this._super();
+        /*jshint expr:true*/
+        if (typeof(this.options) === 'number') {
+          set(this, 'options', { 'is': this.options });
+        }
+
+        if (this.options.messages === undefined) {
+          set(this, 'options.messages', {});
+        }
+
+        for (index = 0; index < this.messageKeys().length; index++) {
+          key = this.messageKeys()[index];
+          if (this.options[key] !== undefined && this.options[key].constructor === String) {
+            this.model.addObserver(this.options[key], this, this._validate);
+          }
+        }
+
+        this.options.tokenizer = this.options.tokenizer || function(value) { return value.split(''); };
+        // if (typeof(this.options.tokenizer) === 'function') {
+          // debugger;
+          // // this.tokenizedLength = new Function('value', 'return '
+        // } else {
+          // this.tokenizedLength = new Function('value', 'return (value || "").' + (this.options.tokenizer || 'split("")') + '.length');
+        // }
+      },
+      CHECKS: {
+        'is'      : '==',
+        'minimum' : '>=',
+        'maximum' : '<='
+      },
+      MESSAGES: {
+        'is'      : 'wrongLength',
+        'minimum' : 'tooShort',
+        'maximum' : 'tooLong'
+      },
+      getValue: function(key) {
+        if (this.options[key].constructor === String) {
+          return get(this.model, this.options[key]) || 0;
+        } else {
+          return this.options[key];
+        }
+      },
+      messageKeys: function() {
+        return Ember.keys(this.MESSAGES);
+      },
+      checkKeys: function() {
+        return Ember.keys(this.CHECKS);
+      },
+      renderMessageFor: function(key) {
+        var options = {count: this.getValue(key)}, _key;
+        for (_key in this.options) {
+          options[_key] = this.options[_key];
+        }
+
+        return this.options.messages[this.MESSAGES[key]] || Messages.render(this.MESSAGES[key], options);
+      },
+      renderBlankMessage: function() {
+        if (this.options.is) {
+          return this.renderMessageFor('is');
+        } else if (this.options.minimum) {
+          return this.renderMessageFor('minimum');
+        }
+      },
+      call: function() {
+        var fn, operator, key;
+
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          if (this.options.allowBlank === undefined && (this.options.is || this.options.minimum)) {
+            this.errors.pushObject(this.renderBlankMessage());
+          }
+        } else {
+          for (key in this.CHECKS) {
+            operator = this.CHECKS[key];
+            if (!this.options[key]) {
+              continue;
+            }
+
+            fn = new Function('return ' + this.options.tokenizer(get(this.model, this.property)).length + ' ' + operator + ' ' + this.getValue(key));
+            if (!fn()) {
+              this.errors.pushObject(this.renderMessageFor(key));
+            }
+          }
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/numericality", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","ember-validations/patterns","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __dependency4__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+    var Patterns = __dependency4__["default"];
+
+    var get = Ember.get;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        /*jshint expr:true*/
+        var index, keys, key;
+        this._super();
+
+        if (this.options === true) {
+          this.options = {};
+        } else if (this.options.constructor === String) {
+          key = this.options;
+          this.options = {};
+          this.options[key] = true;
+        }
+
+        if (this.options.messages === undefined || this.options.messages.numericality === undefined) {
+          this.options.messages = this.options.messages || {};
+          this.options.messages = { numericality: Messages.render('notANumber', this.options) };
+        }
+
+        if (this.options.onlyInteger !== undefined && this.options.messages.onlyInteger === undefined) {
+          this.options.messages.onlyInteger = Messages.render('notAnInteger', this.options);
+        }
+
+        keys = Ember.keys(this.CHECKS).concat(['odd', 'even']);
+        for(index = 0; index < keys.length; index++) {
+          key = keys[index];
+
+          var prop = this.options[key];
+          // I have no idea what the hell is going on here. This seems to do nothing.
+          // The observer's key is being set to the values in the options hash?
+          if (key in this.options && isNaN(prop)) {
+            this.model.addObserver(prop, this, this._validate);
+          }
+
+          if (prop !== undefined && this.options.messages[key] === undefined) {
+            if (Ember.$.inArray(key, Ember.keys(this.CHECKS)) !== -1) {
+              this.options.count = prop;
+            }
+            this.options.messages[key] = Messages.render(key, this.options);
+            if (this.options.count !== undefined) {
+              delete this.options.count;
+            }
+          }
+        }
+      },
+      CHECKS: {
+        equalTo              :'===',
+        greaterThan          : '>',
+        greaterThanOrEqualTo : '>=',
+        lessThan             : '<',
+        lessThanOrEqualTo    : '<='
+      },
+      call: function() {
+        var check, checkValue, fn, operator;
+
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          if (this.options.allowBlank === undefined) {
+            this.errors.pushObject(this.options.messages.numericality);
+          }
+        } else if (!Patterns.numericality.test(get(this.model, this.property))) {
+          this.errors.pushObject(this.options.messages.numericality);
+        } else if (this.options.onlyInteger === true && !(/^[+\-]?\d+$/.test(get(this.model, this.property)))) {
+          this.errors.pushObject(this.options.messages.onlyInteger);
+        } else if (this.options.odd  && parseInt(get(this.model, this.property), 10) % 2 === 0) {
+          this.errors.pushObject(this.options.messages.odd);
+        } else if (this.options.even && parseInt(get(this.model, this.property), 10) % 2 !== 0) {
+          this.errors.pushObject(this.options.messages.even);
+        } else {
+          for (check in this.CHECKS) {
+            operator = this.CHECKS[check];
+
+            if (this.options[check] === undefined) {
+              continue;
+            }
+
+            if (!isNaN(parseFloat(this.options[check])) && isFinite(this.options[check])) {
+              checkValue = this.options[check];
+            } else if (get(this.model, this.options[check]) !== undefined) {
+              checkValue = get(this.model, this.options[check]);
+            }
+
+            fn = new Function('return ' + get(this.model, this.property) + ' ' + operator + ' ' + checkValue);
+
+            if (!fn()) {
+              this.errors.pushObject(this.options.messages[check]);
+            }
+          }
+        }
+      }
+    });
+  });
+define("ember-validations/validators/local/presence", 
+  ["ember","ember-validations/validators/base","ember-validations/messages","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Base = __dependency2__["default"];
+    var Messages = __dependency3__["default"];
+
+    var get = Ember.get;
+
+    __exports__["default"] = Base.extend({
+      init: function() {
+        this._super();
+        /*jshint expr:true*/
+        if (this.options === true) {
+          this.options = {};
+        }
+
+        if (this.options.message === undefined) {
+          this.options.message = Messages.render('blank', this.options);
+        }
+      },
+      call: function() {
+        if (Ember.isEmpty(get(this.model, this.property))) {
+          this.errors.pushObject(this.options.message);
+        }
+      }
+    });
+  });
+define("ember-validations", ["ember-validations/index","exports"], function(__index__, __exports__) {
   "use strict";
   Object.keys(__index__).forEach(function(key){
     __exports__[key] = __index__[key];

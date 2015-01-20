@@ -23,14 +23,41 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 							dataType: 'json',
 							success: function(authResponse){
 								console.log(authResponse);
-								var user = rte.store.find('user', { id: authResponse.auth.user });
 
-								rte.set('currentUser', user);
+								rte.store.find('user', authResponse.id).then(function(user){
 
-								if(user.get('username') === undefined){
+									User.resetCurrent(user);
 
-									rte.transitionTo('manageAccount');
+									if(user.get('username') === undefined || user.get('username') == null){
+
+										FB.api(
+											"/me/picture",
+										{
+											"redirect": true,
+											"height": "101",
+											"type": "normal",
+											"width": "101"
+										},
+										function (response) {
+											if (response && !response.error) {
+												user.set('profilePictureUrl', response.data.url);
+												user.save();
+												User.resetCurrent(user);
+												rte.currentUser = user;
+
+												//TODO: need to merge our user with the simple-auth session
+												// so we can rebuild the UI later on refresh etc
+
+												rte.transitionTo('manageAccount');
+											}
+										}
+									);
+
+
 								}
+								});
+
+
 							},
 							error: function(err){
 								console.log(err);
