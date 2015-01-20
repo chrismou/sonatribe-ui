@@ -1,0 +1,7 @@
+language: node_js
+node_js:
+- "0.11"
+before_script:
+- nvm install 0.10.35
+- nvm alias default 0.10.35
+script: npm install && npm test
