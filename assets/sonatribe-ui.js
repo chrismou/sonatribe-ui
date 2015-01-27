@@ -51,106 +51,20 @@ define("sonatribe-ui/app",
 
     __exports__["default"] = App;
   });
-define("sonatribe-ui/authenticators/torii", 
-  ["simple-auth/authenticators/base","exports"],
+define("sonatribe-ui/authenticators/sonatribe-facebook", 
+  ["simple-auth-torii/authenticators/torii","exports"],
   function(__dependency1__, __exports__) {
     "use strict";
-    var Base = __dependency1__["default"];
+    var Authenticator = __dependency1__["default"];
 
-    /**
-    Authenticator that wraps the
-    [Torii library](https://github.com/Vestorly/torii).
-
-    _The factory for this authenticator is registered as
-    `'simple-auth-authenticator:torii'` in Ember's container._
-
-    @class Torii
-    @namespace SimpleAuth.Authenticators
-    @module simple-auth-torii/authenticators/torii
-    @extends Base
-    */
-    __exports__["default"] = Base.extend({
-      /**
-      @property torii
-      @private
-      */
-      torii: null,
-
-      /**
-      @property provider
-      @private
-      */
-      provider: null,
-
-      /**
-      Restores the session by calling the torii provider's `fetch` method.
-       @method restore
-      @param {Object} data The data to restore the session from
-      @return {Ember.RSVP.Promise} A promise that when it resolves results in the session being authenticated
-      */
-      restore: function (data) {
-        var _this = this;
-        data = data || {};
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-          if (!Ember.isEmpty(data.provider)) {
-            var provider = data.provider;
-            _this.torii.fetch(data.provider, data).then(function (data) {
-              _this.resolveWith(provider, data, resolve);
-            }, function () {
-              delete _this.provider;
-              reject();
-            });
-          } else {
-            delete _this.provider;
-            reject();
-          }
-        });
-      },
-
-      /**
-      Authenticates the session by opening the torii provider. For more
-      documentation on torii, see the
-      [project's README](https://github.com/Vestorly/torii#readme).
-       @method authenticate
-      @param {String} provider The provider to authenticate the session with
-      @param {Object} options The options to pass to the torii provider
-      @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully authenticates a user and rejects otherwise
-      */
+    __exports__["default"] = Authenticator.extend({
+      restore: function (data) {},
       authenticate: function (provider, options) {
-        var _this = this;
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-          _this.torii.open(provider, options || {}).then(function (data) {
-            _this.resolveWith(provider, data, resolve);
-          }, reject);
+        this._super(provider, options).then(function (resolve, reject) {
+          alert(resolve);
         });
       },
-
-      /**
-      Closes the torii provider.
-       @method invalidate
-      @param {Object} data The data that's stored in the session
-      @return {Ember.RSVP.Promise} A promise that resolves when the provider successfully closes and rejects otherwise
-      */
-      invalidate: function () {
-        var _this = this;
-        return new Ember.RSVP.Promise(function (resolve, reject) {
-          _this.torii.close(_this.provider).then(function () {
-            delete _this.provider;
-            resolve();
-          }, reject);
-        });
-      },
-
-      /**
-      @method resolveWith
-      @private
-      */
-      resolveWith: function (provider, data, resolve) {
-        data.provider = provider;
-        this.provider = data.provider;
-        resolve(data);
-      }
-
+      invalidate: function (data) {}
     });
   });
 define("sonatribe-ui/components/em-checkbox", 
@@ -953,6 +867,22 @@ define("sonatribe-ui/helpers/test-helper",
 
     __exports__["default"] = Ember.Handlebars.makeBoundHelper(testHelper);
   });
+define("sonatribe-ui/initializers/authentication", 
+  ["sonatribe-ui/authenticators/sonatribe-facebook","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var CustomAuthenticator = __dependency1__["default"];
+
+    function initialize(container /* application */) {
+      container.register("authenticator:sonatribe-facebook", CustomAuthenticator);
+    }
+
+    __exports__.initialize = initialize;__exports__["default"] = {
+      name: "authentication",
+      before: "simple-auth",
+      initialize: initialize
+    };
+  });
 define("sonatribe-ui/initializers/config", 
   ["ember","ember-idx-utils/config","exports"],
   function(__dependency1__, __dependency2__, __exports__) {
@@ -1091,21 +1021,21 @@ define("sonatribe-ui/initializers/initialize-user",
   ["exports"],
   function(__exports__) {
     "use strict";
-    var initialize = function () {};
+    var initialize = function (container, app) {};
     __exports__.initialize = initialize;
     __exports__["default"] = {
       name: "initialize-user",
-
+      after: "simple-auth",
       initialize: initialize
     };
-    /*container, app*/
-    /*app.deferReadiness();
-     Sonatribe.Ajax.ajax('model/user/')
-         .then(function(result){
-    		    var store = container.lookup('store:main');
-             var user = store.createRecord('user', result.result);
-             app.advanceReadiness();
-     	});*/
+    /*
+    Sonatribe.Ajax.ajax('model/user/')
+        .then(function(result){
+    	    var store = container.lookup('store:main');
+            var user = store.createRecord('user', result.result);
+            app.advanceReadiness();
+    	});
+      */
   });
 define("sonatribe-ui/initializers/router-reopen", 
   ["sonatribe-ui/routes/sonatribe","exports"],
@@ -1216,23 +1146,6 @@ define("sonatribe-ui/initializers/test-helper",
       initialize: initialize
     };
     /* container, application */
-  });
-define("sonatribe-ui/initializers/torii", 
-  ["sonatribe-ui/authenticators/torii","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var Authenticator = __dependency1__["default"];
-
-    __exports__["default"] = {
-      name: "sonatribe-auth-torii",
-      before: "simple-auth",
-      after: "torii",
-      initialize: function (container) {
-        var torii = container.lookup("torii:main");
-        var authenticator = Authenticator.create({ torii: torii });
-        container.register("sonatribe-auth-authenticator:torii", authenticator, { instantiate: false });
-      }
-    };
   });
 define("sonatribe-ui/initializers/user-reopen-class", 
   ["sonatribe-ui/models/user","sonatribe-ui/mixins/singleton","exports"],
@@ -1682,12 +1595,16 @@ define("sonatribe-ui/routes/application",
     var HasCurrentUser = __dependency5__["default"];
 
     var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUser, {
+      currentUser: null,
       actions: {
+        sessionAuthenticationSucceeded: function () {
+          console.log("======authenticated");
+        },
         // action to trigger authentication with Torii
         authenticateFacebook: function (provider) {
           var rte = this;
 
-          this.get("session").authenticate("simple-auth-authenticator:torii", "facebook-connect").then(function () {
+          this.get("session").authenticate("authenticator:sonatribe-facebook", "facebook-connect").then(function () {
             var accessToken = rte.get("session").get("content").accessToken;
 
             //TODO: replace this with a model save
@@ -1695,27 +1612,15 @@ define("sonatribe-ui/routes/application",
               url: Sonatribe.SiteSettings.api_url + "/auths/facebook_access_token?code=" + accessToken,
               dataType: "json",
               success: function (authResponse) {
-                console.log(authResponse);
+                //console.log(authResponse);
+
 
                 rte.store.find("user", authResponse.id).then(function (user) {
-                  User.resetCurrent(user);
+                  rte.get("session").set("user", user);
+                  rte.get("session").save();
 
                   if (user.get("username") === undefined || user.get("username") == null) {
-                    FB.api("/me/picture", {
-                      redirect: true,
-                      height: "101",
-                      type: "normal",
-                      width: "101"
-                    }, function (response) {
-                      if (response && !response.error) {
-                        user.set("profilePictureUrl", response.data.url);
-                        user.save();
-                        User.resetCurrent(user);
-                        rte.currentUser = user;
-                        rte.transitionTo("manageAccount");
-                      }
-                    });
-
+                    console.log(rte.get("session").get("content"));
                   }
                 });
 
@@ -1874,6 +1779,22 @@ define("sonatribe-ui/routes/user-profile",
         });
       }
     });
+  });
+define("sonatribe-ui/sessions/custom", 
+  ["ember","simple-auth/session","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var Session = __dependency2__["default"];
+
+    var CustomSession = Session.extend({
+      after: "simple-auth",
+      currentUser: (function () {
+        return this.container.lookup("ember_simple_auth:session");
+      }).property("currentUser")
+    });
+
+    __exports__["default"] = CustomSession;
   });
 define("sonatribe-ui/templates/admin", 
   ["ember","exports"],
@@ -2711,7 +2632,7 @@ define("sonatribe-ui/templates/header",
     function program6(depth0,data) {
       
       var buffer = '', helper, options;
-      data.buffer.push("\n        <li class='current-user dropdown'>\n            <a class='icon'\n               data-dropdown=\"user-dropdown\"\n               data-render=\"renderUserDropdown\"\n               href=\"#\"\n\n               id=\"current-user\">\n\n                 ");
+      data.buffer.push("\n\n        <li class='current-user dropdown'>\n            <a class='icon'\n               data-dropdown=\"user-dropdown\"\n               data-render=\"renderUserDropdown\"\n               href=\"#\"\n\n               id=\"current-user\">\n                  wayne\n                 ");
       data.buffer.push(escapeExpression((helper = helpers['bound-avatar'] || (depth0 && depth0['bound-avatar']),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0,depth0],types:["ID","STRING"],data:data},helper ? helper.call(depth0, "currentUser.data", "medium", options) : helperMissing.call(depth0, "bound-avatar", "currentUser.data", "medium", options))));
       data.buffer.push("\n            </a>\n        </li>\n        ");
       return buffer;
@@ -3742,13 +3663,13 @@ define("sonatribe-ui/tests/app.jshint",
       ok(false, 'app.js should pass jshint.\napp.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 28, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
     });
   });
-define("sonatribe-ui/tests/authenticators/torii.jshint", 
+define("sonatribe-ui/tests/authenticators/sonatribe-facebook.jshint", 
   [],
   function() {
     "use strict";
     module('JSHint - authenticators');
-    test('authenticators/torii.js should pass jshint', function() { 
-      ok(false, 'authenticators/torii.js should pass jshint.\nauthenticators/torii.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/torii.js: line 15, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
+    test('authenticators/sonatribe-facebook.js should pass jshint', function() { 
+      ok(false, 'authenticators/sonatribe-facebook.js should pass jshint.\nauthenticators/sonatribe-facebook.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 10, col 7, Missing semicolon.\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/components/home-logo.jshint", 
@@ -3998,6 +3919,15 @@ define("sonatribe-ui/tests/helpers/start-app",
       return application;
     }
   });
+define("sonatribe-ui/tests/initializers/authentication.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - initializers');
+    test('initializers/authentication.js should pass jshint', function() { 
+      ok(false, 'initializers/authentication.js should pass jshint.\ninitializers/authentication.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/authentication.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/authentication.js: line 7, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+    });
+  });
 define("sonatribe-ui/tests/initializers/initialize-container.jshint", 
   [],
   function() {
@@ -4013,7 +3943,7 @@ define("sonatribe-ui/tests/initializers/initialize-user.jshint",
     "use strict";
     module('JSHint - initializers');
     test('initializers/initialize-user.js should pass jshint', function() { 
-      ok(false, 'initializers/initialize-user.js should pass jshint.\ninitializers/initialize-user.js: line 1, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/initialize-user.js: line 11, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
+      ok(false, 'initializers/initialize-user.js should pass jshint.\ninitializers/initialize-user.js: line 1, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/initialize-user.js: line 12, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/router-reopen.jshint", 
@@ -4023,15 +3953,6 @@ define("sonatribe-ui/tests/initializers/router-reopen.jshint",
     module('JSHint - initializers');
     test('initializers/router-reopen.js should pass jshint', function() { 
       ok(false, 'initializers/router-reopen.js should pass jshint.\ninitializers/router-reopen.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/router-reopen.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ninitializers/router-reopen.js: line 24, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
-    });
-  });
-define("sonatribe-ui/tests/initializers/torii.jshint", 
-  [],
-  function() {
-    "use strict";
-    module('JSHint - initializers');
-    test('initializers/torii.js should pass jshint', function() { 
-      ok(false, 'initializers/torii.js should pass jshint.\ninitializers/torii.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ninitializers/torii.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
     });
   });
 define("sonatribe-ui/tests/initializers/user-reopen-class.jshint", 
@@ -4202,7 +4123,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 31, col 99, Use \'===\' to compare with \'null\'.\nroutes/application.js: line 71, col 1, \'export\' is only available in ES6 (use esnext option).\n\n7 errors'); 
+      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 36, col 99, Use \'===\' to compare with \'null\'.\nroutes/application.js: line 56, col 1, \'export\' is only available in ES6 (use esnext option).\n\n7 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 
@@ -4286,6 +4207,15 @@ define("sonatribe-ui/tests/routes/user-profile.jshint",
       ok(false, 'routes/user-profile.js should pass jshint.\nroutes/user-profile.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/user-profile.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/user-profile.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
+define("sonatribe-ui/tests/sessions/custom.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - sessions');
+    test('sessions/custom.js should pass jshint', function() { 
+      ok(false, 'sessions/custom.js should pass jshint.\nsessions/custom.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nsessions/custom.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nsessions/custom.js: line 11, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+    });
+  });
 define("sonatribe-ui/tests/sonatribe-ui/tests/helpers/resolver.jshint", 
   [],
   function() {
@@ -4338,6 +4268,15 @@ define("sonatribe-ui/tests/sonatribe-ui/tests/unit/controllers/modal/login-test.
     module('JSHint - sonatribe-ui/tests/unit/controllers/modal');
     test('sonatribe-ui/tests/unit/controllers/modal/login-test.js should pass jshint', function() { 
       ok(true, 'sonatribe-ui/tests/unit/controllers/modal/login-test.js should pass jshint.'); 
+    });
+  });
+define("sonatribe-ui/tests/sonatribe-ui/tests/unit/initializers/authentication-test.jshint", 
+  [],
+  function() {
+    "use strict";
+    module('JSHint - sonatribe-ui/tests/unit/initializers');
+    test('sonatribe-ui/tests/unit/initializers/authentication-test.js should pass jshint', function() { 
+      ok(true, 'sonatribe-ui/tests/unit/initializers/authentication-test.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/sonatribe-ui/tests/unit/routes/manage-account-test.jshint", 
@@ -4414,6 +4353,33 @@ define("sonatribe-ui/tests/unit/controllers/modal/login-test",
     });
     // Specify the other units that are required for this test.
     // needs: ['controller:foo']
+  });
+define("sonatribe-ui/tests/unit/initializers/authentication-test", 
+  ["ember","sonatribe-ui/initializers/authentication"],
+  function(__dependency1__, __dependency2__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+    var initialize = __dependency2__.initialize;
+
+    var container, application;
+
+    module("AuthenticationInitializer", {
+      setup: function () {
+        Ember.run(function () {
+          application = Ember.Application.create();
+          container = application.__container__;
+          application.deferReadiness();
+        });
+      }
+    });
+
+    // Replace this with your real tests.
+    test("it works", function () {
+      initialize(container, application);
+
+      // you would normally confirm the results of the initializer here
+      ok(true);
+    });
   });
 define("sonatribe-ui/tests/unit/routes/manage-account-test", 
   ["ember-qunit"],
