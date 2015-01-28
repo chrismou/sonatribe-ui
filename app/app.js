@@ -16,7 +16,7 @@ loadInitializers(App, config.modulePrefix);
 
 window.Sonatribe = {};
 Sonatribe.SiteSettings = {
-  "api_url": 'http://dev.festivaltribe.co.uk:1337',
+  "api_url": 'https://sonatribe-api.herokuapp.com',
   "app_url": 'http://dev.festivaltribe.co.uk:4200',
 
   "title": "Sonatribe",

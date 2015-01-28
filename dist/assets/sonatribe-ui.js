@@ -41,7 +41,7 @@ define("sonatribe-ui/app",
 
     window.Sonatribe = {};
     Sonatribe.SiteSettings = {
-      api_url: "http://dev.festivaltribe.co.uk:1337",
+      api_url: "https://sonatribe-api.herokuapp.com",
       app_url: "http://dev.festivaltribe.co.uk:4200",
 
       title: "Sonatribe",
@@ -932,7 +932,8 @@ define("sonatribe-ui/helpers/image-helper",
       return new Handlebars.SafeString(html);
     }
 
-    __exports__.imageHelper = imageHelper;__exports__["default"] = Ember.Handlebars.makeBoundHelper(imageHelper);
+    __exports__.imageHelper = imageHelper;
+    __exports__["default"] = Ember.Handlebars.makeBoundHelper(imageHelper);
   });
 define("sonatribe-ui/helpers/test-breadcrumbs", 
   ["ember","ember-cli-bootstrap/utils/test-breadcrumbs","exports"],
@@ -941,7 +942,7 @@ define("sonatribe-ui/helpers/test-breadcrumbs",
     var Ember = __dependency1__["default"];
     var BsBreadcrumbs = __dependency2__["default"];
 
-    //debugger
+    debugger;
     __exports__["default"] = Ember.Handlebars.makeBoundHelper(BsBreadcrumbs);
   });
 define("sonatribe-ui/helpers/test-helper", 
@@ -997,6 +998,7 @@ define("sonatribe-ui/initializers/export-application-global",
       }
     };
     __exports__.initialize = initialize;
+
     __exports__["default"] = {
       name: "export-application-global",
 
@@ -1191,10 +1193,11 @@ define("sonatribe-ui/initializers/test-breadcrumbs",
     var testHelper = __dependency1__["default"];
 
     function initialize() {
-      //debugger
+      debugger;
       Ember.Handlebars.registerHelper("test-breadcrumbs", testHelper);
     };
     __exports__.initialize = initialize;
+
     __exports__["default"] = {
       name: "test-breadcrumbs",
       initialize: initialize
@@ -1211,6 +1214,7 @@ define("sonatribe-ui/initializers/test-helper",
       Ember.Handlebars.registerHelper("test-helper", testHelper);
     };
     __exports__.initialize = initialize;
+
     __exports__["default"] = {
       name: "test-helper",
       initialize: initialize
@@ -1712,6 +1716,10 @@ define("sonatribe-ui/routes/application",
                         user.save();
                         User.resetCurrent(user);
                         rte.currentUser = user;
+
+                        //TODO: need to merge our user with the simple-auth session
+                        // so we can rebuild the UI later on refresh etc
+
                         rte.transitionTo("manageAccount");
                       }
                     });
@@ -1872,6 +1880,20 @@ define("sonatribe-ui/routes/user-profile",
         return this.ajax("Model/User/" + params.Slug, { id: params.Slug }).then(function (response) {
           return response.result;
         });
+      }
+    });
+  });
+define("sonatribe-ui/services/validations", 
+  ["ember","exports"],
+  function(__dependency1__, __exports__) {
+    "use strict";
+    var Ember = __dependency1__["default"];
+
+    var set = Ember.set;
+
+    __exports__["default"] = Ember.Object.extend({
+      init: function () {
+        set(this, "cache", {});
       }
     });
   });
@@ -3146,7 +3168,7 @@ define("sonatribe-ui/templates/modal/create-account",
       data.buffer.push("\n\n");
       stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-      data.buffer.push("\n\n<div>\n  <form id=\"form-register\" action=\"http://test.sonatribe.co.uk:1337/api/register\" method=\"POST\">\n    ");
+      data.buffer.push("\n\n<div>\n  <form id=\"form-register\" action=\"https://sonatribe-api.herokuapp.com/api/register\" method=\"POST\">\n    ");
       stack1 = helpers._triageMustache.call(depth0, "service-stack", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n    <table>\n      <tr class=\"input\">\n        <td style=\"width:80px\" class=\"label\"><label for='new-account-name'>your full name</label></td>\n        <td style=\"width:496px\">\n          ");
@@ -4202,7 +4224,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 31, col 99, Use \'===\' to compare with \'null\'.\nroutes/application.js: line 71, col 1, \'export\' is only available in ES6 (use esnext option).\n\n7 errors'); 
+      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 5, col 1, \'import\' is only available in ES6 (use esnext option).\nroutes/application.js: line 31, col 99, Use \'===\' to compare with \'null\'.\nroutes/application.js: line 75, col 1, \'export\' is only available in ES6 (use esnext option).\n\n7 errors'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 
