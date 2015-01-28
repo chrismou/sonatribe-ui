@@ -4657,11 +4657,11 @@ define("sonatribe-ui/views/header",
       didInsertElement: function () {
         var self = this;
 
-        this.Ember.$("a[data-dropdown]").on("click.dropdown", function (e) {
+        this.$("a[data-dropdown]").on("click.dropdown", function (e) {
           self.showDropdown.apply(self, [Ember.$(e.currentTarget)]);
           return false;
         });
-        this.Ember.$().on("click.notifications", "a.unread-private-messages, a.unread-notifications, a[data-notifications]", function (e) {
+        this.$().on("click.notifications", "a.unread-private-messages, a.unread-notifications, a[data-notifications]", function (e) {
           self.showNotifications(e);
           return false;
         });
