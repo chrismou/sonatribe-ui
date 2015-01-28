@@ -16,13 +16,13 @@ loadInitializers(App, config.modulePrefix);
 
 window.Sonatribe = {};
 Sonatribe.SiteSettings = {
-  "api_url": 'https://sonatribe-api.herokuapp.com',
-  "app_url": 'http://dev.festivaltribe.co.uk:4200',
+  'apiUrl': 'https://sonatribe-api.herokuapp.com',
+  'appUrl': 'http://dev.festivaltribe.co.uk:4200',
 
-  "title": "Sonatribe",
-  "logo_url": "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-  "logo_small_url": "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-  "mobile_logo_url": "",
+  'title': 'Sonatribe',
+  'logo_url': 'http://alpha.sonatribe.com/img/logo_simple_small.jpg',
+  'logo_small_url': 'http://alpha.sonatribe.com/img/logo_simple_small.jpg',
+  'mobile_logo_url': '',
 };
 
 export default App;

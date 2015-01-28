@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
-  classNames: ["title"],
+  classNames: ['title'],
   bigLogoUrl: Sonatribe.SiteSettings['logo_url'],
   title:  Sonatribe.SiteSettings['title'],
   linkUrl: function() {
@@ -10,7 +10,7 @@ export default Ember.Component.extend({
 
   showSmallLogo: function() {
     return false;
-  }.property("minimized"),
+  }.property('minimized'),
 
   showMobileLogo: function() {
     return false;

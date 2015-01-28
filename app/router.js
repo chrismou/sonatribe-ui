@@ -20,7 +20,7 @@ Router.map(function() {
   this.route('unauthorized');
   this.route('manage-account');
   this.route('event-profile/lineup-viewer');
-  this.route("manageAccount");
+  this.route('manageAccount');
 });
 
 export default Router;

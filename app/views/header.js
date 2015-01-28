@@ -10,18 +10,18 @@ export default Ember.View.extend({
 
    showDropdown: function($target) {
     var elementId = $target.data('dropdown') || $target.data('notifications'),
-        $dropdown = $("#" + elementId),
+        $dropdown = Ember.$('#' + elementId),
         $li = $target.closest('li'),
         $ul = $target.closest('ul'),
-        $html = $('html'),
-        $header = $('header'),
-        replyZIndex = parseInt($('#reply-control').css('z-index'), 10),
+        $html = Ember.$('html'),
+        $header = Ember.$('header'),
+        replyZIndex = parseInt(Ember.$('#reply-control').css('z-index'), 10),
         self = this;
 
-    originalZIndex = originalZIndex || $('header').css('z-index');
+    originalZIndex = originalZIndex || Ember.$('header').css('z-index');
 
     if(replyZIndex > 0) {
-      $header.css("z-index", replyZIndex + 1);
+      $header.css('z-index', replyZIndex + 1);
     }
 
     var controller = self.get('controller');
@@ -42,7 +42,7 @@ export default Ember.View.extend({
     }
 
     var hideDropdown = function() {
-      $header.css("z-index", originalZIndex);
+      $header.css('z-index', originalZIndex);
       $dropdown.fadeOut('fast');
       $li.removeClass('active');
       $html.data('hide-dropdown', null);
@@ -58,15 +58,15 @@ export default Ember.View.extend({
     // otherwhise, mark it as active
     $li.addClass('active');
     // hide the other dropdowns
-    $('li', $ul).not($li).removeClass('active');
-    $('.d-dropdown').not($dropdown).fadeOut('fast');
+    Ember.$('li', $ul).not($li).removeClass('active');
+    Ember.$('.d-dropdown').not($dropdown).fadeOut('fast');
     // fade it fast
     $dropdown.fadeIn('fast');
     // autofocus any text input field
     $dropdown.find('input[type=text]').focus().select();
 
     $html.on('click.d-dropdown', function(e) {
-      return $(e.target).closest('.d-dropdown').length > 0 ? true : hideDropdown.apply(self);
+      return Ember.$(e.target).closest('.d-dropdown').length > 0 ? true : hideDropdown.apply(self);
     });
 
     $html.data('hide-dropdown', hideDropdown);
@@ -82,22 +82,22 @@ export default Ember.View.extend({
     // it's much slower to calculate `outlet.offset()`
     Ember.run.next(function () {
       if (!headerView.docAt) {
-        var outlet = $('#main-outlet');
+        var outlet = Ember.$('#main-outlet');
         if (!(outlet && outlet.length === 1)) {
           return;
         }
         headerView.docAt = outlet.offset().top;
       }
 
-      var offset = window.pageYOffset || $('html').scrollTop();
+      var offset = window.pageYOffset || Ember.$('html').scrollTop();
       if (offset >= headerView.docAt) {
         if (!headerView.dockedHeader) {
-          $('body').addClass('docked');
+          Ember.$('body').addClass('docked');
           headerView.dockedHeader = true;
         }
       } else {
         if (headerView.dockedHeader) {
-          $('body').removeClass('docked');
+          Ember.$('body').removeClass('docked');
           headerView.dockedHeader = false;
         }
       }
@@ -109,28 +109,28 @@ export default Ember.View.extend({
 
     var self = this;
 
-    this.$('a[data-dropdown]').on('click.dropdown', function(e) {
-      self.showDropdown.apply(self, [$(e.currentTarget)]);
+    this.Ember.$('a[data-dropdown]').on('click.dropdown', function(e) {
+      self.showDropdown.apply(self, [Ember.$(e.currentTarget)]);
       return false;
     });
-    this.$().on('click.notifications','a.unread-private-messages, a.unread-notifications, a[data-notifications]', function(e) {
+    this.Ember.$().on('click.notifications','a.unread-private-messages, a.unread-notifications, a[data-notifications]', function(e) {
       self.showNotifications(e);
       return false;
     });
-    $(window).bind('scroll.discourse-dock', function() {
+    Ember.$(window).bind('scroll.discourse-dock', function() {
       self.examineDockHeader();
     });
-    $(document).bind('touchmove.discourse-dock', function() {
+    Ember.$(document).bind('touchmove.discourse-dock', function() {
       self.examineDockHeader();
     });
     self.examineDockHeader();
 
     // Delegate ESC to the composer
-    $('body').on('keydown.header', function(e) {
+    Ember.$('body').on('keydown.header', function(e) {
       // Hide dropdowns
       if (e.which === 27) {
-        self.$('li').removeClass('active');
-        self.$('.d-dropdown').fadeOut('fast');
+        self.Ember.$('li').removeClass('active');
+        self.Ember.$('.d-dropdown').fadeOut('fast');
       }
       if (self.get('editingTopic')) {
         if (e.which === 13) {

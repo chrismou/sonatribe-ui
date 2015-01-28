@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
 	needs: 'event-profile',
-	model: function(params){
+	model: function() {
 		
 		  var parentmodel = this.modelFor('eventProfile');
   		return this.store.find('listingEvent', { eventinstanceSlug: parentmodel.eventProfile.slug, skip: 0, take: 20 })
@@ -12,7 +12,7 @@ export default Ember.Route.extend({
   	
     },
   	actions: {
-  		toggleAttendance: function  (m){
+  		toggleAttendance: function(m) {
 
   			var id = m.get('id');
   			var toggle = !m.get('currentUserAttending');

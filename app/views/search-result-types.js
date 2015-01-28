@@ -7,7 +7,7 @@ export default Ember.CollectionView.extend({
   itemViewClass: GroupedView.extend({
     tagName: 'li',
     classNameBindings: ['selected'],
-    templateName: new Fmt('parentView.displayType', "search/%@-result-type")
+    templateName: new Fmt('parentView.displayType', 'search/%@-result-type')
   }),
 
   didInsertElement: function(){

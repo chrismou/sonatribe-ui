@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
 	needs: 'event-profile',
-	model: function(params){
+	model: function(){
 		
 		  var parentmodel = this.modelFor('eventProfile');
   		return this.store.find('listingEvent', { eventinstanceSlug: parentmodel.eventProfile.slug, skip: 0, take: 20 })

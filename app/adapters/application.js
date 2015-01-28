@@ -2,7 +2,7 @@ import DS from 'ember-data';
 import Ember from 'ember';
 
 export default DS.RESTAdapter.extend({
-	host: Sonatribe.SiteSettings.api_url,
+	host: Sonatribe.SiteSettings.apiUrl,
 	updateRecord: function(store, type, record) {
 	    var data = {};
 	    var get = Ember.get;
@@ -12,6 +12,6 @@ export default DS.RESTAdapter.extend({
 
 	    var id = get(record, 'id');
 
-	    return this.ajax(this.buildURL(type.typeKey, id, record), "PUT", { data: data });
+	    return this.ajax(this.buildURL(type.typeKey, id, record), 'PUT', { data: data });
   },
 });

@@ -19,7 +19,7 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 
 						//TODO: replace this with a model save
 						Ember.$.ajax({
-							url: Sonatribe.SiteSettings.api_url + '/auths/facebook_access_token?code=' + accessToken,
+							url: Sonatribe.SiteSettings.apiUrl + '/auths/facebook_access_token?code=' + accessToken,
 							dataType: 'json',
 							success: function(authResponse){
 								console.log(authResponse);
@@ -31,12 +31,12 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 									if(user.get('username') === undefined || user.get('username') == null){
 
 										FB.api(
-											"/me/picture",
+											'/me/picture',
 										{
-											"redirect": true,
-											"height": "101",
-											"type": "normal",
-											"width": "101"
+											'redirect': true,
+											'height': '101',
+											'type': 'normal',
+											'width': '101'
 										},
 										function (response) {
 											if (response && !response.error) {
