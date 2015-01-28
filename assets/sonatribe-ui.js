@@ -41,7 +41,7 @@ define("sonatribe-ui/app",
 
     window.Sonatribe = {};
     Sonatribe.SiteSettings = {
-      api_url: "http://dev.festivaltribe.co.uk:1337",
+      api_url: "https://sonatribe-api.herokuapp.com",
       app_url: "http://dev.festivaltribe.co.uk:4200",
 
       title: "Sonatribe",
@@ -3168,7 +3168,7 @@ define("sonatribe-ui/templates/modal/create-account",
       data.buffer.push("\n\n");
       stack1 = helpers['if'].call(depth0, "async", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
-      data.buffer.push("\n\n<div>\n  <form id=\"form-register\" action=\"http://test.sonatribe.co.uk:1337/api/register\" method=\"POST\">\n    ");
+      data.buffer.push("\n\n<div>\n  <form id=\"form-register\" action=\"https://sonatribe-api.herokuapp.com/api/register\" method=\"POST\">\n    ");
       stack1 = helpers._triageMustache.call(depth0, "service-stack", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n    <table>\n      <tr class=\"input\">\n        <td style=\"width:80px\" class=\"label\"><label for='new-account-name'>your full name</label></td>\n        <td style=\"width:496px\">\n          ");
