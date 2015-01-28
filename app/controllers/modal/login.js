@@ -21,7 +21,7 @@ export default Ember.Controller.extend(Presence, Ajax, {
         return;
       }
 
-      var promise = this.ajax('auth/credentials?username=' + this.get('loginName') + '&password=' + this.get('loginPassword'), {});
+      var promise = this.ajax('/auth/credentials?username=' + this.get('loginName') + '&password=' + this.get('loginPassword'), {});
 
       promise.then(function(){
         self.set('loggedIn', true);
