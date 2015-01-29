@@ -2,6 +2,8 @@
 
 [![Code Climate](https://codeclimate.com/github/wayne-o/sonatribe-ui/badges/gpa.svg)](https://codeclimate.com/github/wayne-o/sonatribe-ui)
 
+[![Code Climate](https://codeclimate.com/github/wayne-o/sonatribe-ui/badges/gpa.svg)](https://codeclimate.com/github/wayne-o/sonatribe-ui)
+
 # Sonatribe-ui
 
 Demo: http://test.sonatribe.com/
