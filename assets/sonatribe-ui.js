@@ -1687,7 +1687,7 @@ define("sonatribe-ui/routes/application",
     var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUser, {
       actions: {
         // action to trigger authentication with Torii
-        authenticateFacebook: function (provider) {
+        authenticateFacebook: function () {
           var rte = this;
 
           this.get("session").authenticate("simple-auth-authenticator:torii", "facebook-connect").then(function () {
@@ -3751,7 +3751,7 @@ define("sonatribe-ui/tests/adapters/application.jshint",
     "use strict";
     module('JSHint - adapters');
     test('adapters/application.js should pass jshint', function() { 
-      ok(false, 'adapters/application.js should pass jshint.\nadapters/application.js: line 5, col 9, \'Sonatribe\' is not defined.\n\n1 error'); 
+      ok(true, 'adapters/application.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/app.jshint", 
@@ -3760,7 +3760,7 @@ define("sonatribe-ui/tests/app.jshint",
     "use strict";
     module('JSHint - .');
     test('app.js should pass jshint', function() { 
-      ok(false, 'app.js should pass jshint.\napp.js: line 18, col 1, \'Sonatribe\' is not defined.\n\n1 error'); 
+      ok(true, 'app.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/authenticators/torii.jshint", 
@@ -3769,7 +3769,7 @@ define("sonatribe-ui/tests/authenticators/torii.jshint",
     "use strict";
     module('JSHint - authenticators');
     test('authenticators/torii.js should pass jshint', function() { 
-      ok(false, 'authenticators/torii.js should pass jshint.\nauthenticators/torii.js: line 38, col 16, \'Ember\' is not defined.\nauthenticators/torii.js: line 39, col 12, \'Ember\' is not defined.\nauthenticators/torii.js: line 66, col 16, \'Ember\' is not defined.\nauthenticators/torii.js: line 82, col 16, \'Ember\' is not defined.\n\n4 errors'); 
+      ok(true, 'authenticators/torii.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/components/home-logo.jshint", 
@@ -3778,7 +3778,7 @@ define("sonatribe-ui/tests/components/home-logo.jshint",
     "use strict";
     module('JSHint - components');
     test('components/home-logo.js should pass jshint', function() { 
-      ok(false, 'components/home-logo.js should pass jshint.\ncomponents/home-logo.js: line 5, col 15, \'Sonatribe\' is not defined.\ncomponents/home-logo.js: line 6, col 11, \'Sonatribe\' is not defined.\n\n2 errors'); 
+      ok(true, 'components/home-logo.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/components/text-field.jshint", 
@@ -3922,7 +3922,7 @@ define("sonatribe-ui/tests/controllers/sonatribe.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/sonatribe.js should pass jshint', function() { 
-      ok(false, 'controllers/sonatribe.js should pass jshint.\ncontrollers/sonatribe.js: line 6, col 12, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 7, col 12, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 17, col 14, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 17, col 73, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 18, col 21, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 18, col 83, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 19, col 20, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 19, col 81, \'Sonatribe\' is not defined.\ncontrollers/sonatribe.js: line 20, col 19, \'Sonatribe\' is not defined.\n\n9 errors'); 
+      ok(true, 'controllers/sonatribe.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/controllers/user-dropdown.jshint", 
@@ -3940,7 +3940,7 @@ define("sonatribe-ui/tests/helpers/bound-avatar.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/bound-avatar.js should pass jshint', function() { 
-      ok(false, 'helpers/bound-avatar.js should pass jshint.\nhelpers/bound-avatar.js: line 1, col 12, \'Handlebars\' is not defined.\nhelpers/bound-avatar.js: line 7, col 37, \'Sonatribe\' is not defined.\nhelpers/bound-avatar.js: line 9, col 35, \'Sonatribe\' is not defined.\n\n3 errors'); 
+      ok(true, 'helpers/bound-avatar.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/helpers/computed.jshint", 
@@ -3949,7 +3949,7 @@ define("sonatribe-ui/tests/helpers/computed.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/computed.js should pass jshint', function() { 
-      ok(false, 'helpers/computed.js should pass jshint.\nhelpers/computed.js: line 5, col 14, \'Sonatribe\' is not defined.\n\n1 error'); 
+      ok(true, 'helpers/computed.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/helpers/fmt.jshint", 
@@ -3967,7 +3967,7 @@ define("sonatribe-ui/tests/helpers/icon-helper.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/icon-helper.js should pass jshint', function() { 
-      ok(false, 'helpers/icon-helper.js should pass jshint.\nhelpers/icon-helper.js: line 11, col 14, \'Handlebars\' is not defined.\n\n1 error'); 
+      ok(true, 'helpers/icon-helper.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/helpers/image-helper.jshint", 
@@ -3976,7 +3976,7 @@ define("sonatribe-ui/tests/helpers/image-helper.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/image-helper.js should pass jshint', function() { 
-      ok(false, 'helpers/image-helper.js should pass jshint.\nhelpers/image-helper.js: line 4, col 30, \'Sonatribe\' is not defined.\nhelpers/image-helper.js: line 5, col 15, \'Handlebars\' is not defined.\n\n2 errors'); 
+      ok(true, 'helpers/image-helper.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/helpers/resolver", 
@@ -4133,7 +4133,7 @@ define("sonatribe-ui/tests/mixins/sonatribe-ajax.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/sonatribe-ajax.js should pass jshint', function() { 
-      ok(false, 'mixins/sonatribe-ajax.js should pass jshint.\nmixins/sonatribe-ajax.js: line 71, col 20, \'Sonatribe\' is not defined.\n\n1 error'); 
+      ok(true, 'mixins/sonatribe-ajax.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/mixins/sonatribe-debounce.jshint", 
@@ -4169,7 +4169,7 @@ define("sonatribe-ui/tests/models/image.jshint",
     "use strict";
     module('JSHint - models');
     test('models/image.js should pass jshint', function() { 
-      ok(false, 'models/image.js should pass jshint.\nmodels/image.js: line 7, col 14, \'Sonatribe\' is not defined.\n\n1 error'); 
+      ok(true, 'models/image.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/models/listing-event.jshint", 
@@ -4223,7 +4223,7 @@ define("sonatribe-ui/tests/routes/application.jshint",
     "use strict";
     module('JSHint - routes');
     test('routes/application.js should pass jshint', function() { 
-      ok(false, 'routes/application.js should pass jshint.\nroutes/application.js: line 22, col 20, \'Sonatribe\' is not defined.\nroutes/application.js: line 33, col 21, \'FB\' is not defined.\nroutes/application.js: line 10, col 38, \'provider\' is defined but never used.\n\n3 errors'); 
+      ok(true, 'routes/application.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/routes/artist-profile.jshint", 
@@ -4485,7 +4485,7 @@ define("sonatribe-ui/tests/views/index.jshint",
     "use strict";
     module('JSHint - views');
     test('views/index.js should pass jshint', function() { 
-      ok(false, 'views/index.js should pass jshint.\nviews/index.js: line 2, col 1, \'Handlebars\' is defined but never used.\n\n1 error'); 
+      ok(true, 'views/index.js should pass jshint.'); 
     });
   });
 define("sonatribe-ui/tests/views/search-result-types.jshint", 
@@ -4712,7 +4712,7 @@ define("sonatribe-ui/views/index",
   function(__dependency1__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
-    /* global Handlebars */
+
     __exports__["default"] = Ember.View.extend({});
   });
 define("sonatribe-ui/views/search-result-types", 
