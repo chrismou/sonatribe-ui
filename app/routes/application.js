@@ -7,7 +7,7 @@ import HasCurrentUser from 'sonatribe-ui/mixins/has-current-user';
 var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUser, {
 	 actions: {
 			// action to trigger authentication with Torii
-			authenticateFacebook: function(provider){
+			authenticateFacebook: function(){
 
 				var rte = this;
 
