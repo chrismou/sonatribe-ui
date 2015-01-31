@@ -7,17 +7,10 @@ import HasCurrentUser from 'sonatribe-ui/mixins/has-current-user';
 var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUser, {
 	 actions: {
 			// action to trigger authentication with Torii
-<<<<<<< HEAD
+
 			authenticateFacebook: function(provider){
 				return this.get('session')
 					.authenticate('authenticator:custom', 'facebook-connect');
-=======
-			authenticateFacebook: function(){
-
-				var rte = this;
-
-				this.get('session')
-					.authenticate('simple-auth-authenticator:torii', 'facebook-connect')
 					.then(function(){
 
 						var accessToken = rte.get('session').get('content').accessToken;
@@ -72,7 +65,6 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 					});
 
 					return false;
->>>>>>> a0889be7d5de3d7e7c570b6337cf52c9d9bcae9c
 			}
 	}
 });
