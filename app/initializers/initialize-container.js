@@ -1,12 +1,13 @@
+import customAuth from 'sonatribe-ui/authenticators/sonatribe-facebook';
+import customSession from 'sonatribe-ui/session/custom-session';
 
-export var initialize = function( /*container, app*/ ) {
- // app.register('ajax:main', Ajax);
- //container.injection('application:main', 'store', 'store:main');
- //SimpleAuth(container, app);
+export var initialize = function(container, app ) {
+ container.register('authenticator:custom', customAuth);
+ container.register('session:custom', customSession);
 };
 
 export default {
   name: 'initialize-container',
-
+  after: 'injectStore',
   initialize: initialize
 };

@@ -1,6 +1,7 @@
 /* jshint node: true */
 
 module.exports = function(environment) {
+
   var ENV = {
     modulePrefix: 'sonatribe-ui',
     environment: environment,
@@ -27,6 +28,11 @@ module.exports = function(environment) {
       'frame-src': "*"
     },
   };
+  
+  ENV['simple-auth'] = {
+        session:    'session:custom',
+        authorizer: 'authenticator:custom'
+      };
 
   if (environment === 'development') {
     // ENV.APP.LOG_RESOLVER = true;

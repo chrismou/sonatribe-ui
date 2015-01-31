@@ -1,12 +1,13 @@
-import Authenticator from 'sonatribe-ui/authenticators/torii';
+import Authenticator from 'sonatribe-ui/authenticators/sonatribe-facebook';
 
 export default {
-  name:   'sonatribe-auth-torii',
+  name:   'st-simple-auth-torii',
   before: 'simple-auth',
   after:  'torii',
-  initialize: function(container) {
+  initialize: function(container, application) {
     var torii         = container.lookup('torii:main');
-    var authenticator = Authenticator.create({ torii: torii });
-    container.register('sonatribe-auth-authenticator:torii', authenticator, { instantiate: false });
+    var store = container.lookup('store:main');
+    var authenticator = Authenticator.create({ torii: torii, store: store });
+    container.register('authenticator:custom', authenticator, { instantiate: false });
   }
 };

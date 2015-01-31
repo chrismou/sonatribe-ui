@@ -3,10 +3,10 @@ var safe = Handlebars.SafeString;
 import Ember from 'ember';
 
 function boundAvatar(user) {
-  if (user != null && user.image != null) {
-  	return new safe('<img src="' +  Sonatribe.SiteSettings.api_url  + 'image/' + user.image.name + '?size=avatarsquare" />');
-  }else if(user.image != null){
-	return new safe('<img src="' +  Sonatribe.SiteSettings.api_url  + 'image/' + user.image.name + '?size=avatarsquare" />');
+  if (user != null && user.profilePictureUrl != null) {
+  	return new safe('<img src="' + user.profilePictureUrl + '" />');
+  }else if(user.profilePictureUrl != null){
+	return new safe('<img src="' + user.profilePictureUrl + '" />');
   }
   else{
 	return new safe('<img src="http://conversations.sonatribe.com/user_avatar/conversations.sonatribe.com/thestumonkey/25/13.png" />');

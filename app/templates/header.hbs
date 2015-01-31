@@ -38,7 +38,7 @@
             </a>
 
         </li>
-         {{#if currentUser}}
+         {{#if session.isAuthenticated}}
         <li class='current-user dropdown'>
             <a class='icon'
                data-dropdown="user-dropdown"
@@ -46,8 +46,9 @@
                href="#"
 
                id="current-user">
-
-                 {{bound-avatar currentUser.data "medium"}}
+               {{log session}}
+                  {{log session.account}}
+                 {{bound-avatar session.account "medium"}}
             </a>
         </li>
         {{/if}}
