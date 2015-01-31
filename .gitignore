@@ -30,3 +30,6 @@ bower_components
 .DS_Store
 
 .vagrant/machines/default/virtualbox
+
+dist
+assets

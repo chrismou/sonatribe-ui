@@ -7,8 +7,8 @@ export default Ember.Controller.extend(Presence, Ajax, {
     var flashMessage = this.get('flashMessage');
     if (flashMessage) {
       var messageClass = flashMessage.get('messageClass') || 'success';
-      var $alert = $('#modal-alert').hide().removeClass('alert-error', 'alert-success');
-      $alert.addClass("alert alert-" + messageClass).html(flashMessage.get('message'));
+      var $alert = Ember.$('#modal-alert').hide().removeClass('alert-error', 'alert-success');
+      $alert.addClass('alert alert-' + messageClass).html(flashMessage.get('message'));
       $alert.fadeIn();
     }
   }.observes('flashMessage'),
@@ -21,7 +21,7 @@ export default Ember.Controller.extend(Presence, Ajax, {
         return;
       }
 
-      var promise = this.ajax('auth/credentials?username=' + this.get('loginName') + '&password=' + this.get('loginPassword'), {});
+      var promise = this.ajax('/auth/credentials?username=' + this.get('loginName') + '&password=' + this.get('loginPassword'), {});
 
       promise.then(function(){
         self.set('loggedIn', true);

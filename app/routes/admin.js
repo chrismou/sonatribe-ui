@@ -2,17 +2,17 @@ import Ember from 'ember';
 import HasCurrentUser from 'sonatribe-ui/mixins/has-current-user';
 
 export default Ember.Route.extend(HasCurrentUser, {
-	model: function(params){
+	model: function () {
 		this.set('currentUser', this.currentUser);
 	},
 	access: [ 'Admin'],
-	setupController: function (controller, model) {
+	setupController: function (controller) {
 		this.set('currentUser', this.currentUser);
 		this.store.find('event-instance').then(function(result){
-			controller.set("model", result);
+			controller.set('model', result);
 		});
 	},
-    beforeModel: function(transition) {
+    beforeModel: function () {
 
 		var found = false;
 

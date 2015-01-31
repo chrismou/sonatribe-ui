@@ -9,7 +9,7 @@ export default Ember.Controller.extend({
   },
   actions : {
     searchEvent: function(){
-      alert(this.get('eventName'));
+      //alert(this.get('eventName'));
         //this.transitionTo('posts', );
     },
 

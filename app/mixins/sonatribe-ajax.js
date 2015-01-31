@@ -5,7 +5,7 @@ export default Ember.Mixin.create({
     var url, args;
 
     if (arguments.length === 1) {
-      if (typeof arguments[0] === "string") {
+      if (typeof arguments[0] === 'string') {
         url = arguments[0];
         args = {};
       } else {
@@ -19,10 +19,10 @@ export default Ember.Mixin.create({
     }
 
     if (args.success) {
-      Ember.Logger.error("DEPRECATION: Sonatribe.ajax should use promises, received 'success' callback");
+      Ember.Logger.error('DEPRECATION: Sonatribe.ajax should use promises, received "success" callback');
     }
     if (args.error) {
-      Ember.Logger.error("DEPRECATION: Sonatribe.ajax should use promises, received 'error' callback");
+      Ember.Logger.error('DEPRECATION: Sonatribe.ajax should use promises, received "error" callback');
     }
 
     var performAjax = function(resolve, reject) {
@@ -68,7 +68,7 @@ export default Ember.Mixin.create({
       args.crossDomain = true;
       args.xhrFields = {withCredentials: true};
 
-      $.ajax(Sonatribe.SiteSettings.api_url + url, args);
+      Ember.$.ajax(Sonatribe.SiteSettings.apiUrl + url, args);
     };
 
     return new Ember.RSVP.Promise(performAjax);

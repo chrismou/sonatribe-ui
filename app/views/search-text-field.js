@@ -4,9 +4,9 @@ export default TextField.extend({
   placeholder: function() {
 
     if(this.get('searchContextEnabled')){
-      return "search init";
+      return 'search init';
     }
 
-    return "search";
+    return 'search';
   }.property('searchContextEnabled')
 });

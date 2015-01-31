@@ -18,7 +18,7 @@ export default Ember.Mixin.create({
     var instance = this.current();
     if (!instance) { return; }
 
-    if (typeof(value) !== "undefined") {
+    if (typeof(value) !== 'undefined') {
       instance.set(property, value);
       return value;
     } else {

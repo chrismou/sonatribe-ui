@@ -21,10 +21,10 @@ export default SonatribeController.extend(ModalFunctionality, Presence, HasCurre
 	userFields: null,
 	actions: {
 	  	createAccount: function() {
-	  		var name = this.get("accountName");
-	  		var username = this.get("accountUsername");
-	  		var email = this.get("accountEmail");
-	  		var password = this.get("accountPassword");
+	  		var name = this.get('accountName');
+	  		var username = this.get('accountUsername');
+	  		var email = this.get('accountEmail');
+	  		//var password = this.get('accountPassword');
 
 	  		var self = this;
 

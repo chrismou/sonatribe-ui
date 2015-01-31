@@ -9,7 +9,7 @@
 {{#unless complete}}
 
 {{#unless hasAuthOptions}}
-<a {{bind-attr href=facebook_login_url}}>facebook</a>
+<a {{bind-attr href=facebookLoginUrl}}>facebook</a>
 <a {{bind-attr href=twitter_login_url}}>twitter</a>
 {{/unless}}
 
@@ -18,7 +18,7 @@ Submitting, please wait...
 {{/if}}
 
 <div>
-  <form id="form-register" action="http://test.sonatribe.co.uk:1337/api/register" method="POST">
+  <form id="form-register" action="https://sonatribe-api.herokuapp.com/api/register" method="POST">
     {{service-stack}}
     <table>
       <tr class="input">

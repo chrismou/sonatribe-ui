@@ -14,7 +14,7 @@ export default Ember.TextField.extend({
 
   placeholder: function() {
     if (this.get('placeholderKey')) {
-      return "";
+      return '';
     } else {
       return '';
     }

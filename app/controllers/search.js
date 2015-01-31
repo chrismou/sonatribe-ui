@@ -10,7 +10,7 @@ export default SonatribeController.extend(EventSearch, Debounce, {
       this.set('searchContextEnabled', false);
       this._dontSearch = false;
     }
-  }.observes("searchContext"),
+  }.observes('searchContext'),
 
   searchContextEnabledChanged: function(){
     if(this._dontSearch){ return; }
