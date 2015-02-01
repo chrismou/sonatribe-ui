@@ -35,7 +35,7 @@ export default Authenticator.extend({
 
         console.log(authResponse);
 
-        var accessToken = accessToken;
+        var accessToken = authResponse.accessToken;
 
         Ember.$.ajax({
           url: config.sonatribe.api_url + '/auths/facebook_access_token?code=' + accessToken,
