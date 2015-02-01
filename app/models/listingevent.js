@@ -6,10 +6,10 @@ export default DS.Model.extend({
   	slug: DS.attr('string'),
   	start:DS.attr('string'),
   	end:DS.attr('string'),
-	eventInstanceSlug: DS.attr('string'),
-  	location: DS.belongsTo('location'),
-  	artists: DS.hasMany('artist', { async:true }),
-  	usersAttending: DS.hasMany('user', { async:true })
+		eventInstanceSlug: DS.attr('string'),
+  	//location: DS.belongsTo('location'),
+  	//artists: DS.hasMany('artist', { async:true }),
+  	//usersAttending: DS.hasMany('user', { async:true })
 });
 
 //http://emberjs.jsbin.com/tepeqo/2/edit

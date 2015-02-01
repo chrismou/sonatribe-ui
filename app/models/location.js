@@ -5,5 +5,5 @@ export default DS.Model.extend({
 	name:DS.attr('string'),
 
   	eventinstance: DS.belongsTo('eventinstance'),
-  	listingEvents: DS.hasMany('listingEvent', {async:true})
+  	listingEvents: DS.hasMany('listingevent', {async:true})
 });
