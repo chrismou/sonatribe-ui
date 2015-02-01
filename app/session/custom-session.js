@@ -5,7 +5,7 @@ var session = Session.extend({
     var accountId = this.get('user_id');
     if (!Ember.isEmpty(accountId)) {
       var store = this.container.lookup('store:main');
-      var user = store.find('user', accountId)
+      store.find('user', accountId)
       .then(function(user){
         alert(user);
         var picurl = user.get('profilePictureUrl');

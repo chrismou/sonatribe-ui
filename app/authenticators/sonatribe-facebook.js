@@ -1,5 +1,6 @@
 import Authenticator from 'simple-auth-torii/authenticators/torii';
 import config from '../config/environment';
+import session from 'sonatribe-ui/session/custom-session';
 
 export default Authenticator.extend({
   needs: ['store'],
@@ -11,6 +12,7 @@ export default Authenticator.extend({
       if (!Ember.isEmpty(data.provider)) {
         var provider = data.provider;
         _this.torii.fetch(data.provider, data).then(function(data) {
+          console.log(data);
           _this.resolveWith(provider, data, resolve);
         }, function() {
           delete _this.provider;
@@ -35,16 +37,12 @@ export default Authenticator.extend({
 
         var accessToken = accessToken;
 
-        //TODO: replace this with a model save
         Ember.$.ajax({
           url: config.sonatribe.api_url + '/auths/facebook_access_token?code=' + accessToken,
           dataType: 'json',
           success: function(stAuthResponse){
             console.log(stAuthResponse);
             Ember.run(function() {
-              // resolve (including the account id) as the AJAX request was successful; all properties this promise resolves
-              // with will be available through the session
-              //resolve({ access_token: accessToken, account_id: stAuthResponse.id });
               var store = orig.store;
 
               store.find('user', stAuthResponse.id).then(function(user){
@@ -62,22 +60,13 @@ export default Authenticator.extend({
                       if (response && !response.error) {
                         user.set('profilePictureUrl', response.data.url);
                         user.save();
-
-
                         authResponse.user_id = stAuthResponse.id;
                         authResponse.user = user;
 
-
                         orig.resolveWith(provider, authResponse, resolve);
-                          //.then(function(){
-                          //  orig.transitionTo('manageAccount');
-                          //});
                       }
                     });
                 }
-
-                //authResponse.sonatribeId = stAuthResponse.id;
-                //orig.resolveWith(provider, authResponse, resolve);
               });
             });
           }
@@ -86,6 +75,9 @@ export default Authenticator.extend({
     });
   },
   invalidate: function(data) {
-
+    var orig = this;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      return orig._super(data)
+    });
   }
 });
