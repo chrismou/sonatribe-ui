@@ -2,9 +2,15 @@ import Ember from 'ember';
 import config from '../config/environment';
 
 export default Ember.Component.extend({
+<<<<<<< HEAD
+  classNames: ['title'],
+  bigLogoUrl: Sonatribe.SiteSettings['logo_url'],
+  title:  Sonatribe.SiteSettings['title'],
+=======
   classNames: ["title"],
   bigLogoUrl: config.sonatribe.logo_url,
   title:  config.sonatribe.title,
+>>>>>>> config-refacto
   linkUrl: function() {
     return '';
   }.property(),

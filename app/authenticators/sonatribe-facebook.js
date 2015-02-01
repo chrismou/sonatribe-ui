@@ -1,4 +1,5 @@
 import Authenticator from 'simple-auth-torii/authenticators/torii';
+import config from '../config/environment';
 
 export default Authenticator.extend({
   needs: ['store'],
@@ -24,6 +25,7 @@ export default Authenticator.extend({
   authenticate: function(provider, options) {
 
     var orig = this;
+    console.log(config);
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       return orig._super(provider, options)
@@ -35,7 +37,7 @@ export default Authenticator.extend({
 
         //TODO: replace this with a model save
         Ember.$.ajax({
-          url: Sonatribe.SiteSettings.api_url + '/auths/facebook_access_token?code=' + accessToken,
+          url: config.sonatribe.api_url + '/auths/facebook_access_token?code=' + accessToken,
           dataType: 'json',
           success: function(stAuthResponse){
             console.log(stAuthResponse);

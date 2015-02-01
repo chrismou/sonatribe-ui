@@ -70,7 +70,11 @@ export default Ember.Mixin.create({
       args.crossDomain = true;
       args.xhrFields = {withCredentials: true};
 
+<<<<<<< HEAD
+      Ember.$.ajax(Sonatribe.SiteSettings.apiUrl + url, args);
+=======
       $.ajax(config.sonatribe.api_url + url, args);
+>>>>>>> config-refacto
     };
 
     return new Ember.RSVP.Promise(performAjax);

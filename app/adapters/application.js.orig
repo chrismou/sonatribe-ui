@@ -3,7 +3,11 @@ import Ember from 'ember';
 import config from '../config/environment';
 
 export default DS.RESTAdapter.extend({
+<<<<<<< HEAD
+	host: Sonatribe.SiteSettings.apiUrl,
+=======
 	host: config.sonatribe.api_url,
+>>>>>>> config-refacto
 	updateRecord: function(store, type, record) {
 	    var data = {};
 	    var get = Ember.get;
