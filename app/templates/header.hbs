@@ -38,7 +38,8 @@
             </a>
 
         </li>
-         {{#if session.isAuthenticated}}
+        {{#if session.isAuthenticated}}
+         {{#if session.account}}
         <li class='current-user dropdown'>
             <a class='icon'
                data-dropdown="user-dropdown"
@@ -47,10 +48,12 @@
 
                id="current-user">
                {{log session}}
+               {{log Ember.Env}}
                   {{log session.account}}
                  {{bound-avatar session.account "medium"}}
             </a>
         </li>
+        {{/if}}
         {{/if}}
       </ul>
         {{render "search"}}

@@ -1,12 +1,13 @@
 define("sonatribe-ui/adapters/application", 
-  ["ember-data","ember","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["ember-data","ember","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var DS = __dependency1__["default"];
     var Ember = __dependency2__["default"];
+    var config = __dependency3__["default"];
 
     __exports__["default"] = DS.RESTAdapter.extend({
-      host: Sonatribe.SiteSettings.api_url,
+      host: config.sonatribe.api_url,
       updateRecord: function (store, type, record) {
         var data = {};
         var get = Ember.get;
@@ -39,23 +40,14 @@ define("sonatribe-ui/app",
     loadInitializers(App, config.modulePrefix);
 
 
-    window.Sonatribe = {};
-    Sonatribe.SiteSettings = {
-      api_url: "http://dev.festivaltribe.co.uk:1337",
-      app_url: "http://dev.festivaltribe.co.uk:4200",
-
-      title: "Sonatribe",
-      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-      logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-      mobile_logo_url: "" };
-
     __exports__["default"] = App;
   });
 define("sonatribe-ui/authenticators/sonatribe-facebook", 
-  ["simple-auth-torii/authenticators/torii","exports"],
-  function(__dependency1__, __exports__) {
+  ["simple-auth-torii/authenticators/torii","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Authenticator = __dependency1__["default"];
+    var config = __dependency2__["default"];
 
     __exports__["default"] = Authenticator.extend({
       needs: ["store"],
@@ -80,6 +72,7 @@ define("sonatribe-ui/authenticators/sonatribe-facebook",
       },
       authenticate: function (provider, options) {
         var orig = this;
+        console.log(config);
 
         return new Ember.RSVP.Promise(function (resolve, reject) {
           return orig._super(provider, options).then(function (authResponse) {
@@ -89,7 +82,7 @@ define("sonatribe-ui/authenticators/sonatribe-facebook",
 
             //TODO: replace this with a model save
             Ember.$.ajax({
-              url: Sonatribe.SiteSettings.api_url + "/auths/facebook_access_token?code=" + accessToken,
+              url: config.sonatribe.api_url + "/auths/facebook_access_token?code=" + accessToken,
               dataType: "json",
               success: function (stAuthResponse) {
                 console.log(stAuthResponse);
@@ -290,15 +283,16 @@ define("sonatribe-ui/components/em-text",
     __exports__["default"] = TextComponent;
   });
 define("sonatribe-ui/components/home-logo", 
-  ["ember","exports"],
-  function(__dependency1__, __exports__) {
+  ["ember","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
+    var config = __dependency2__["default"];
 
     __exports__["default"] = Ember.Component.extend({
       classNames: ["title"],
-      bigLogoUrl: Sonatribe.SiteSettings.logo_url,
-      title: Sonatribe.SiteSettings.title,
+      bigLogoUrl: config.sonatribe.logo_url,
+      title: config.sonatribe.title,
       linkUrl: (function () {
         return "";
       }).property(),
@@ -685,16 +679,17 @@ define("sonatribe-ui/controllers/search",
       } });
   });
 define("sonatribe-ui/controllers/sonatribe", 
-  ["ember","sonatribe-ui/mixins/has-current-user","exports"],
-  function(__dependency1__, __dependency2__, __exports__) {
+  ["ember","sonatribe-ui/mixins/has-current-user","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __dependency3__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
     var HasCurrentUser = __dependency2__["default"];
+    var config = __dependency3__["default"];
 
 
     __exports__["default"] = Ember.Controller.extend(HasCurrentUser, {
-      api_url: Sonatribe.SiteSettings.api_url,
-      app_url: Sonatribe.SiteSettings.app_url,
+      api_url: config.sonatribe.api_url,
+      app_url: config.sonatribe.app_url,
       isAdmin: (function () {
         var found = false;
 
@@ -704,10 +699,10 @@ define("sonatribe-ui/controllers/sonatribe",
 
         return found;
       }).property(),
-      log_out_link: Sonatribe.SiteSettings.api_url + "auth/logout/?continue=" + Sonatribe.SiteSettings.app_url,
-      facebook_login_url: Sonatribe.SiteSettings.api_url + "auth/facebook/?continue=" + Sonatribe.SiteSettings.app_url,
-      twitter_login_url: Sonatribe.SiteSettings.api_url + "auth/twitter/?continue=" + Sonatribe.SiteSettings.app_url,
-      image_format_url: Sonatribe.SiteSettings.api_url + "image/"
+      log_out_link: config.sonatribe.api_url + "auth/logout/?continue=" + config.sonatribe.app_url,
+      facebook_login_url: config.sonatribe.api_url + "auth/facebook/?continue=" + config.sonatribe.app_url,
+      twitter_login_url: config.sonatribe.api_url + "auth/twitter/?continue=" + config.sonatribe.app_url,
+      image_format_url: config.sonatribe.api_url + "image/"
     });
   });
 define("sonatribe-ui/controllers/user-dropdown", 
@@ -727,10 +722,10 @@ define("sonatribe-ui/helpers/bound-avatar",
     var Ember = __dependency1__["default"];
 
     function boundAvatar(user) {
-      if (user != null && user.profilePictureUrl != null) {
-        return new safe("<img src=\"" + user.profilePictureUrl + "\" />");
-      } else if (user.profilePictureUrl != null) {
-        return new safe("<img src=\"" + user.profilePictureUrl + "\" />");
+      if (user != null && user.get("profilePictureUrl") != null) {
+        return new safe("<img src=\"" + user.get("profilePictureUrl") + "\" />");
+      } else if (user.get("profilePictureUrl") != null) {
+        return new safe("<img src=\"" + user.get("profilePictureUrl") + "\" />");
       } else {
         return new safe("<img src=\"http://conversations.sonatribe.com/user_avatar/conversations.sonatribe.com/thestumonkey/25/13.png\" />");
       }
@@ -741,14 +736,15 @@ define("sonatribe-ui/helpers/bound-avatar",
     __exports__["default"] = Ember.Handlebars.makeBoundHelper(boundAvatar);
   });
 define("sonatribe-ui/helpers/computed", 
-  ["ember","exports"],
-  function(__dependency1__, __exports__) {
+  ["ember","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
+    var config = __dependency2__["default"];
 
     function computed() {
       return Ember.computed(function () {
-        return Sonatribe.SiteSettings[name];
+        return config.sonatribe.name;
       }).property();
     }
 
@@ -1397,10 +1393,12 @@ define("sonatribe-ui/mixins/singleton",
     });
   });
 define("sonatribe-ui/mixins/sonatribe-ajax", 
-  ["ember","exports"],
-  function(__dependency1__, __exports__) {
+  ["ember","sonatribe-ui/config/environment","exports"],
+  function(__dependency1__, __dependency2__, __exports__) {
     "use strict";
     var Ember = __dependency1__["default"];
+    var config = __dependency2__["default"];
+
 
     __exports__["default"] = Ember.Mixin.create({
       ajax: function () {
@@ -1469,7 +1467,7 @@ define("sonatribe-ui/mixins/sonatribe-ajax",
           args.crossDomain = true;
           args.xhrFields = { withCredentials: true };
 
-          $.ajax(Sonatribe.SiteSettings.api_url + url, args);
+          $.ajax(config.sonatribe.api_url + url, args);
         };
 
         return new Ember.RSVP.Promise(performAjax);
@@ -2696,9 +2694,20 @@ define("sonatribe-ui/templates/header",
 
     function program6(depth0,data) {
       
+      var buffer = '', stack1;
+      data.buffer.push("\n         ");
+      stack1 = helpers['if'].call(depth0, "session.account", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(7, program7, data),contexts:[depth0],types:["ID"],data:data});
+      if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
+      data.buffer.push("\n        ");
+      return buffer;
+      }
+    function program7(depth0,data) {
+      
       var buffer = '', helper, options;
       data.buffer.push("\n        <li class='current-user dropdown'>\n            <a class='icon'\n               data-dropdown=\"user-dropdown\"\n               data-render=\"renderUserDropdown\"\n               href=\"#\"\n\n               id=\"current-user\">\n               ");
       data.buffer.push(escapeExpression(helpers.log.call(depth0, "session", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
+      data.buffer.push("\n               ");
+      data.buffer.push(escapeExpression(helpers.log.call(depth0, "Ember.Env", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
       data.buffer.push("\n                  ");
       data.buffer.push(escapeExpression(helpers.log.call(depth0, "session.account", {hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["ID"],data:data})));
       data.buffer.push("\n                 ");
@@ -2707,7 +2716,7 @@ define("sonatribe-ui/templates/header",
       return buffer;
       }
 
-    function program8(depth0,data) {
+    function program9(depth0,data) {
       
       var buffer = '', helper, options;
       data.buffer.push("\n          ");
@@ -2731,13 +2740,13 @@ define("sonatribe-ui/templates/header",
       data.buffer.push(escapeExpression((helper = helpers['icon-helper'] || (depth0 && depth0['icon-helper']),options={hash:{
         'label': ("site_map")
       },hashTypes:{'label': "STRING"},hashContexts:{'label': depth0},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "bars", options) : helperMissing.call(depth0, "icon-helper", "bars", options))));
-      data.buffer.push("\n            </a>\n\n        </li>\n         ");
+      data.buffer.push("\n            </a>\n\n        </li>\n        ");
       stack1 = helpers['if'].call(depth0, "session.isAuthenticated", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(6, program6, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n      </ul>\n        ");
       data.buffer.push(escapeExpression((helper = helpers.render || (depth0 && depth0.render),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "search", options) : helperMissing.call(depth0, "render", "search", options))));
       data.buffer.push("\n\n        ");
-      stack1 = helpers['if'].call(depth0, "view.renderSiteMap", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(8, program8, data),contexts:[depth0],types:["ID"],data:data});
+      stack1 = helpers['if'].call(depth0, "view.renderSiteMap", {hash:{},hashTypes:{},hashContexts:{},inverse:self.noop,fn:self.program(9, program9, data),contexts:[depth0],types:["ID"],data:data});
       if(stack1 || stack1 === 0) { data.buffer.push(stack1); }
       data.buffer.push("\n\n        ");
       data.buffer.push(escapeExpression((helper = helpers.render || (depth0 && depth0.render),options={hash:{},hashTypes:{},hashContexts:{},contexts:[depth0],types:["STRING"],data:data},helper ? helper.call(depth0, "user-dropdown", options) : helperMissing.call(depth0, "render", "user-dropdown", options))));
@@ -3720,7 +3729,7 @@ define("sonatribe-ui/tests/adapters/application.jshint",
     "use strict";
     module('JSHint - adapters');
     test('adapters/application.js should pass jshint', function() { 
-      ok(false, 'adapters/application.js should pass jshint.\nadapters/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+      ok(false, 'adapters/application.js should pass jshint.\nadapters/application.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nadapters/application.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/app.jshint", 
@@ -3729,7 +3738,7 @@ define("sonatribe-ui/tests/app.jshint",
     "use strict";
     module('JSHint - .');
     test('app.js should pass jshint', function() { 
-      ok(false, 'app.js should pass jshint.\napp.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 28, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
+      ok(false, 'app.js should pass jshint.\napp.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 4, col 1, \'import\' is only available in ES6 (use esnext option).\napp.js: line 17, col 1, \'export\' is only available in ES6 (use esnext option).\n\n5 errors'); 
     });
   });
 define("sonatribe-ui/tests/authenticators/sonatribe-facebook.jshint", 
@@ -3738,7 +3747,7 @@ define("sonatribe-ui/tests/authenticators/sonatribe-facebook.jshint",
     "use strict";
     module('JSHint - authenticators');
     test('authenticators/sonatribe-facebook.js should pass jshint', function() { 
-      ok(false, 'authenticators/sonatribe-facebook.js should pass jshint.\nauthenticators/sonatribe-facebook.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 50, col 79, Use \'===\' to compare with \'null\'.\n\n3 errors'); 
+      ok(false, 'authenticators/sonatribe-facebook.js should pass jshint.\nauthenticators/sonatribe-facebook.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\nauthenticators/sonatribe-facebook.js: line 52, col 79, Use \'===\' to compare with \'null\'.\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/components/home-logo.jshint", 
@@ -3747,7 +3756,7 @@ define("sonatribe-ui/tests/components/home-logo.jshint",
     "use strict";
     module('JSHint - components');
     test('components/home-logo.js should pass jshint', function() { 
-      ok(false, 'components/home-logo.js should pass jshint.\ncomponents/home-logo.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 5, col 37, [\'logo_url\'] is better written in dot notation.\ncomponents/home-logo.js: line 6, col 33, [\'title\'] is better written in dot notation.\n\n4 errors'); 
+      ok(false, 'components/home-logo.js should pass jshint.\ncomponents/home-logo.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncomponents/home-logo.js: line 4, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/components/text-field.jshint", 
@@ -3891,7 +3900,7 @@ define("sonatribe-ui/tests/controllers/sonatribe.jshint",
     "use strict";
     module('JSHint - controllers');
     test('controllers/sonatribe.js should pass jshint', function() { 
-      ok(false, 'controllers/sonatribe.js should pass jshint.\ncontrollers/sonatribe.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+      ok(false, 'controllers/sonatribe.js should pass jshint.\ncontrollers/sonatribe.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\ncontrollers/sonatribe.js: line 6, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/controllers/user-dropdown.jshint", 
@@ -3909,7 +3918,7 @@ define("sonatribe-ui/tests/helpers/bound-avatar.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/bound-avatar.js should pass jshint', function() { 
-      ok(false, 'helpers/bound-avatar.js should pass jshint.\nhelpers/bound-avatar.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 6, col 12, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 6, col 46, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 8, col 35, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 16, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 20, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
+      ok(false, 'helpers/bound-avatar.js should pass jshint.\nhelpers/bound-avatar.js: line 3, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 6, col 12, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 6, col 53, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 8, col 42, Use \'!==\' to compare with \'null\'.\nhelpers/bound-avatar.js: line 16, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/bound-avatar.js: line 20, col 1, \'export\' is only available in ES6 (use esnext option).\n\n6 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/computed.jshint", 
@@ -3918,7 +3927,7 @@ define("sonatribe-ui/tests/helpers/computed.jshint",
     "use strict";
     module('JSHint - helpers');
     test('helpers/computed.js should pass jshint', function() { 
-      ok(false, 'helpers/computed.js should pass jshint.\nhelpers/computed.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 9, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 13, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
+      ok(false, 'helpers/computed.js should pass jshint.\nhelpers/computed.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 10, col 1, \'export\' is only available in ES6 (use esnext option).\nhelpers/computed.js: line 14, col 1, \'export\' is only available in ES6 (use esnext option).\n\n4 errors'); 
     });
   });
 define("sonatribe-ui/tests/helpers/fmt.jshint", 
@@ -4102,7 +4111,7 @@ define("sonatribe-ui/tests/mixins/sonatribe-ajax.jshint",
     "use strict";
     module('JSHint - mixins');
     test('mixins/sonatribe-ajax.js should pass jshint', function() { 
-      ok(false, 'mixins/sonatribe-ajax.js should pass jshint.\nmixins/sonatribe-ajax.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/sonatribe-ajax.js: line 3, col 1, \'export\' is only available in ES6 (use esnext option).\n\n2 errors'); 
+      ok(false, 'mixins/sonatribe-ajax.js should pass jshint.\nmixins/sonatribe-ajax.js: line 1, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/sonatribe-ajax.js: line 2, col 1, \'import\' is only available in ES6 (use esnext option).\nmixins/sonatribe-ajax.js: line 5, col 1, \'export\' is only available in ES6 (use esnext option).\n\n3 errors'); 
     });
   });
 define("sonatribe-ui/tests/mixins/sonatribe-debounce.jshint", 

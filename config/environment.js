@@ -28,7 +28,7 @@ module.exports = function(environment) {
       'frame-src': "*"
     },
   };
-  
+
   ENV['simple-auth'] = {
         session:    'session:custom',
         authorizer: 'authenticator:custom'
@@ -52,6 +52,17 @@ module.exports = function(environment) {
         }
       }
     };
+    ENV['sonatribe'] = {
+      api_url: 'http://dev.festivaltribe.co.uk:1337',
+      app_url: 'http://dev.festivaltribe.co.uk:4200',
+
+      title: "Sonatribe",
+      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      mobile_logo_url: ""
+    };
+
+
   }
 
   if (environment === 'test') {
@@ -76,6 +87,16 @@ module.exports = function(environment) {
         }
       }
     };
+
+    ENV['sonatribe'] = {
+      api_url: 'http://dev.festivaltribe.co.uk:1337',
+      app_url: 'http://dev.festivaltribe.co.uk:4200',
+
+      title: "Sonatribe",
+      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      mobile_logo_url: ""
+    };
   }
 
   if (environment === 'production') {
@@ -90,6 +111,15 @@ module.exports = function(environment) {
           appId:      '787578521258518'
         }
       }
+    };
+    ENV['sonatribe'] = {
+      api_url: 'http://dev.festivaltribe.co.uk:1337',
+      app_url: 'http://dev.festivaltribe.co.uk:4200',
+
+      title: "Sonatribe",
+      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      mobile_logo_url: ""
     };
   }
 

@@ -1,8 +1,9 @@
 import DS from 'ember-data';
 import Ember from 'ember';
+import config from '../config/environment';
 
 export default DS.RESTAdapter.extend({
-	host: Sonatribe.SiteSettings.api_url,
+	host: config.sonatribe.api_url,
 	updateRecord: function(store, type, record) {
 	    var data = {};
 	    var get = Ember.get;

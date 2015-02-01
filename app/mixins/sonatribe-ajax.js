@@ -1,4 +1,6 @@
 import Ember from 'ember';
+import config from '../config/environment';
+
 
 export default Ember.Mixin.create({
   ajax: function(){
@@ -68,7 +70,7 @@ export default Ember.Mixin.create({
       args.crossDomain = true;
       args.xhrFields = {withCredentials: true};
 
-      $.ajax(Sonatribe.SiteSettings.api_url + url, args);
+      $.ajax(config.sonatribe.api_url + url, args);
     };
 
     return new Ember.RSVP.Promise(performAjax);
