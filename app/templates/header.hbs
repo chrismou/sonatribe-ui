@@ -39,7 +39,8 @@
 
         </li>
         {{#if session.isAuthenticated}}
-         {{#if session.account}}
+
+
         <li class='current-user dropdown'>
             <a class='icon'
                data-dropdown="user-dropdown"
@@ -47,13 +48,12 @@
                href="#"
 
                id="current-user">
-               {{log session}}
               
-                  {{log session.account}}
-                 {{bound-avatar session.account "medium"}}
+               {{bound-avatar session.account "medium"}}
             </a>
         </li>
-        {{/if}}
+
+
         {{/if}}
       </ul>
         {{render "search"}}

@@ -47,26 +47,13 @@ export default Authenticator.extend({
 
               store.find('user', stAuthResponse.id).then(function(user){
 
-                if(user.get('username') === undefined || user.get('username') == null){
-                  FB.api(
-                      '/me/picture',
-                    {
-                      'redirect': true,
-                      'height': '101',
-                      'type': 'normal',
-                      'width': '101'
-                    },
-                    function (response) {
-                      if (response && !response.error) {
-                        user.set('profilePictureUrl', response.data.url);
-                        user.save();
+
                         authResponse.user_id = stAuthResponse.id;
                         authResponse.user = user;
 
                         orig.resolveWith(provider, authResponse, resolve);
-                      }
-                    });
-                }
+
+                
               });
             });
           }
