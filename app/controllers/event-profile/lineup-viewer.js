@@ -20,7 +20,8 @@ export default Ember.ArrayController.extend(SearchLineup, Debounce, {
 
   search: function(term){
       	var self = this;
-      	var slug = this.get('controllers.eventProfile').model.eventProfile.slug;
+        var controller = this.get('controllers.eventProfile');
+      	var slug = controller.model.get('slug');
 
       	return this.debounce(this.searchLineup(slug, term)
         	.then(function(results) {
