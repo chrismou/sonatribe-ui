@@ -1,7 +1,7 @@
 import DS from 'ember-data';
 
 export default DS.Model.extend({
-  	eventsAttending: DS.hasMany('eventInstance', {async:true}),
+  	eventsAttending: DS.hasMany('eventinstance', {async:true}),
   	slug: DS.attr('string'),
     name: DS.attr('string'),
     username: DS.attr('string'),

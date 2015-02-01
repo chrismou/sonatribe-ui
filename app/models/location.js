@@ -4,6 +4,6 @@ export default DS.Model.extend({
 	slug: DS.attr('string'),
 	name:DS.attr('string'),
 
-  	eventInstance: DS.belongsTo('eventInstance'),
+  	eventinstance: DS.belongsTo('eventinstance'),
   	listingEvents: DS.hasMany('listingEvent', {async:true})
 });

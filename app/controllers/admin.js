@@ -4,7 +4,7 @@ import HasCurrentUser from 'sonatribe-ui/mixins/has-current-user';
 export default Ember.Controller.extend(HasCurrentUser, {
 	actions:{
 		createNew: function(){
-			var ei = this.store.createRecord('eventInstance', {
+			var ei = this.store.createRecord('eventinstance', {
 				name: 'test'
 			});
 			ei.save();

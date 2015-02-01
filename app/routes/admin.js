@@ -8,7 +8,7 @@ export default Ember.Route.extend(HasCurrentUser, {
 	access: [ 'Admin'],
 	setupController: function (controller) {
 		this.set('currentUser', this.currentUser);
-		this.store.find('event-instance').then(function(result){
+		this.store.find('eventinstance').then(function(result){
 			controller.set('model', result);
 		});
 	},
@@ -26,7 +26,7 @@ export default Ember.Route.extend(HasCurrentUser, {
         if (found) {
             return true;
         }
-        
+
         // manage the unauthorized attempt
         this.transitionTo('unauthorized'); // or whatever
     }

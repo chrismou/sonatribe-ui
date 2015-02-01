@@ -5,8 +5,8 @@ import Debounce from 'sonatribe-ui/mixins/sonatribe-debounce';
 export default Ember.ArrayController.extend(SearchLineup, Debounce, {
   needs: 'eventProfile',
 	renderList: false,
-  	renderGrid: true,
-  	newSearchNeeded: function() {
+  renderGrid: true,
+  newSearchNeeded: function() {
     	this.set('noResults', false);
     	var term = (this.get('term') || '').trim();
     	if (term.length >= 0) {
@@ -18,7 +18,7 @@ export default Ember.ArrayController.extend(SearchLineup, Debounce, {
     	this.set('selectedIndex', 0);
   	}.observes('term'),
 
-  	search: function(term){
+  search: function(term){
       	var self = this;
       	var slug = this.get('controllers.eventProfile').model.eventProfile.slug;
 
@@ -29,13 +29,13 @@ export default Ember.ArrayController.extend(SearchLineup, Debounce, {
         	}).catch(function() {
           		self.set('loading', false);
        	 	}), 400);
-  },
+    },
 
   	actions: {
     	nextPage: function(){
       		this.set('renderGrid', !this.get('renderGrid'));
       		this.set('renderList', !this.get('renderList'));
     	},
-      
+
   }
 });

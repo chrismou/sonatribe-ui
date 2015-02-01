@@ -9,7 +9,7 @@ Router.map(function() {
   this.route('user-profile', { path: '/user/:Slug'});
 
   this.resource('event-profile', { path: '/event/:Slug'}, function(){
-    this.route('lineup-viewer', { path: '/'});
+    //this.route('lineup-viewer', { path: '/'});
   });
 
   this.route('artist-profile', { path: '/artist/:Slug'});
