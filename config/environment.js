@@ -113,7 +113,7 @@ module.exports = function(environment) {
       }
     };
     ENV['sonatribe'] = {
-      api_url: 'http://sonatribe-api.heroku.com',
+      api_url: 'http://api.test.sonatribe.com',
       app_url: 'http://test.sonatribe.com',
 
       title: "Sonatribe",
