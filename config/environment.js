@@ -104,17 +104,17 @@ module.exports = function(environment) {
       sessionServiceName: 'session',
       providers: {
         'facebook-oauth2': {
-          apiKey:      '787578521258518',
-          redirectUri: 'http://dev.festivaltribe.co.uk:4200'
+          apiKey:      '1392930090981307',
+          redirectUri: 'http://test.sonatribe.com'
         },
         'facebook-connect': {
-          appId:      '787578521258518'
+          appId:      '1392930090981307'
         }
       }
     };
     ENV['sonatribe'] = {
-      api_url: 'http://dev.festivaltribe.co.uk:1337',
-      app_url: 'http://dev.festivaltribe.co.uk:4200',
+      api_url: 'http://sonatribe-api.heroku.com',
+      app_url: 'http://test.sonatribe.com',
 
       title: "Sonatribe",
       logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
