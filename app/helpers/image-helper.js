@@ -1,7 +1,9 @@
 import Ember from 'ember';
+import config from '../config/environment';
 
-export function imageHelper(model, size) {
- 	var html = '<img src="' + Sonatribe.ApiUrl + '/image/' + model.get('name') + '?size=' + size + '"  />';
+
+export function imageHelper(img, size) {
+ 	var html = '<img src="' + img.url + '"  />';
  	return new Handlebars.SafeString(html);
 }
 

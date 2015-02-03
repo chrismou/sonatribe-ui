@@ -34,13 +34,18 @@ users attending: {{model.usersAttending.length}}
 <li>artist bio: {{artist.bio.content}}</li>
 <br /> familiarity: {{artist.stats.familiarity}}
 <br /> hotttness: {{artist.stats.hotttnesss}}
-<br /> 
+<br />
 tracks:<br />
 {{#each track in artist.tracks.track}}
-{{track.name}}, 
+{{track.name}},
 {{/each}}
-<br /> 
+<br />
 images<br />
+
+{{#each genre in artist.genres}}
+{{genre.name}}, 
+{{/each}}
+
 {{#each image in artist.images}}
 
 {{image-helper image 'square'}}
