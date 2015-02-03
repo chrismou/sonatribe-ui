@@ -9,7 +9,7 @@ export default Ember.Mixin.create(Ajax, {
     promise.then(function(result){
         result.resultTypes = [];
 
-        [['event','events'],['user','users'], ['artist', 'artists']].forEach(function(pair){
+        [['event','events'],['user','users'], ['artist', 'artists'], ['le', 'les']].forEach(function(pair){
         var type = pair[0], name = pair[1];
         if(result[name].length > 0) {
           result.resultTypes.push({

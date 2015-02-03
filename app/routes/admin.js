@@ -3,7 +3,7 @@ import HasCurrentUser from 'sonatribe-ui/mixins/has-current-user';
 
 export default Ember.Route.extend(HasCurrentUser, {
 	model: function () {
-		this.set('currentUser', this.currentUser);
+		//this.set('currentUser', this.currentUser);
 	},
 	access: [ 'Admin'],
 	setupController: function (controller) {

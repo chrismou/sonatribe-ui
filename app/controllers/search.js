@@ -39,7 +39,7 @@ export default SonatribeController.extend(EventSearch, Debounce, {
         context = this.get('searchContext');
       }
 
-      if (term.length > 2) {
+      if (term.length > 0) {
         return this.debounce(
           this.search(term)
           .then(function(results) {
