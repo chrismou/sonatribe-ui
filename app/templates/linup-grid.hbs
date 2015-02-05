@@ -28,6 +28,11 @@ ul.block-grid-3 > li:nth-of-type(3n+1) {
 {{#each le in this}}
 
         <li class='heading row'>
+
+        {{#foreach artist in le.artists}}
+          {{image-helper artist.image.url 'c_fill,h_30,w_20'}}
+        {{/foreach}}
+
         <b>users attending: {{le.usersAttending.length}}
         <b>  {{#link-to 'artist-profile' le.slug}}{{le.name}}{{/link-to}} - {{le.start}} - {{le.end}}</b>
         <div> locationId: {{le.locationName}}</div>
