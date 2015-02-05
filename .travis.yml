@@ -1,7 +1,12 @@
 language: node_js
+
 node_js:
-- "0.10.35"
+    - 0.10.35
+
 before_script:
-- nvm install 0.10.35
-- nvm alias default 0.10.35
-script: npm install && npm install -g bower && bower install && npm test
+    - nvm install 0.10.35
+    - nvm alias default 0.10.35
+
+notifications:
+    slack:
+        secure: ENd4Tfx7HYnVL9G+GwtZx0/cPkwMV0Plx4hLJxlxe8qLkoaGPcXpn5FStiVoOWlZdN2rIgwJ/+r6jFPKe9KrQAOQ8/hKItbcagyZmhYwVub3LUMj7B9Dw7laKLSD6ZRIaqeiMOQHVlWoGiV2PHen7n/v8U8ORz6D4388uwL2IB4=

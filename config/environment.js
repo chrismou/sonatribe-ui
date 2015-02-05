@@ -53,13 +53,13 @@ module.exports = function(environment) {
       }
     };
     ENV['sonatribe'] = {
-      api_url: 'http://dev.festivaltribe.co.uk:1337',
-      app_url: 'http://dev.festivaltribe.co.uk:4200',
+      apiUrl: 'http://dev.festivaltribe.co.uk:1337',
+      appUrl: 'http://dev.festivaltribe.co.uk:4200',
 
       title: "Sonatribe",
-      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logoUrl: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
       logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-      mobile_logo_url: ""
+      mobile_logoUrl: ""
     };
 
 
@@ -89,13 +89,13 @@ module.exports = function(environment) {
     };
 
     ENV['sonatribe'] = {
-      api_url: 'http://dev.festivaltribe.co.uk:1337',
-      app_url: 'http://dev.festivaltribe.co.uk:4200',
+      apiUrl: 'http://dev.festivaltribe.co.uk:1337',
+      appUrl: 'http://dev.festivaltribe.co.uk:4200',
 
       title: "Sonatribe",
-      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logoUrl: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
       logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-      mobile_logo_url: ""
+      mobile_logoUrl: ""
     };
   }
 
@@ -113,13 +113,13 @@ module.exports = function(environment) {
       }
     };
     ENV['sonatribe'] = {
-      api_url: 'http://api.test.sonatribe.com',
-      app_url: 'http://test.sonatribe.com',
+      apiUrl: 'http://api.test.sonatribe.com',
+      appUrl: 'http://test.sonatribe.com',
 
       title: "Sonatribe",
-      logo_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
+      logoUrl: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
       logo_small_url: "http://alpha.sonatribe.com/img/logo_simple_small.jpg",
-      mobile_logo_url: ""
+      mobile_logoUrl: ""
     };
   }
 
