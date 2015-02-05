@@ -26,10 +26,10 @@ ul.block-grid-3 > li:nth-of-type(3n+1) {
 
  <ul class="row-fluid block-grid-3">
 {{#each le in this}}
-       
+
         <li class='heading row'>
         <b>users attending: {{le.usersAttending.length}}
-        <b>  {{#link-to 'listing-event' le.slug}}{{le.name}}{{/link-to}} - {{le.start}} - {{le.end}}</b>
+        <b>  {{#link-to 'artist-profile' le.slug}}{{le.name}}{{/link-to}} - {{le.start}} - {{le.end}}</b>
         <div> locationId: {{le.locationName}}</div>
         {{#if le.currentUserAttending}}
         <button id="clear-completed" {{action "toggleAttendance" le}}>

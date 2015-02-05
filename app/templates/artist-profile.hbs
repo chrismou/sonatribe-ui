@@ -3,6 +3,8 @@
 
 test user profile new: <br>
 
+{{log this}}
+
 <div>name: {{name}}</div>
 
 <div>events played at:</div>
@@ -14,6 +16,10 @@ test user profile new: <br>
 
 <div>bio: {{bio.content}}</div>
 
+{{#each image in images}}
 
+{{image-helper image.url 'c_fill,h_300,w_200'}}
+
+{{/each}}
 
 {{outlet}}

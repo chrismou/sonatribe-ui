@@ -1,7 +1,7 @@
 import DS from 'ember-data';
 
 export default DS.Model.extend({
-	currentUserAttending: DS.attr(),
+		currentUserAttending: DS.attr(),
   	name:DS.attr(),
   	slug: DS.attr('string'),
   	start:DS.attr('string'),

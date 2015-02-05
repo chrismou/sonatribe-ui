@@ -2,8 +2,8 @@ import Ember from 'ember';
 import config from '../config/environment';
 
 
-export function imageHelper(img, size) {
- 	var html = '<img src="' + img.url + '"  />';
+export function imageHelper(url, size) {
+ 	var html = '<img src="' + url.replace('upload/', 'upload/' + size + '/') + '"  />';
  	return new Handlebars.SafeString(html);
 }
 
