@@ -7,8 +7,7 @@ export default Ember.Route.extend(Ajax, {
 		return this.store.find('artist', {slug: params.Slug})
 				.then(function(result){
 					var res = result.get('firstObject');
-					console.log(result);
-					console.log(res);
+					
 					return res;
 				});
   	}

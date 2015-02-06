@@ -1,17 +1,14 @@
 
-<br><br><br><br><br>
 
-
-{{#link-to 'event-profile' model.eventInstanceSlug}}back to event{{/link-to}}
-
-test user profile new: <br>
+test artist profile new: <br>
 
 <div>name: {{name}}</div>
 
 <div>events played at:</div>
 <ul>
-{{#each e in eventsPlayedAt}}
-	<li>{{e.name}}</li>
+{{#each le in listingEventsPlayedAt}}
+	<li>- {{le.name}} {{le.location.name}} {{le.start}}-
+		{{#link-to 'event-profile' le.location.eventInstance.slug}}{{le.location.eventInstance.name}} {{/link-to}}</li>
 {{/each}}
 </ul>
 
@@ -22,5 +19,7 @@ test user profile new: <br>
 {{image-helper image.url 'c_fill,h_300,w_200'}}
 
 {{/each}}
+
+
 
 {{outlet}}
