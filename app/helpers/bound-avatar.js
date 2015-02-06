@@ -7,7 +7,7 @@ function boundAvatar(user) {
   	return new safe('<img width="32" src="' + user.get('profilePictureUrl') + '" />');
   }
   else{
-  	return new safe('<img src="http://virtual-host-discourse.global.ssl.fastly.net/user_avatar/discuss.emberjs.com/wayne_douglas/32/9568.png" />');
+  	return new safe('<img src="/assets/images/avatar40x40.jpg" width="32" />');
   }
 }
 
