@@ -1,13 +1,13 @@
 import Authenticator from 'simple-auth-torii/authenticators/torii';
 import config from '../config/environment';
-import session from 'sonatribe-ui/session/custom-session';
+//import session from 'sonatribe-ui/session/custom-session';
 
 export default Authenticator.extend({
   needs: ['store'],
   restore: function(data) {
     var _data = data;
     var orig = this;
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Ember.RSVP.Promise(function(resolve) {
       return orig._super(data).then(function(data){
         Ember.merge(data, _data);
         resolve(data);
@@ -18,7 +18,7 @@ export default Authenticator.extend({
 
     var orig = this;
 
-    return new Ember.RSVP.Promise(function(resolve, reject) {
+    return new Ember.RSVP.Promise(function(resolve) {
       return orig._super(provider, options)
       .then(function(authResponse){
 
@@ -45,8 +45,8 @@ export default Authenticator.extend({
   },
   invalidate: function(data) {
     var orig = this;
-    return new Ember.RSVP.Promise(function(resolve, reject) {
-      return orig._super(data)
+    return new Ember.RSVP.Promise(function() {
+      return orig._super(data);
     });
   }
 });
