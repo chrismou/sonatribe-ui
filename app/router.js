@@ -6,7 +6,7 @@ var Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route('index', { path: '/'})
+  this.route('index', { path: '/'});
   this.route('user-profile', { path: '/user/:Slug'});
 
   this.resource('event-profile', { path: '/event/:Slug'}, function(){

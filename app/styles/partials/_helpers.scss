@@ -27,4 +27,4 @@ i, em { font-style:italic; }
 }
 
 /* clears */
-.grids:after, .subnav:after, .section:after, .group:after, .clearfix:after, .row:after, .trendy-block:after { content: '.'; display: block; clear: both; height: 0; visibility: hidden; }
+.section:after, .group:after, .clearfix:after, .row:after, .trendy-block:after { content: '.'; display: block; clear: both; height: 0; visibility: hidden; }
