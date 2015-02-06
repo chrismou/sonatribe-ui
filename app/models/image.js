@@ -2,7 +2,7 @@ import DS from 'ember-data';
 
 export default DS.Model.extend({
 	name:DS.attr('string'),
-  	artist: DS.belongsTo('artist'),
+  	artist: DS.belongsTo('artist', {async: true}),
 		width: DS.attr('string'),
 		height: DS.attr('string'),
 		format: DS.attr('string'),

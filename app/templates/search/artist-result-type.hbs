@@ -1,8 +1,3 @@
 {{#link-to 'artist-profile' this.slug}}
 
-{{#if this.images}}
-{{log "we have images"}}
-{{log this.images.1.url}}
-{{image-helper this.images.1.url 'c_fill,h_20,w_20'}}
-{{/if}}
-{{unbound name}}  -- {{/link-to}}
+{{image-helper this.images.0.url 'c_fill,h_40,w_40'}} {{unbound name}}  {{/link-to}}
