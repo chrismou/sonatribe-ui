@@ -3,13 +3,14 @@ import Ember from 'ember';
 
 
 export function imageHelper(url, size) {
- if (url !== null && url !== undefined) {
-   var html = '<img src="' + url.replace('upload/', 'upload/' + size + '/') + '"  />';
-   return new Handlebars.SafeString(html);
- }
+  var html;
+  if (url !== null && url !== undefined) {
+    html = '<img src="' + url.replace('upload/', 'upload/' + size + '/') + '"  />';
+    return new Handlebars.SafeString(html);
+  }
 
- var html = '<img src="/assets/images/avatar40x40.jpg" />';
- return new Handlebars.SafeString(html);
+  html = '<img src="/assets/images/avatar40x40.jpg" />';
+  return new Handlebars.SafeString(html);
 }
 
 export default Ember.Handlebars.makeBoundHelper(imageHelper);
