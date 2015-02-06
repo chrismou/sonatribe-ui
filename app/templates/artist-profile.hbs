@@ -1,6 +1,9 @@
 
 <br><br><br><br><br>
 
+
+{{#link-to 'event-profile' model.eventInstanceSlug}}back to event{{/link-to}}
+
 test user profile new: <br>
 
 <div>name: {{name}}</div>
@@ -14,6 +17,10 @@ test user profile new: <br>
 
 <div>bio: {{bio.content}}</div>
 
+{{#each image in images}}
 
+{{image-helper image.url 'c_fill,h_300,w_200'}}
+
+{{/each}}
 
 {{outlet}}
