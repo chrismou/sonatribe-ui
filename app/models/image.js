@@ -2,8 +2,10 @@ import DS from 'ember-data';
 
 export default DS.Model.extend({
 	name:DS.attr('string'),
-  	artist: DS.belongsTo('artist'),
-  	fullPath: function(){
-  		return Sonatribe.ApiUrl + '/image/' + this.get('name') + '?size=smallsquare' ;
-  	}.property()
+  	artist: DS.belongsTo('artist', {async: true}),
+		width: DS.attr('string'),
+		height: DS.attr('string'),
+		format: DS.attr('string'),
+		url: DS.attr('string'),
+		secureUrl: DS.attr('string')
 });
