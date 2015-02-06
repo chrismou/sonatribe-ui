@@ -8,7 +8,7 @@ export function imageHelper(url, size) {
    return new Handlebars.SafeString(html);
  }
 
- var html = '<img src="temp.png"  />';
+ var html = '<img src="/assets/images/temp.png"  />';
  return new Handlebars.SafeString(html);
 }
 

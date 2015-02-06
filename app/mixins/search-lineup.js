@@ -3,6 +3,6 @@ import Ajax from 'sonatribe-ui/mixins/sonatribe-ajax';
 
 export default Ember.Mixin.create(Ajax, {
   	searchLineup: function(slug, term){
-    	return this.store.findQuery('listingevent', { name: term + '%', eventInstanceSlug: slug });
+    	return this.store.findQuery('listingevent', { name: term + '%', eventInstanceSlug: slug, skip: 0, limit: 20 });
   	}
 });
