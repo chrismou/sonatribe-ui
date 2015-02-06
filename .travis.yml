@@ -8,7 +8,7 @@ before_script:
     - travis_retry nvm alias default 0.10.35
 
 script:
-	- travis_retry npm install && npm install -g bower && bower install && npm test
+    - travis_retry npm install && npm install -g bower && bower install && npm test
 
 notifications:
     slack:
