@@ -1,0 +1,30 @@
+/* html */
+body { font-family:'Droid Sans',Helvetica,Arial,"Helvetica Neue",sans-serif; color:#709b9a;  }
+a { color:#46b746; text-decoration:none; }
+a:hover { color:#333; text-decoration:none; }
+p { margin-bottom:15px; }
+ul.inline-list li { display:inline-block; }
+h1, h2 { text-transform:uppercase; font-weight:normal; }
+h3 { font-size:20px; line-height:28px; margin-bottom:5px; }
+dl dt { font-size:16px; line-height:22px; font-weight:bold; }
+dl dd { margin-bottom:15px; }
+b, strong { font-weight:bold; }
+i, em { font-style:italic; }
+
+/* helpers */
+.fleft { float:left; }
+.fright { float:right; }
+.clear { display:block; clear:both; }
+.tleft { text-align:left; }
+.tright { text-align:right; }
+.tcenter { text-align:center; }
+.tbold { font-weight:bold; }
+.titalic { font-style:italic; }
+.small { font-size:11px; line-height:17px; }
+.section { 
+	margin-bottom:20px; 
+	&.nomar { margin-bottom:0; }
+}
+
+/* clears */
+.grids:after, .subnav:after, .section:after, .group:after, .clearfix:after, .row:after, .trendy-block:after { content: '.'; display: block; clear: both; height: 0; visibility: hidden; }
