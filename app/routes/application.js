@@ -9,7 +9,17 @@ var ApplicationRoute = SonatribeRoute.extend(ApplicationRouteMixin, HasCurrentUs
 		// action to trigger authentication with Torii
 
 		authenticateFacebook: function(provider){
-			return this.get('session').authenticate('authenticator:custom', 'facebook-connect');
+			return this.get('session').authenticate('authenticator:custom', 'facebook-connect')
+			.then(function(a, b){
+				console.log(a);
+				console.log(b);
+				console.log(_this.get('session'));
+				console.log(_this.get('session').get('account'));
+				if(_this.get("session").content.user.username == undefined){
+					_this.transitionTo('manage-account');
+				}
+				return true;
+			});
 		}
 	}
 });
