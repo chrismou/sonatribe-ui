@@ -30,7 +30,9 @@ ul.block-grid-3 > li:nth-of-type(3n+1) {
         <li class='heading row'>
 
         {{#each artist in le.artists}}
-          {{image-helper artist.image.url 'c_fill,h_30,w_20'}}
+
+        {{ render "artist/artist-tile" artist }}
+
         {{/each}}
 
         <b>users attending: {{le.usersAttending.length}}
