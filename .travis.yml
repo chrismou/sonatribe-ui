@@ -4,8 +4,10 @@ node_js:
     - 0.10.35
 
 before_script:
-    - nvm install 0.10.35
-    - nvm alias default 0.10.35
+    - travis_retry nvm install 0.10.35
+    - travis_retry nvm alias default 0.10.35
+    - travis_retry npm install -g bower
+    - travis_retry bower install
 
 notifications:
     slack:
