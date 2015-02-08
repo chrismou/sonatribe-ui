@@ -14,10 +14,9 @@
 Submitting, please wait...
 {{/if}}
 
-{{showRegistration}}
-<a {{action "authenticateFacebook" "facebook-oauth2"}}>facebook</a>
+<a {{action "authenticateFacebook" "facebook-oauth2"}} class="btn btn-social facebook">facebook</a>
+<a {{action "authenticateTwitter" "twitter"}} class="btn btn-social twitter">twitter</a>
 
-<a {{bind-attr href=twitterLoginUrl}}>twitter</a>
 <form id='login-form' method='post'>
   <div>
     <table>

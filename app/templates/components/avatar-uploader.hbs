@@ -1,0 +1,12 @@
+<input type="file" accept="image/*" style="display:none" />
+<button class="btn" {{action "selectFile"}} {{bind-attr disabled="uploading"}} title="uploading">
+  <i class="fa fa-picture-o"></i>&nbsp;upload
+</button>
+{{#if uploading}}
+  <span>uploading 99%</span>
+{{/if}}
+{{#if imageIsNotASquare}}
+  <div class="warning">warning tengs a gwarn</div>
+{{/if}}
+
+{{yield}}

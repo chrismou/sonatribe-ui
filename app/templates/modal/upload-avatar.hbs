@@ -1,0 +1,52 @@
+{{#em-modal-form configName="bs" id="upload-avatar" in-async=async}}
+{{#em-modal-title}}
+<!--optional toggler to close the opened modal-->
+{{#em-modal-toggler class="close"}}x{{/em-modal-toggler}}
+<h4 class="modal-title">Upload Avatar</h4>
+{{/em-modal-title}}
+<!--the content of the modal...-->
+{{#em-modal-body}}
+
+{{#if async}}
+Submitting, please wait...
+{{/if}}
+
+<div class="form-group">
+  <div class="col-sm-1">
+    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  </div>
+  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+    System assigned profile picture
+  </label>
+</div>
+
+<div class="form-group">
+  <div class="col-sm-1">
+    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  </div>
+  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+    Gravatar, based on wayne@prjatk.com
+    <button href {{action "refreshGravatar"}} title="gravatar text" class="btn no-text"><i class="fa fa-refresh"></i></button>
+  </label>
+</div>
+
+<div class="form-group">
+  <div class="col-sm-1">
+    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  </div>
+  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+    Add a custom picture
+    {{avatar-uploader uploadUrl=categoryUploadUrl imageUrl=logo_url type="logo"}}
+  </label>
+</div>
+
+
+
+
+
+{{/em-modal-body}}
+<!--optional footer section of the modal, usually contains buttons-->
+{{#em-modal-footer}}
+{{#em-modal-toggler class="btn btn-default"}}Close{{/em-modal-toggler}}
+{{/em-modal-footer}}
+{{/em-modal-form}}
