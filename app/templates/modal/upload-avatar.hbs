@@ -11,37 +11,34 @@
 Submitting, please wait...
 {{/if}}
 
-<div class="form-group">
-  <div class="col-sm-1">
-    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  <div class="form-group">
+    <div class="col-sm-1">
+      <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+    </div>
+    <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+      System assigned profile picture
+    </label>
   </div>
-  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
-    System assigned profile picture
-  </label>
-</div>
 
-<div class="form-group">
-  <div class="col-sm-1">
-    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  <div class="form-group">
+    <div class="col-sm-1">
+      <input type="radio" id="gravatar" name="avatar" value="gravatar" {{action "useGravatar"}}>
+    </div>
+    <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+      Gravatar, based on wayne@prjatk.com
+      <button href {{action "refreshGravatar"}} title="gravatar text" class="btn no-text"><i class="fa fa-refresh"></i></button>
+    </label>
   </div>
-  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
-    Gravatar, based on wayne@prjatk.com
-    <button href {{action "refreshGravatar"}} title="gravatar text" class="btn no-text"><i class="fa fa-refresh"></i></button>
-  </label>
-</div>
 
-<div class="form-group">
-  <div class="col-sm-1">
-    <input type="radio" id="system-avatar" name="avatar" value="system" {{action "useSystem"}}>
+  <div class="form-group">
+    <div class="col-sm-1">
+      <input type="radio" id="uploaded_avatar" name="avatar" value="uploaded" {{action "useUploadedAvatar"}}>
+    </div>
+    <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
+      Add a custom picture
+      {{avatar-uploader uploadUrl=categoryUploadUrl imageUrl=logo_url type="logo"}}
+    </label>
   </div>
-  <label class="control-label col-sm-11">{{bound-avatar session.account "medium"}}
-    Add a custom picture
-    {{avatar-uploader uploadUrl=categoryUploadUrl imageUrl=logo_url type="logo"}}
-  </label>
-</div>
-
-
-
 
 
 {{/em-modal-body}}

@@ -3,7 +3,7 @@
 <div class="container">
   <h4>Because you're new...</h4>
 <br>
-  {{outlet}}
+{{outlet}}
   <section class='user-content'>
 
     <form class="form-horizontal">
@@ -13,7 +13,7 @@
       <label class="control-label">Username</label>
       <div class="col-sm-10">
         <span class='static'>username</span>
-        {{#link-to "index" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
+        {{#link-to "preferences.username" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
         <div class='instructions'>
           People can mention you as @username
         </div>
@@ -24,7 +24,7 @@
       <label class="control-label">Email</label>
       <div class="col-sm-10">
         <span class='static'>email@trst.vom</span>
-        {{#link-to "index" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
+        {{#link-to "preferences.email" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
         <div class='instructions'>
           Never shown to the public
         </div>

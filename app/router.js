@@ -19,9 +19,14 @@ Router.map(function() {
 
   this.route('admin', { path: '/admin/:Slug'});
   this.route('unauthorized');
-  this.route('manage-account', { path: '/user'});
+  //this.route('manage-account', { path: '/user/preferences'});
   this.route('event-profile/lineup-viewer');
   this.route('manageAccount');
+
+  this.route("preferences", function() {
+    this.route("username");
+    this.route("email");
+  });
 });
 
 export default Router;

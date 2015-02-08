@@ -1,0 +1,42 @@
+{{outlet}}
+<section class='user-content'>
+  <form class="form-horizontal">
+
+    <div class="control-group">
+      <div class="controls">
+        <h3>change email</h3>
+      </div>
+    </div>
+
+    {{#if error}}
+      <div class="control-group">
+        <div class="instructions">
+          <div class='alert alert-error'>error text</div>
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="control-group">
+      <label class="control-label">Email:</label>
+      <div class="controls">
+        {{text-field value=newUsername id="change_username" classNames="input-xxlarge" maxlength=maxLength}}
+      </div>
+      <div class='instructions'>
+        {{#if taken}}
+          username taken
+        {{/if}}
+        <span>error message</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <div class="controls">
+        {{#link-to "preferences" class="btn btn-primary"}}cancel</i>{{/link-to}}
+
+          <button {{action "changeUsername"}} {{bind-attr disabled="saveDisabled"}} class="btn btn-primary">save</button>
+          {{#if saved}}saved{{/if}}
+      </div>
+    </div>
+
+  </form>
+</section>
