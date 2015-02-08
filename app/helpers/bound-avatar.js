@@ -7,7 +7,7 @@ function boundAvatar(user) {
   	return new safe('<img width="32" src="' + user.get('profilePictureUrl') + '" />');
   }
   else{
-  	return new safe('<img src="/assets/images/avatar40x40.jpg" width="32" />');
+  	return new safe('<img src="/img/avatar40x40.jpg" width="32" />');
   }
 }
 

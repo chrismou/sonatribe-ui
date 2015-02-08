@@ -1,12 +1,15 @@
 <section class='d-dropdown' id='user-dropdown'>
+
+  {{log session.account}}
+
   <ul class='user-dropdown-links'>
-      <li>{{#link-to 'user-profile' currentUser}}profile{{/link-to}}</li>
-      {{#if isAdmin}}
+      <li>{{#link-to 'user-profile' session.user}}profile{{/link-to}}</li>
+    {{#if isAdmin}}
       	<li>{{#link-to 'admin' currentUser}}admin{{/link-to}}</li>
 	  {{/if}}
       <li><a href="#">messages</a></li>
-      <li><a href="#">settings</a></li>
-      <li><a {{bind-attr href=logoutUrl}}>log out</a></li>
-      
+      <li>{{#link-to 'manage-account'}}settings{{/link-to}}</li>
+      <li> <a {{ action 'invalidateSession' }} class="btn btn-danger navbar-btn">Logout</a></li>
+
   </ul>
 </section>

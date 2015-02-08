@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import SonatribeRoute from 'sonatribe-ui/routes/application';
 
-export default Ember.Route.extend({
+export default SonatribeRoute.extend({
 });

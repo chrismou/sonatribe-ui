@@ -4,13 +4,43 @@
   <h4>Because you're new...</h4>
 <br>
   {{outlet}}
-  <div class="col-sm-9 col-xs-12 page row well line-example">
-    {{#em-form form_layout="default"}}
-    {{em-input property="name" label="Full Name" placeholder="Enter a name..."}}
-    {{em-text property="comment" label="Coment" placeholder="Comment please.." rows=4}}
-    {{em-select property="gender" label="Gender" prompt="-select-" contentBinding="genderOptions" optionValuePath="content.id" optionLabelPath="content.name"}}
-    {{em-checkbox property="active" label="Active?"}}
-    {{/em-form}}
-  </div>
+  <section class='user-content'>
+
+    <form class="form-horizontal">
+
+
+    <div class="form-group">
+      <label class="control-label">Username</label>
+      <div class="col-sm-10">
+        <span class='static'>username</span>
+        {{#link-to "index" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
+        <div class='instructions'>
+          People can mention you as @username
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="control-label">Email</label>
+      <div class="col-sm-10">
+        <span class='static'>email@trst.vom</span>
+        {{#link-to "index" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
+        <div class='instructions'>
+          Never shown to the public
+        </div>
+      </div>
+    </div>
+
+
+    <div class="form-group">
+      <label class="control-label">Profile Picture</label>
+      <div class="col-sm-10">
+        {{bound-avatar session.account "large"}}
+        {{#link-to "index" class="btn btn-small pad-left no-text"}}<i class="fa fa-pencil"></i>{{/link-to}}
+      </div>
+    </div>
+
+    </form>
+  </section>
 
 </div>

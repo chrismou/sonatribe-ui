@@ -9,7 +9,7 @@ Router.map(function() {
   this.route('index', { path: '/'});
   this.route('user-profile', { path: '/user/:Slug'});
 
-  this.resource('event-profile', { path: '/event/:Slug'}, function(){
+  this.route('event-profile', { path: '/event/:Slug'}, function(){
     this.route('lineup-viewer', { path: '/'});
   });
 
@@ -19,7 +19,7 @@ Router.map(function() {
 
   this.route('admin', { path: '/admin/:Slug'});
   this.route('unauthorized');
-  this.route('manage-account');
+  this.route('manage-account', { path: '/user'});
   this.route('event-profile/lineup-viewer');
   this.route('manageAccount');
 });

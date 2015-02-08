@@ -9,7 +9,7 @@ export function imageHelper(url, size) {
     return new Handlebars.SafeString(html);
   }
 
-  html = '<img src="/assets/images/avatar40x40.jpg" />';
+  html = '<img src="/img/avatar40x40.jpg" />';
   return new Handlebars.SafeString(html);
 }
 

@@ -43,10 +43,13 @@ export default Authenticator.extend({
       });
     });
   },
-  invalidate: function(data) {
-    var orig = this;
-    return new Ember.RSVP.Promise(function() {
-      return orig._super(data);
+  invalidate: function() {
+    var _this = this;
+    return new Ember.RSVP.Promise(function(resolve, reject) {
+      _this.torii.close(_this.provider).then(function() {
+        delete _this.provider;
+        resolve();
+      }, reject);
     });
   }
 });
